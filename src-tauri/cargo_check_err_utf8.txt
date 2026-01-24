@@ -1,0 +1,47 @@
+﻿cargo :     Checking d2r-rust v0.1.0 (F:\mycode\D2Rmutiplay\d2r-rus
+t\src-tauri)
+所在位置 行:1 字符: 1
++ cargo check 2> cargo_check_err.txt; Get-Content cargo_check_err.t
+xt | ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking d2...rus 
+   t\src-tauri):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+error[E0599]: no method named `refresh_list` found for struct `std:
+:sync::MutexGuard<'_, Users>` in the current scope
+   --> src\modules\account.rs:170:11
+    |
+170 |     users.refresh_list();
+    |           ^^^^^^^^^^^^
+    |
+help: there is a method `refresh` with a similar name
+    |
+170 -     users.refresh_list();
+170 +     users.refresh();
+    |
+
+error[E0061]: this method takes 1 argument but 0 arguments were sup
+plied
+    --> src\modules\account.rs:176:48
+     |
+ 176 |         sysinfo::ProcessRefreshKind::nothing().with_user()
+     |                                                ^^^^^^^^^-- a
+rgument #1 of type `UpdateKind` is missing
+     |
+note: method defined here
+    --> C:\Users\yoyos\.cargo\registry\src\index.crates.io-1949cf8c
+6b5b557f\sysinfo-0.37.2\src\common\system.rs:2457:9
+     |
+2457 |         with_user,
+     |         ^^^^^^^^^
+help: provide the argument
+     |
+ 176 |         sysinfo::ProcessRefreshKind::nothing().with_user(/* 
+UpdateKind */)
+     |                                                          +++
++++++++++++++
+
+Some errors have detailed explanations: E0061, E0599.
+For more information about an error, try `rustc --explain E0061`.
+error: could not compile `d2r-rust` (lib) due to 2 previous errors

@@ -1,0 +1,70 @@
+﻿cargo :     Checking webview2-com v0.38.2
+所在位置 行:1 字符: 1
++ cargo check 2> cargo_check_errors.txt
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking webview2 
+   -com v0.38.2:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    Checking scap v0.1.0-beta.1
+error[E0599]: no method named `timespan` found for mutable referenc
+e `&mut windows_capture::frame::Frame<'_>` in the current scope
+  --> C:\Users\yoyos\.cargo\registry\src\index.crates.io-1949cf8c6b
+5b557f\scap-0.1.0-beta.1\src\capturer\engine\win\mod.rs:79:29
+   |
+79 |         let elapsed = frame.timespan().Duration - self.start_t
+ime.0;
+   |                             ^^^^^^^^ method not found in `&mut
+ windows_capture::frame::Frame<'_>`
+
+error[E0308]: arguments to this function are incorrect
+   --> C:\Users\yoyos\.cargo\registry\src\index.crates.io-1949cf8c6
+b5b557f\scap-0.1.0-beta.1\src\capturer\engine\win\mod.rs:214:55
+    |
+214 |         Target::Display(display) => Settings::Display(WCSetti
+ngs::new(
+    |                                                       ^^^^^^^
+^^^^^^^^
+...
+218 |             color_format,
+    |             ------------ expected `SecondaryWindowSettings`, 
+found `ColorFormat`
+219 |             SecondaryWindowSettings::Default,
+    |             -------------------------------- expected `Minimu
+mUpdateIntervalSettings`, found `SecondaryWindowSettings`
+220 |             MinimumUpdateIntervalSettings::Default,
+    |             -------------------------------------- expected `
+DirtyRegionSettings`, found `MinimumUpdateIntervalSettings`
+221 |             DirtyRegionSettings::Default,
+    |             ---------------------------- expected `ColorForma
+t`, found `DirtyRegionSettings`
+    |
+note: associated function defined here
+   --> C:\Users\yoyos\.cargo\registry\src\index.crates.io-1949cf8c6
+b5b557f\windows-capture-1.5.0\src\settings.rs:133:18
+    |
+133 |     pub const fn new(
+    |                  ^^^
+help: reorder these arguments
+    |
+214 ~         Target::Display(display) => Settings::Display(WCSetti
+ngs::new(
+215 +             WCMonitor::from_raw_hmonitor(display.raw_handle.0
+),
+216 +             show_cursor,
+217 +             draw_border,
+218 +             SecondaryWindowSettings::Default,
+219 +             MinimumUpdateIntervalSettings::Default,
+220 +             DirtyRegionSettings::Default,
+221 +             color_format,
+222 +             FlagStruct {
+223 +                 tx: tx.clone(),
+224 +                 crop: Some(get_crop_area(options)),
+225 +             },
+226 ~         )),
+    |
+
+Some errors have detailed explanations: E0308, E0599.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `scap` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

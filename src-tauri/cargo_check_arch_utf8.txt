@@ -1,0 +1,75 @@
+﻿cargo :     Checking d2r-rust v0.1.0 (F:\mycode\D2Rmutiplay\d2r-rus
+t\src-tauri)
+所在位置 行:1 字符: 1
++ cargo check 2> cargo_check_arch.txt; Get-Content cargo_check_arch
+.txt ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Checking d2...rus 
+   t\src-tauri):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: unused imports: `System` and `Users`
+ --> src\modules\account.rs:8:15
+  |
+8 | use sysinfo::{System, Users};
+  |               ^^^^^^  ^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on 
+by default
+
+error[E0599]: no function or associated item named `new` found for 
+struct `ProcessRefreshKind` in the current scope
+    --> src\modules\account.rs:173:38
+     |
+ 173 |         sysinfo::ProcessRefreshKind::new()
+     |                                      ^^^ function or associa
+ted item not found in `ProcessRefreshKind`
+     |
+note: if you're trying to build a new `ProcessRefreshKind` consider
+ using one of the following associated functions:
+      ProcessRefreshKind::nothing
+      ProcessRefreshKind::everything
+    --> C:\Users\yoyos\.cargo\registry\src\index.crates.io-1949cf8c
+6b5b557f\sysinfo-0.37.2\src\common\system.rs:2410:5
+     |
+2410 |     pub fn nothing() -> Self {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2425 |     pub fn everything() -> Self {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: there is a method `ne` with a similar name, but with differen
+t arguments
+    --> /rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234\library\cor
+e\src\cmp.rs:264:5
+
+error[E0599]: no function or associated item named `new` found for 
+struct `ProcessRefreshKind` in the current scope
+    --> src\state.rs:14:75
+     |
+  14 |                 RefreshKind::nothing().with_processes(Proces
+sRefreshKind::new())
+     |                                                             
+              ^^^ function or associated item not found in `Process
+RefreshKind`
+     |
+note: if you're trying to build a new `ProcessRefreshKind` consider
+ using one of the following associated functions:
+      ProcessRefreshKind::nothing
+      ProcessRefreshKind::everything
+    --> C:\Users\yoyos\.cargo\registry\src\index.crates.io-1949cf8c
+6b5b557f\sysinfo-0.37.2\src\common\system.rs:2410:5
+     |
+2410 |     pub fn nothing() -> Self {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2425 |     pub fn everything() -> Self {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: there is a method `ne` with a similar name, but with differen
+t arguments
+    --> /rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234\library\cor
+e\src\cmp.rs:264:5
+
+For more information about this error, try `rustc --explain E0599`.
+warning: `d2r-rust` (lib) generated 1 warning
+error: could not compile `d2r-rust` (lib) due to 2 previous errors;
+ 1 warning emitted

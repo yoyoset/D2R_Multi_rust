@@ -1,0 +1,182 @@
+﻿cargo :     Checking 
+d2r-rust v0.1.0 (F:\m
+ycode\D2Rmutiplay\d2r
+-rust\src-tauri)
+所在位置 行:1 字符: 1
++ cargo check *>&1 | 
+Out-File -Encoding ut
+f8 build_log.txt
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (    Che   
+ cking d2...rust\    
+src-tauri):Strin    g
+) [], RemoteExc    ep
+tion
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+warning: unused impor
+t: `Shortcut`
+ --> src\lib.rs:2:36
+  |
+2 | use tauri_plugin_
+global_shortcut::{Sho
+rtcut, GlobalShortcut
+Ext};
+  |                  
+                  ^^^
+^^^^^
+  |
+  = note: `#[warn(unu
+sed_imports)]` (part 
+of `#[warn(unused)]`)
+ on by default
+
+warning: unnecessary 
+parentheses around pa
+ttern
+  --> src\modules\ai.
+rs:24:9
+   |
+24 |     let (base64_
+image) = tauri::async
+_runtime::spawn_block
+ing(|| {
+   |         ^       
+     ^
+   |
+   = note: `#[warn(un
+used_parens)]` (part 
+of `#[warn(unused)]`)
+ on by default
+help: remove these pa
+rentheses
+   |
+24 -     let (base64_
+image) = tauri::async
+_runtime::spawn_block
+ing(|| {
+24 +     let base64_i
+mage  = tauri::async_
+runtime::spawn_blocki
+ng(|| {
+   |
+
+error[E0308]: mismatc
+hed types
+   --> src\modules\ai
+.rs:31:61
+    |
+ 31 |         let dyn
+amic_image = image::D
+ynamicImage::ImageRgb
+a8(captured_image);
+    |                
+             --------
+---------------------
+-- ^^^^^^^^^^^^^^ exp
+ected `ImageBuffer<Rg
+ba<u8>, Vec<u8>>`, fo
+und a different `Imag
+eBuffer<Rgba<u8>, Vec
+<u8>>`
+    |                
+             |
+    |                
+             argument
+s to this enum varian
+t are incorrect
+    |
+    = note: `ImageBuf
+fer<Rgba<u8>, Vec<u8>
+>` and `ImageBuffer<R
+gba<u8>, Vec<u8>>` ha
+ve similar names, but
+ are actually distinc
+t types
+note: `ImageBuffer<Rg
+ba<u8>, Vec<u8>>` is 
+defined in crate `ima
+ge`
+   --> C:\Users\yoyos
+\.cargo\registry\src\
+index.crates.io-1949c
+f8c6b5b557f\image-0.2
+4.9\src\buffer.rs:656
+:1
+    |
+656 | pub struct Imag
+eBuffer<P: Pixel, Con
+tainer> {
+    | ^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
+note: `ImageBuffer<Rg
+ba<u8>, Vec<u8>>` is 
+defined in crate `ima
+ge`
+   --> C:\Users\yoyos
+\.cargo\registry\src\
+index.crates.io-1949c
+f8c6b5b557f\image-0.2
+5.9\src\images\buffer
+.rs:661:1
+    |
+661 | pub struct Imag
+eBuffer<P: Pixel, Con
+tainer> {
+    | ^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
+note: tuple variant d
+efined here
+   --> C:\Users\yoyos
+\.cargo\registry\src\
+index.crates.io-1949c
+f8c6b5b557f\image-0.2
+5.9\src\images\dynima
+ge.rs:82:5
+    |
+ 82 |     ImageRgba8(
+RgbaImage),
+    |     ^^^^^^^^^^
+
+warning: unused impor
+t: `std::str::FromStr
+`
+ --> src\lib.rs:3:5
+  |
+3 | use std::str::Fro
+mStr;
+  |     ^^^^^^^^^^^^^
+^^^^
+
+warning: unused impor
+t: `GlobalShortcutExt
+`
+ --> src\lib.rs:2:46
+  |
+2 | use tauri_plugin_
+global_shortcut::{Sho
+rtcut, GlobalShortcut
+Ext};
+  |                  
+                     
+       ^^^^^^^^^^^^^^
+^^^
+
+For more information 
+about this error, try
+ `rustc --explain E03
+08`.
+warning: `d2r-rust` (
+lib) generated 4 warn
+ings
+error: could not comp
+ile `d2r-rust` (lib) 
+due to 1 previous err
+or; 4 warnings emitte
+d
