@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { getConfig, launchGame, saveConfig, AppConfig, Account } from "./lib/api";
-import { Settings, Globe, LayoutGrid, Users, Wrench } from "lucide-react";
+import { Settings, Globe, LayoutGrid, Users, Wrench, Heart } from "lucide-react";
 import { SettingsModal } from "./components/modals/SettingsModal";
 import { AccountModal } from "./components/modals/AccountModal";
+import { DonateModal } from "./components/modals/DonateModal";
 import { useTranslation } from "react-i18next";
 import Dashboard from "./components/views/Dashboard";
 import AccountManager from "./components/views/AccountManager";
@@ -36,6 +37,7 @@ function App() {
   // Modals
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isDonateOpen, setIsDonateOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined);
 
   // Apply Theme Color
@@ -114,6 +116,10 @@ function App() {
         onSave={setConfig}
         editingAccount={editingAccount}
       />
+      <DonateModal
+        isOpen={isDonateOpen}
+        onClose={() => setIsDonateOpen(false)}
+      />
 
       <header className="h-16 border-b border-white/5 bg-zinc-950 z-50 flex items-center px-6 justify-between shadow-xl">
         <div className="flex items-center gap-8">
@@ -161,6 +167,14 @@ function App() {
               <option value="en">EN</option>
             </select>
           </div>
+
+          <button
+            onClick={() => setIsDonateOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gold/20 text-gold-light hover:bg-gold/30 transition-all border border-gold/40 hover:border-gold shadow-glow-gold animate-glow-pulse"
+          >
+            <Heart size={14} fill="currentColor" className="text-gold" />
+            <span className="text-xs font-bold tracking-tight">{t('donate')}</span>
+          </button>
 
           <button onClick={() => setIsSettingsOpen(true)} className="text-zinc-500 hover:text-gold transition-colors">
             <Settings size={18} />

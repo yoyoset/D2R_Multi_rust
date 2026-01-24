@@ -99,6 +99,12 @@ const resources = {
             "ai_screenshot_active": "功能开启",
             "recording": "正在录制...",
             "ai_ask": "问 AI",
+            "donate": "赞助支持",
+            "donate_title": "赞助开发者",
+            "donate_blessing": "赞助有礼，好运加持！祝您神装满地，发发入魂。",
+            "donate_alipay": "支付宝",
+            "donate_wechat": "微信支付",
+            "donate_paypal": "PayPal",
         }
     },
     "en": {
@@ -194,6 +200,12 @@ const resources = {
             "ai_screenshot_active": "AI Active",
             "recording": "Recording...",
             "ai_ask": "Ask AI",
+            "donate": "Donate",
+            "donate_title": "Support the Developer",
+            "donate_blessing": "Donating brings good luck! May your drops be legendary and your rolls be perfect.",
+            "donate_alipay": "Alipay",
+            "donate_wechat": "WeChat Pay",
+            "donate_paypal": "PayPal",
         }
     },
     "zh-TW": {
