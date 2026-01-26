@@ -12,10 +12,10 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant = 'solid', size = 'md', isLoading, children, disabled, ...props }, ref) => {
         const variants = {
-            // Solid: Primary Color BG + White Text (Safe for most dark mode accent colors like Blue/Emerald/Violet)
-            solid: "bg-primary text-white font-semibold hover:opacity-90 transition-all shadow-sm disabled:opacity-50",
-            outline: "border border-border text-primary hover:bg-zinc-900 transition-colors",
-            ghost: "text-secondary hover:text-primary hover:bg-white/5 transition-colors",
+            // solid: Primary Color BG + White Text
+            solid: "bg-primary text-white font-semibold hover:opacity-90 active:scale-[0.98] transition-all duration-200 shadow-sm disabled:opacity-50",
+            outline: "border border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-white transition-all duration-200",
+            ghost: "text-zinc-400 hover:text-primary hover:bg-white/5 transition-all",
             danger: "bg-red-950/20 text-red-500 border border-red-900/50 hover:bg-red-950/40 hover:text-red-400 transition-colors",
         }
 

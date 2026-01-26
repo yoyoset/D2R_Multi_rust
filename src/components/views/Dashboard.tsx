@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Account, AccountStatus, getAccountsProcessStatus } from '../../lib/api';
 import { Play, User, LayoutGrid, List, GripVertical, Edit2 } from 'lucide-react';
+import { ClassAvatar } from '../modals/AccountModal';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
 import {
@@ -247,12 +248,14 @@ function SortableAccountItem({ account, viewMode, selectedAccountId, onSelectAcc
                         )}>
                             {account.avatar ? (
                                 account.avatar.length <= 3 ? (
-                                    <span className="text-[10px] font-bold text-primary">{account.avatar}</span>
+                                    <ClassAvatar cls={account.avatar} className="w-full h-full border-0" />
                                 ) : (
                                     <img src={account.avatar} alt="Avatar" className="w-full h-full object-cover" />
                                 )
                             ) : (
-                                <User size={20} className={selectedAccountId === account.id ? "text-primary/60" : "text-zinc-700"} />
+                                <div className="flex flex-col items-center justify-center w-full h-full bg-zinc-800/50">
+                                    <User size={18} className={selectedAccountId === account.id ? "text-primary/60" : "text-zinc-700"} />
+                                </div>
                             )}
                         </div>
                     </div>
@@ -289,7 +292,7 @@ function SortableAccountItem({ account, viewMode, selectedAccountId, onSelectAcc
                     )}>
                         {account.avatar ? (
                             account.avatar.length <= 3 ? (
-                                <span className="text-[10px] font-bold text-primary">{account.avatar}</span>
+                                <ClassAvatar cls={account.avatar} size="sm" className="w-full h-full border-0" />
                             ) : (
                                 <img src={account.avatar} alt="Avatar" className="w-full h-full object-cover" />
                             )

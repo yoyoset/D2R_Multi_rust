@@ -4,6 +4,7 @@ import { AppConfig, saveConfig } from "../../lib/api";
 import { useTranslation } from "react-i18next";
 import { Check, Palette, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -68,71 +69,71 @@ export function SettingsModal({ isOpen, onClose, config, onSave }: SettingsModal
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="w-full max-w-lg bg-zinc-950 border border-white/10 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="p-5 pb-3 border-b border-white/5 flex justify-between items-center bg-zinc-900">
-                    <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                        <SettingsIcon size={18} className="text-primary" />
-                        {t('settings')}
-                    </h2>
-                </div>
+        <Modal isOpen={isOpen} onClose={onClose}>
+            <ModalContent>
+                <ModalHeader onClose={onClose}>
+                    <SettingsIcon size={18} className="text-primary" />
+                    {t('settings')}
+                </ModalHeader>
 
-                <div className="p-6 overflow-y-auto space-y-8 scrollbar-thin scrollbar-thumb-zinc-800">
-                    {/* Appearance */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Palette size={14} className="text-zinc-500" />
-                            <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest text-[10px]">
-                                {t('appearance')}
-                            </label>
+                <ModalBody>
+                    <div className="space-y-8">
+                        {/* Appearance */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Palette size={14} className="text-zinc-500" />
+                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest text-[10px]">
+                                    {t('appearance')}
+                                </label>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                {THEMES.map((theme) => (
+                                    <button
+                                        key={theme.color}
+                                        onClick={() => setThemeColor(theme.color)}
+                                        className={cn(
+                                            "w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110",
+                                            themeColor === theme.color ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-950 shadow-xl" : "opacity-80 hover:opacity-100"
+                                        )}
+                                        style={{ backgroundColor: theme.color }}
+                                    >
+                                        {themeColor === theme.color && <Check size={16} className="text-white drop-shadow-md" />}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <div className="flex flex-wrap gap-3">
-                            {THEMES.map((theme) => (
-                                <button
-                                    key={theme.color}
-                                    onClick={() => setThemeColor(theme.color)}
-                                    className={cn(
-                                        "w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110",
-                                        themeColor === theme.color ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-950 shadow-xl" : "opacity-80 hover:opacity-100"
-                                    )}
-                                    style={{ backgroundColor: theme.color }}
-                                >
-                                    {themeColor === theme.color && <Check size={16} className="text-white drop-shadow-md" />}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
 
-                    <hr className="border-white/5" />
+                        <hr className="border-white/5" />
 
-                    {/* System Tray Setting */}
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-white/10 transition-all cursor-pointer"
-                        onClick={() => setCloseToTray(!closeToTray)}>
-                        <div className="space-y-0.5">
-                            <div className="text-sm font-bold text-zinc-200">{t('setting_close_to_tray')}</div>
-                            <div className="text-[11px] text-zinc-500 pr-4 leading-tight opacity-80">{t('setting_close_to_tray_desc')}</div>
-                        </div>
-                        <div className={cn(
-                            "w-10 h-5 rounded-full relative transition-colors duration-200 shrink-0",
-                            closeToTray ? "bg-primary" : "bg-zinc-800"
-                        )}>
+                        {/* System Tray Setting */}
+                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-white/10 transition-all cursor-pointer"
+                            onClick={() => setCloseToTray(!closeToTray)}>
+                            <div className="space-y-0.5">
+                                <div className="text-sm font-bold text-zinc-200">{t('setting_close_to_tray')}</div>
+                                <div className="text-[11px] text-zinc-500 pr-4 leading-tight opacity-80">{t('setting_close_to_tray_desc')}</div>
+                            </div>
                             <div className={cn(
-                                "absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm",
-                                closeToTray ? "left-6" : "left-1"
-                            )} />
+                                "w-10 h-5 rounded-full relative transition-colors duration-200 shrink-0",
+                                closeToTray ? "bg-primary" : "bg-zinc-800"
+                            )}>
+                                <div className={cn(
+                                    "absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm",
+                                    closeToTray ? "left-6" : "left-1"
+                                )} />
+                            </div>
                         </div>
                     </div>
-                </div>
+                </ModalBody>
 
-                <div className="p-5 flex justify-end gap-3 border-t border-white/5 bg-zinc-950">
+                <ModalFooter>
                     <Button variant="ghost" className="text-zinc-500 px-6" onClick={handleCancel} disabled={isSaving}>
                         {t('cancel')}
                     </Button>
                     <Button variant="solid" className="px-8 bg-primary font-bold shadow-lg shadow-primary/20" onClick={handleSave} isLoading={isSaving}>
                         {t('save')}
                     </Button>
-                </div>
-            </div>
-        </div>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
     );
-}
+};

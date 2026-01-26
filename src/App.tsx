@@ -121,7 +121,7 @@ function App() {
         onClose={() => setIsDonateOpen(false)}
       />
 
-      <header className="h-16 border-b border-white/5 bg-zinc-950 z-50 flex items-center px-6 justify-between shadow-xl">
+      <header className="h-16 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md z-50 flex items-center px-6 justify-between shadow-xl">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded bg-gradient-to-tr from-gold to-yellow-700 flex items-center justify-center shadow-glow-gold-sm">

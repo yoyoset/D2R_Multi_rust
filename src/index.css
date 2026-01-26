@@ -5,7 +5,7 @@
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   color-scheme: dark;
-  /* Default Linear Blue: 59 130 246 (#3b82f6) */
+  /* Linear Blue: 59 130 246 (#3b82f6) */
   --color-primary: 59 130 246;
 }
 
@@ -28,4 +28,10 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-700;
+}
+
+@layer components {
+  .imperial-glass-hover {
+    @apply hover:bg-zinc-900/80 hover:border-gold/40 hover:shadow-[0_0_20px_rgba(212, 175, 55, 0.2)] transition-all duration-300;
+  }
 }
