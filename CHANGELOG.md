@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2026-02-05
+
+### Added
+
+- **Supplier Pattern (OSProvider Abstraction)**: Introduced a trait-based `OSProvider` abstraction layer to decouple business logic from OS-specific APIs.
+- **Windows implementation**: Added `WindowsProvider` utilizing `windows-rs` 0.62.2 for secure user management and process isolation.
+- **Dependency Injection**: Integrated `OSProvider` into the global `AppState` for cleaner resource management and improved testability.
+
+### Changed
+
+- **Upgrade windows-rs**: Successfully upgraded the project's primary Windows API dependency to version 0.62.2.
+- **Tauri Command Refactoring**: Updated all core commands in `lib.rs` and `account.rs` to consume the `OSProvider` via dependency injection.
+
+### Removed
+
+- **Legacy Modules**: Deleted redundant `win_user.rs` and `win32_safe/process.rs` modules after successful migration.
+
 ## [0.1.1] - 2026-01-26
 
 ### Added
