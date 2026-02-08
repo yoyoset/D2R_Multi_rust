@@ -59,7 +59,7 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
@@ -114,7 +114,14 @@ jobs:
           
           # 3. Signature File (.sig) and latest.json
           # Tauri 2.0 generates signatures for the update bundles
+          # They are often located in target/release/bundle/nsis/*.sig or similar
           $sigFile = Get-ChildItem -Path "src-tauri/target/release/bundle" -Filter "*.sig" -Recurse | Select-Object -First 1
+          
+          # If still not found, check if it's named setup.exe.sig
+          if (!$sigFile) {
+             $sigFile = Get-ChildItem -Path "src-tauri/target/release/bundle" -Filter "*-setup.exe.sig" -Recurse | Select-Object -First 1
+          }
+
           if ($sigFile) {
              $sig = Get-Content $sigFile.FullName -Raw
              $sig = $sig.Trim()
