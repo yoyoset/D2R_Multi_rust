@@ -67,6 +67,7 @@ jobs:
           releaseBody: 'See CHANGELOG.md for details.'
           releaseDraft: true
           prerelease: false
+          args: --target x86_64-pc-windows-msvc
 
       - name: Prepare Artifacts for R2
         shell: pwsh
