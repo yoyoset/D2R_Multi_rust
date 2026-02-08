@@ -27,6 +27,8 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
 
       - name: Install Rclone (Chocolatey)
         run: choco install rclone
@@ -38,6 +40,7 @@ jobs:
           if (!(Test-Path $rcloneConfigDir)) { New-Item -ItemType Directory -Force -Path $rcloneConfigDir }
           $rcloneConf = "$rcloneConfigDir\rclone.conf"
           
+          # Added no_check_bucket = true to config to prevent CreateBucket/HeadBucket calls
           $configContent = @"
           [r2]
           type = s3
@@ -72,26 +75,41 @@ jobs:
       - name: Prepare Artifacts for R2
         shell: pwsh
         run: |
-          # Robust version extraction from package.json
           $version = (Get-Content package.json | ConvertFrom-Json).version
           Write-Host "Detected version: $version"
           
           $dist = "dist_r2"
           if (!(Test-Path $dist)) { New-Item -ItemType Directory -Force -Path $dist }
           
-          # Debug: List bundle directory to see exactly what was built
-          Write-Host "Listing build artifacts..."
-          Get-ChildItem -Path "src-tauri/target/release/bundle" -Recurse | Select-Object FullName
+          # Dynamic Path Resolution
+          # When using --target, artifacts are in src-tauri/target/x86_64-pc-windows-msvc/release/bundle
+          # Otherwise they are in src-tauri/target/release/bundle
+          
+          $basePath = "src-tauri/target/release/bundle"
+          $targetPath = "src-tauri/target/x86_64-pc-windows-msvc/release/bundle"
+          
+          if (Test-Path $targetPath) {
+              $buildDir = $targetPath
+              Write-Host "Found build artifacts in TARGET override path: $buildDir"
+          } elseif (Test-Path $basePath) {
+              $buildDir = $basePath
+              Write-Host "Found build artifacts in DEFAULT path: $buildDir"
+          } else {
+              Write-Error "Could not find bundle directory in either $targetPath or $basePath"
+              Get-ChildItem "src-tauri/target" -Recurse -Depth 3 | Select-Object FullName
+              exit 1
+          }
           
           # 1. Installer (.exe)
-          $exeSource = "src-tauri/target/release/bundle/nsis/d2r-rust_${version}_x64-setup.exe"
+          $exeSource = "$buildDir/nsis/d2r-rust_${version}_x64-setup.exe"
           $exeDest = "$dist/d2r-rust_${version}_x64-setup.exe"
           
           if (Test-Path $exeSource) {
             Copy-Item $exeSource $exeDest
             Write-Host "Copied EXE to $exeDest"
           } else {
-            $anyExe = Get-ChildItem "src-tauri/target/release/bundle/nsis/*.exe" | Select-Object -First 1
+            # Robust fallback search
+            $anyExe = Get-ChildItem "$buildDir/nsis/*.exe" | Select-Object -First 1
             if ($anyExe) {
                 Copy-Item $anyExe.FullName $exeDest
                 Write-Host "Found alternative EXE: $($anyExe.Name), copied to $exeDest"
@@ -101,28 +119,29 @@ jobs:
             }
           }
 
-          # 2. Portable (.zip) - We create it from the raw exe for direct user download
-          $rawExe = "src-tauri/target/release/d2r-rust.exe"
+          # 2. Portable (.zip)
+          # Note: The raw exe is usually in the grand-parent folder of the bundle
+          $rawExeDir = Split-Path (Split-Path $buildDir -Parent) -Parent
+          $rawExe = "$rawExeDir/d2r-rust.exe"
           $zipDest = "$dist/d2r-rust_${version}_x64-portable.zip"
           
           if (Test-Path $rawExe) {
             Compress-Archive -Path $rawExe -DestinationPath $zipDest -Force
-            Write-Host "Created Portable ZIP at $zipDest"
+            Write-Host "Created Portable ZIP from $rawExe"
           } else {
              Write-Error "Raw EXE not found at $rawExe"
              exit 1
           }
           
           # 3. Signature Resolution
-          # The logs confirm: d2r-rust_0.2.1_x64-setup.exe.sig AND d2r-rust_0.2.1_x64-setup.nsis.zip.sig exist.
-          # We prefer the zip signature for the updater if available, or the exe signature.
+          # Search in our resolved $buildDir
           
-          # Try searching for the nsis.zip.sig first (standard for Tauri v2 updater)
-          $sigFile = Get-ChildItem -Path "src-tauri/target/release/bundle" -Filter "*nsis.zip.sig" -Recurse | Select-Object -First 1
+          # Try searching for the nsis.zip.sig first
+          $sigFile = Get-ChildItem -Path $buildDir -Filter "*nsis.zip.sig" -Recurse | Select-Object -First 1
           
           # Fallback to exe.sig
           if (!$sigFile) {
-             $sigFile = Get-ChildItem -Path "src-tauri/target/release/bundle" -Filter "*setup.exe.sig" -Recurse | Select-Object -First 1
+             $sigFile = Get-ChildItem -Path $buildDir -Filter "*setup.exe.sig" -Recurse | Select-Object -First 1
           }
 
           if ($sigFile) {
@@ -145,8 +164,7 @@ jobs:
              $json | ConvertTo-Json -Depth 5 | Out-File "$dist/latest.json" -Encoding utf8
              Write-Host "Generated latest.json in $dist"
           } else {
-             Write-Warning "Signature file (.sig) not found in bundle directory. Updater will not work."
-             # Still generate a basic json for debugging if needed, or just let it fail
+             Write-Warning "Signature file (.sig) not found in $buildDir. Updater will not work."
           }
           
           # 4. Upload Assets to GitHub Release (if tag)
