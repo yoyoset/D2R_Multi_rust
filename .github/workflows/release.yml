@@ -96,6 +96,7 @@ jobs:
               Write-Host "Found build artifacts in DEFAULT path: $buildDir"
           } else {
               Write-Error "Could not find bundle directory in either $targetPath or $basePath"
+              # Debug output if missing
               Get-ChildItem "src-tauri/target" -Recurse -Depth 3 | Select-Object FullName
               exit 1
           }
@@ -134,15 +135,8 @@ jobs:
           }
           
           # 3. Signature Resolution
-          # Search in our resolved $buildDir
-          
-          # Try searching for the nsis.zip.sig first
-          $sigFile = Get-ChildItem -Path $buildDir -Filter "*nsis.zip.sig" -Recurse | Select-Object -First 1
-          
-          # Fallback to exe.sig
-          if (!$sigFile) {
-             $sigFile = Get-ChildItem -Path $buildDir -Filter "*setup.exe.sig" -Recurse | Select-Object -First 1
-          }
+          # Search for .sig files recursively in the target directory (covers both nsis.zip.sig and others)
+          $sigFile = Get-ChildItem -Path "src-tauri/target" -Filter "*.sig" -Recurse | Select-Object -First 1
 
           if ($sigFile) {
              $sig = Get-Content $sigFile.FullName -Raw
@@ -164,7 +158,7 @@ jobs:
              $json | ConvertTo-Json -Depth 5 | Out-File "$dist/latest.json" -Encoding utf8
              Write-Host "Generated latest.json in $dist"
           } else {
-             Write-Warning "Signature file (.sig) not found in $buildDir. Updater will not work."
+             Write-Warning "Signature file (.sig) not found even after enabling updater feature. Manual debug required."
           }
           
           # 4. Upload Assets to GitHub Release (if tag)
