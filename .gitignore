@@ -35,7 +35,6 @@ temp_signer.key
 
 # Build Artifacts & Temp
 dist-updates/
-RELEASES/
 update/
 *.zip
 *.msi
