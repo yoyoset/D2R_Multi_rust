@@ -1,6 +1,6 @@
 # D2R Multiplay - 开发规约
 
-> 版本: v2.0 (2026-01-24) | 基于架构优化教训制定
+> 版本: v3.0 (2026-02-07) | 基于 windows-rs 0.62.2 解耦重构
 
 ---
 
@@ -9,6 +9,7 @@
 ### 1.1 禁止在循环或高频调用中创建昂贵实例
 
 ❌ **禁止：**
+
 ```rust
 fn get_process_status() {
     let sys = System::new_all();  // 每次分配 ~2MB
@@ -17,6 +18,7 @@ fn get_process_status() {
 ```
 
 ✅ **正确：**
+
 ```rust
 #[tauri::command]
 fn get_process_status(state: tauri::State<AppState>) {
@@ -36,11 +38,13 @@ fn get_process_status(state: tauri::State<AppState>) {
 ### 1.2 使用精细化刷新 API
 
 ❌ **禁止：**
+
 ```rust
 sys.refresh_processes(ProcessesToUpdate::All, true);  // 更新所有信息
 ```
 
 ✅ **正确：**
+
 ```rust
 sys.refresh_processes_specifics(
     ProcessesToUpdate::All,
@@ -68,6 +72,7 @@ pub fn kill_d2r_mutexes() -> Result<usize, IsolationError> {
 ```
 
 ✅ **正确：** 直接调用底层模块
+
 ```rust
 // lib.rs
 modules::win32_safe::mutex::close_d2r_mutexes()
@@ -83,29 +88,33 @@ modules::win32_safe::mutex::close_d2r_mutexes()
 
 | 层级 | 职责 | 示例 |
 |:---|:---|:---|
-| **win32_safe/** | Win32 API 封装、错误转换 | `create_process_with_logon()` |
+| **os/** | 操作系统抽象层、用户管理、进程创建 | `create_process_with_logon()` |
+| **win32_safe/** | 底层 Win32 API 封装 | `close_d2r_mutexes()` |
 | **业务逻辑** | 编排调用、状态管理 | `launch_game()` |
 | **文件操作** | 存档备份/恢复 | `rotate_save()` |
 
-**禁止：** 在 `win32_safe/` 中读取配置文件或执行业务逻辑。
+**禁止：** 在 `win32_safe/` 或 `os/` 中读取配置文件或执行业务逻辑。
 
 ---
 
 ## 3. 日志规约
 
-### 3.1 禁止在生产代码中使用 println!
+### 3.1 禁止在生产代码中使用 println
 
 ❌ **禁止：**
+
 ```rust
 println!("Deleted config: {:?}", path);
 ```
 
 ✅ **正确：**
+
 ```rust
 tracing::debug!("Deleted config: {:?}", path);
 ```
 
 **规则：** 所有日志必须使用 `tracing` 宏：
+
 - `debug!` - 调试信息
 - `info!` - 一般信息
 - `warn!` - 警告
@@ -156,6 +165,7 @@ impl serde::Serialize for AppError {
 ### 5.1 防止白屏
 
 **规则：**
+
 1. `tauri.conf.json` 中设置 `visible: false`
 2. `index.html` 中添加内联深色背景
 3. React 挂载后调用 `getCurrentWindow().show()`
@@ -186,7 +196,9 @@ type LaunchPhase = 'idle' | 'cleaning' | 'swapping' | 'launching' | 'done';
 
 ```toml
 sysinfo = "0.37.2"  # 0.37+ API 变更: ProcessRefreshKind::nothing()
-windows = "0.62.2"
+windows = "0.62.2"  # 0.62+ 安全 API 绑定更完整
+tauri = "2"
+tauri-plugin-single-instance = "2"
 ```
 
 **规则：** 升级前必须检查 API 兼容性。

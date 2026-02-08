@@ -5,8 +5,14 @@ mod state;
 // --- Commands ---
 
 #[tauri::command]
-fn kill_mutexes() -> Result<String, String> {
-    match modules::win32_safe::mutex::close_d2r_mutexes() {
+fn clear_logs() -> Result<(), String> {
+    modules::logger::clear_logs();
+    Ok(())
+}
+
+#[tauri::command]
+fn kill_mutexes(app: tauri::AppHandle) -> Result<String, String> {
+    match modules::win32_safe::mutex::close_d2r_mutexes(&app) {
         Ok(count) => Ok(format!("Killed {} mutexes", count)),
         Err(e) => Err(e.to_string()),
     }
@@ -68,6 +74,11 @@ fn get_whoami(state: tauri::State<'_, state::AppState>) -> String {
 }
 
 #[tauri::command]
+fn check_admin() -> bool {
+    modules::win_admin::is_admin()
+}
+
+#[tauri::command]
 fn get_windows_users(
     state: tauri::State<'_, state::AppState>,
     deep_scan: Option<bool>,
@@ -83,12 +94,25 @@ fn create_windows_user(
     state: tauri::State<'_, state::AppState>,
     username: String,
     password: String,
+    never_expires: bool,
 ) -> Result<String, String> {
     state
         .os
-        .create_user(&username, &password)
+        .create_user(&username, &password, never_expires)
         .map_err(|e| e.to_string())?;
     Ok("User created successfully".to_string())
+}
+
+#[tauri::command]
+fn set_password_never_expires(
+    state: tauri::State<'_, state::AppState>,
+    username: String,
+    never_expires: bool,
+) -> Result<(), String> {
+    state
+        .os
+        .set_password_never_expires(&username, never_expires)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -150,6 +174,15 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            // 当检测到第二个实例启动时，激活并显示主窗口
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+                let _ = window.unminimize();
+            }
+        }))
         .manage(state::AppState::new())
         .invoke_handler(tauri::generate_handler![
             kill_mutexes,
@@ -164,9 +197,12 @@ pub fn run() {
             get_windows_users,
             create_windows_user,
             get_whoami,
+            check_admin,
             modules::account::get_accounts_process_status,
             modules::mirror::create_mirror_junction,
-            update_tray_language
+            update_tray_language,
+            set_password_never_expires,
+            clear_logs
         ])
         .setup(|app| {
             // Load config to determine initial language

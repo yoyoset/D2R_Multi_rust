@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Account, AccountStatus, getAccountsProcessStatus } from '../../lib/api';
-import { Play, User, LayoutGrid, List, GripVertical, Edit2 } from 'lucide-react';
+import { Play, User, LayoutGrid, List, GripVertical, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 import { ClassAvatar } from '../modals/AccountModal';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
@@ -32,6 +32,10 @@ interface DashboardProps {
     isLaunching: boolean;
     onReorder: (newAccounts: Account[]) => void;
     onEdit: (account: Account) => void;
+    launchLogs: any[];
+    onClearLogs: () => void;
+    viewMode: 'card' | 'list';
+    onViewModeChange: (mode: 'card' | 'list') => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -41,11 +45,15 @@ const Dashboard: React.FC<DashboardProps> = ({
     onLaunch,
     isLaunching,
     onReorder,
-    onEdit
+    onEdit,
+    launchLogs,
+    onClearLogs,
+    viewMode,
+    onViewModeChange
 }) => {
     const { t } = useTranslation();
-    const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
     const [accountStatuses, setAccountStatuses] = useState<Record<string, AccountStatus>>({});
+    const [isLogsExpanded, setIsLogsExpanded] = useState(true);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -97,13 +105,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </div>
                 <div className="flex bg-zinc-900 border border-white/5 p-1 rounded-lg">
                     <button
-                        onClick={() => setViewMode('card')}
+                        onClick={() => onViewModeChange('card')}
                         className={cn("p-1.5 rounded-md transition-all", viewMode === 'card' ? "bg-zinc-800 text-primary shadow-sm" : "text-zinc-600 hover:text-zinc-300")}
                     >
                         <LayoutGrid size={14} />
                     </button>
                     <button
-                        onClick={() => setViewMode('list')}
+                        onClick={() => onViewModeChange('list')}
                         className={cn("p-1.5 rounded-md transition-all", viewMode === 'list' ? "bg-zinc-800 text-primary shadow-sm" : "text-zinc-600 hover:text-zinc-300")}
                     >
                         <List size={14} />
@@ -121,7 +129,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <div className={cn(
                         "w-full pb-6",
                         viewMode === 'card'
-                            ? "grid grid-cols-[repeat(auto-fill,minmax(130px,140px))] gap-3 md:gap-4 justify-center"
+                            ? "grid grid-cols-[repeat(auto-fill,minmax(143px,154px))] gap-2 md:gap-3 justify-center"
                             : "flex flex-col gap-2"
                     )}>
                         <SortableContext
@@ -169,6 +177,50 @@ const Dashboard: React.FC<DashboardProps> = ({
                     </div>
                 </Button>
             </div>
+
+            {/* Atomic Launch Logs - Dashboard Integration */}
+            {launchLogs.length > 0 && (
+                <div className="flex-shrink-0 w-full max-w-5xl mt-2 animate-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-zinc-950/40 border border-white/5 rounded-xl overflow-hidden backdrop-blur-sm shadow-2xl transition-all duration-300">
+                        <div
+                            className="bg-zinc-900/50 px-4 py-1.5 flex justify-between items-center border-b border-white/5 cursor-pointer hover:bg-zinc-900/70 transition-colors"
+                            onClick={() => setIsLogsExpanded(!isLogsExpanded)}
+                        >
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                                {isLogsExpanded ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
+                                {t('atomic_logs')}
+                            </span>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onClearLogs();
+                                }}
+                                className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors"
+                            >
+                                {t('clear_logs_btn')}
+                            </button>
+                        </div>
+                        <div className={cn(
+                            "overflow-y-auto font-mono text-[11px] space-y-1 scrollbar-thin scrollbar-thumb-zinc-800 transition-all duration-300 ease-in-out",
+                            isLogsExpanded ? "max-h-32 p-3 opacity-100" : "max-h-0 p-0 opacity-0 border-none"
+                        )}>
+                            {launchLogs.map((log, i) => (
+                                <div key={i} className={cn(
+                                    "flex gap-3 leading-relaxed",
+                                    log.level === 'error' ? "text-rose-400" : log.level === 'success' ? "text-emerald-400" : "text-zinc-400"
+                                )}>
+                                    <span className="opacity-30 flex-shrink-0">{log.time}</span>
+                                    <span className="flex-1">
+                                        {log.level === 'error' ? '✖ ' : log.level === 'success' ? '✔ ' : '> '}
+                                        {log.message}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
@@ -205,10 +257,10 @@ function SortableAccountItem({ account, viewMode, selectedAccountId, onSelectAcc
             style={style}
             onClick={() => onSelectAccount(account.id)}
             className={cn(
-                "relative rounded-xl border cursor-pointer transition-all duration-300 group overflow-hidden active:scale-[0.97] flex flex-col",
+                "relative rounded-xl border cursor-pointer transition-colors duration-300 group overflow-hidden flex flex-col",
                 viewMode === 'card' ? "p-3 aspect-square justify-between shadow-sm" : "p-3 flex-row items-center",
                 selectedAccountId === account.id
-                    ? 'bg-zinc-900/90 border-primary/50 ring-1 ring-primary/30 shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
+                    ? 'bg-zinc-900/90 border-primary/50 shadow-lg'
                     : 'bg-zinc-900/20 border-white/5 hover:bg-zinc-900/40 hover:border-white/10'
             )}
         >
@@ -302,8 +354,8 @@ function SortableAccountItem({ account, viewMode, selectedAccountId, onSelectAcc
                     </div>
 
                     <span className={cn(
-                        "text-xs font-bold min-w-[80px] max-w-[120px] truncate uppercase tracking-tighter",
-                        selectedAccountId === account.id ? "text-primary px-1.5 py-0.5 rounded bg-primary/10" : "text-zinc-500"
+                        "text-xs font-bold min-w-[80px] max-w-[120px] truncate uppercase tracking-tighter transition-colors",
+                        selectedAccountId === account.id ? "text-primary" : "text-zinc-500"
                     )}>
                         {account.win_user}
                     </span>
@@ -325,18 +377,25 @@ function SortableAccountItem({ account, viewMode, selectedAccountId, onSelectAcc
                     </div>
 
                     {/* Edit & Drag Handle in list mode */}
-                    <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-all">
-                        <button
+                    <div className="flex items-center gap-2 ml-2 opacity-0 group-hover:opacity-100 transition-all">
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onEdit(account);
                             }}
-                            className="p-1 text-zinc-500 hover:text-primary rounded hover:bg-white/5"
+                            className="h-9 w-9 p-0 text-zinc-500 hover:text-primary rounded-lg hover:bg-white/5 transition-all shadow-sm"
                         >
-                            <Edit2 size={13} />
-                        </button>
-                        <div {...attributes} {...listeners} className="p-1 text-zinc-500 hover:text-white cursor-grab">
-                            <GripVertical size={14} />
+                            <Edit2 size={16} />
+                        </Button>
+                        <div
+                            {...attributes}
+                            {...listeners}
+                            className="h-9 w-9 flex items-center justify-center text-zinc-500 hover:text-white cursor-grab active:cursor-grabbing rounded-lg hover:bg-white/5 transition-all"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <GripVertical size={16} />
                         </div>
                     </div>
                 </div>

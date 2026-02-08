@@ -14,6 +14,8 @@ pub fn kill_battle_net_processes() -> usize {
         "Battle.net.exe",
         "Agent.exe",
         "crashpad_handler.exe",
+        "Blizzard Error.exe",
+        "Uninstaller.exe",
     ];
 
     let mut killed_count = 0;
@@ -29,6 +31,6 @@ pub fn kill_battle_net_processes() -> usize {
             }
         }
     }
-    
+
     killed_count
 }

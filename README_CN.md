@@ -2,9 +2,9 @@
 
 <div align="center">
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg) 
-![Version](https://img.shields.io/badge/version-0.1.0--alpha-orange) 
-![Backend](https://img.shields.io/badge/backend-Rust-red) 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Version](https://img.shields.io/badge/version-0.2.0-orange)
+![Backend](https://img.shields.io/badge/backend-Rust-red)
 ![Framework](https://img.shields.io/badge/framework-Tauri_v2-blue)
 
 [English](./README.md) | **简体中文**
@@ -22,25 +22,27 @@
 - **轻量化重构**：完全移除庞大的 .NET 运行时依赖，使用 Rust + Tauri 构建，体积更小，启动更快。
 - **🔧 配置轮转 (Config Swapping)**：智能的 `product.db` 轮转机制，确保每个账号都能独立保存登录凭证 (Token)，互不干扰。
 - **🌍 国际化支持 (i18n)**：
-    - 完美支持 简体中文、繁体中文、英语、日语、韩语。
-    - 系统托盘菜单会自动跟随应用语言切换。
-- **🎨 极简 UI**：摒弃繁复设计，采用干净、高效的现代化极简界面，只保留核心功能。
+  - 完美支持 简体中文、繁体中文、英语、日语、韩语。
+  - 系统托盘菜单会自动跟随应用语言切换。
+- **🎨 极简 UI**：采用现代化、高效的极简界面，注重核心交互体验。
 - **📂 绿色便携 (Portable)**：提供单文件绿色版 (`.exe`)，无需安装，即点即用。
 
 ## 🛠️ 技术栈
 
 - **后端**: Rust (Win32 API, Windows crate, Serde)
 - **前端**: React 19, TypeScript, TailwindCSS, ShadCN
-- **框架Capabilities**: Tauri v2, System Tray, Process Management
+- **框架能力**: Tauri v2, 系统托盘, 进程管理, **统一通知系统**, **全量日志追踪**
 
 ## 📦 安装与使用
 
 ### 方法 1: 绿色便携版 (推荐)
+
 1. 在 [Releases](https://github.com/YOUR_USERNAME/d2r-rust/releases) 页面下载 `d2r-rust.exe`。
 2. 将其放置在任意位置（例如桌面）。
 3. **右键 -> 以管理员身份运行** (必须使用管理员权限以执行进程隔离)。
 
 ### 方法 2: 源码编译
+
 请确保已安装 [Rust](https://rustup.rs/) 和 [Node.js](https://nodejs.org/) 环境。
 
 ```bash
@@ -65,9 +67,17 @@ npm run tauri build
 - 应用配置存储于：`%APPDATA%/com.d2rmultiplay.ui/config.json`
 - 账号快照存储于：`%APPDATA%/com.d2rmultiplay.ui/snapshots/`
 
+## 📝 0.2.0 更新详情
+
+- **透明化交互**: 引入统一通知系统，重要决策不再发生静默失败。
+- **流程追踪**: 集成全量日志追踪，前端可实时查看启动序列的每一步 atomic 操作。
+- **视图记忆**: 仪表盘自动保存您的卡片/列表模式偏好。
+- **交互优化**: 优化了列表模式下的按钮触控区，极大提升了重度用户的使用效率。
+
 ## ⚠️ 免责声明
 
 本工具通过操作系统进程管理和文件系统操作来实现多开功能。
+
 - 使用风险自负。
 - 请务必遵守游戏发行商的服务条款 (ToS)。
 

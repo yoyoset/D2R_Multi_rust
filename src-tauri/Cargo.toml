@@ -1,6 +1,6 @@
 [package]
 name = "d2r-rust"
-version = "0.1.1"
+version = "0.2.0"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -15,11 +15,11 @@ name = "d2r_rust_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.5.5", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["tray-icon", "image"] }
-tauri-plugin-opener = "2"
+tauri = { version = "2.10.2", features = ["tray-icon", "image"] }
+tauri-plugin-opener = "2.5.3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_Security", "Win32_Security_Authorization", "Win32_System_Diagnostics_ToolHelp", "Win32_System_Memory", "Win32_Security_Credentials", "Win32_UI_WindowsAndMessaging", "Win32_System_WindowsProgramming", "Win32_NetworkManagement_NetManagement", "Win32_System_Registry"] }
@@ -28,4 +28,13 @@ thiserror = "2.0.18"
 tracing = "0.1.44"
 tracing-subscriber = "0.3.22"
 sysinfo = "0.37.2"
-tauri-plugin-dialog = "2"
+tauri-plugin-dialog = "2.6.0"
+tauri-plugin-single-instance = "2.4.0"
+chrono = { version = "0.4", features = ["serde"] }
+tauri-plugin-updater = "2.10.0"
+
+[profile.release]
+panic = "abort"
+codegen-units = 16
+lto = true
+strip = true

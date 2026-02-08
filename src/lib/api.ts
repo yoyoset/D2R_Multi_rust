@@ -9,20 +9,23 @@ export interface Account {
     bnet_account: string;
     avatar?: string;
     note?: string;
+    password_never_expires: boolean;
 }
 
 export interface AccountStatus {
-    is_running: boolean;
-    pid?: number;
-    bnet_active?: boolean;
-    d2r_active?: boolean;
+    bnet_active: boolean;
+    d2r_active: boolean;
 }
 
 export interface AppConfig {
     accounts: Account[];
+    game_path: string;
     last_active_account?: string;
     theme_color?: string;
     close_to_tray?: boolean;
+    language?: string;
+    enable_logging?: boolean;
+    dashboard_view_mode?: 'card' | 'list';
 }
 
 export async function getWindowsUsers(deepScan: boolean = false): Promise<string[]> {
@@ -33,8 +36,12 @@ export async function getWhoami(): Promise<string> {
     return await invoke('get_whoami');
 }
 
-export async function createWindowsUser(username: string, password: string): Promise<string> {
-    return await invoke('create_windows_user', { username, password });
+export async function createWindowsUser(username: string, password: string, neverExpires: boolean = true): Promise<string> {
+    return await invoke('create_windows_user', { username, password, neverExpires });
+}
+
+export async function setPasswordNeverExpires(username: string, neverExpires: boolean): Promise<void> {
+    await invoke('set_password_never_expires', { username, neverExpires });
 }
 
 export async function killMutexes(): Promise<string> {
@@ -63,3 +70,8 @@ export async function saveConfig(config: AppConfig): Promise<void> {
 export async function getAccountsProcessStatus(usernames: string[]): Promise<Record<string, AccountStatus>> {
     return await invoke("get_accounts_process_status", { usernames });
 }
+
+export async function checkAdmin(): Promise<boolean> {
+    return await invoke<boolean>('check_admin');
+}
+

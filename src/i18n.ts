@@ -1,5 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { invoke } from "@tauri-apps/api/core";
 
 const resources = {
     "zh-CN": {
@@ -30,6 +31,8 @@ const resources = {
             "no_bnet_id": "未绑定 Bnet ID",
             "username": "用户名 (Windows)",
             "password": "密码 (选填)",
+            "label_username": "用户名",
+            "label_password": "密码",
             "password_hint": "如果在 Windows 设置了免密登录，此处留空即可。",
             "logs_title": "系统日志",
             "success": "成功",
@@ -38,11 +41,33 @@ const resources = {
             "launching": "正在启动...",
             "account_sanctum": "账号营地",
             "setting_close_to_tray": "最小化到系统托盘",
-            "setting_close_to_tray_desc": "点击关闭按钮时，保持应用在后台运行",
+            "save_success": "配置保存成功",
+            "atomic_logs": "原子操作日志",
+            "clear_logs_btn": "清除",
+            "advanced_settings": "高级设置",
+            "setting_enable_logging": "全量系统日志",
+            "setting_enable_logging_desc": "详细追踪所有后台操作，用于排查黑箱 Bug",
+            "clear_all_logs": "清理所有原子日志",
+            "danger_zone": "危险区域",
+            "logs_cleared": "日志已清理",
+            "policy_synced_success": "密码策略同步成功",
+            "user_created_success": "用户创建成功",
             "appearance": "外观定制",
             "entities_registered": "{{count}} 个实体已注册",
             "isolation_core_ready": "隔离核心已就绪",
             "launch_game": "启动游戏",
+            "launch_failed": "启动失败",
+            "bnet_not_found": "未找到 Battle.net 安装。本软件依赖所有账户将 Battle.net 安装到默认路径 (C:\\Program Files (x86)\\Battle.net)",
+            "update_found": "发现新版本",
+            "update_installed": "更新已下载并安装，请重启软件",
+            "already_latest": "当前已是最新版本",
+            "update_check_failed": "检查更新失败",
+            "update_available_title": "发现新版本: {{version}}",
+            "update_desc": "请选择更新方式：",
+            "update_auto": "自动更新 (仅限安装版)",
+            "update_manual": "下载绿色版 (手动覆盖)",
+            "update_failed_auto": "自动更新失败",
+            "downloading": "正在下载...",
             "kill_success": "成功清理 Mutex 句柄。",
             "config_saved": "配置已保存。",
             "path_missing": "未设置游戏路径！请前往设置。",
@@ -62,6 +87,8 @@ const resources = {
             "win_username": "Windows 用户名",
             "win_password": "Windows 密码",
             "win_create_warning": "* 将创建标准本地用户。需要管理员权限执行。",
+            "win_pass_never_expires": "密码永不过期",
+            "win_pass_never_expires_hint": "防止 Windows 强制要求定期更改密码 (0x80070532)",
             "note_placeholder": "例如：主力法师, 仓库号...",
             "bnet_account": "Bnet 备注/账号 (选填)",
             "scan_users": "扫描更多用户 (Deep Scan)",
@@ -73,8 +100,6 @@ const resources = {
             "delete_global_db_nuke": "删除全局 Product.db (清理状态)",
             "direct_boot_title": "独立启动尝试",
             "launch_as_identity": "以身份启动: {{user}}",
-            "atomic_logs": "原子操作日志",
-            "clear_logs": "清空",
             "waiting_ops": "等待执行指令...",
             // Mirror Tool
             "mirror_title": "目录镜像 (Junction)",
@@ -105,6 +130,16 @@ const resources = {
             "donate_alipay": "支付宝",
             "donate_wechat": "微信支付",
             "donate_paypal": "PayPal",
+            "admin_mode": "管理员模式",
+            "user_mode": "普通用户",
+            "avatar": "头像选择",
+            "about": "关于软件",
+            "maintainer": "维护者",
+            "author_name": "方砖叔 (SquareUncle)",
+            "github_repo": "GitHub 代码仓库",
+            "blog": "个人博客",
+            "check_update": "检查更新",
+            "current_version": "当前版本",
         }
     },
     "en": {
@@ -128,6 +163,8 @@ const resources = {
             "cancel": "Cancel",
             "username": "Username",
             "password": "Password (Optional)",
+            "label_username": "Username",
+            "label_password": "Password",
             "password_hint": "Leave empty if account has no password.",
             "logs_title": "System Logs",
             "success": "Success",
@@ -136,11 +173,33 @@ const resources = {
             "launching": "Launching...",
             "account_sanctum": "Account Camp",
             "setting_close_to_tray": "Minimize to Tray",
-            "setting_close_to_tray_desc": "Keep the app running in the background when closed",
+            "save_success": "Configuration saved successfully",
+            "atomic_logs": "ATOMIC LOGS",
+            "clear_logs_btn": "Clear",
+            "advanced_settings": "Advanced Settings",
+            "setting_enable_logging": "Full System Logging",
+            "setting_enable_logging_desc": "Detailed tracing for background ops and bug debugging",
+            "clear_all_logs": "Clear All Atomic Logs",
+            "danger_zone": "Danger Zone",
+            "logs_cleared": "Logs cleared",
+            "policy_synced_success": "Policy synced successfully",
+            "user_created_success": "User created successfully",
             "appearance": "Appearance",
             "entities_registered": "{{count}} Entities Registered",
             "isolation_core_ready": "Isolation Core Primed & Ready",
             "launch_game": "Launch Game",
+            "launch_failed": "Launch failed",
+            "bnet_not_found": "Battle.net not found. This software requires all accounts to have Battle.net installed at the default path (C:\\Program Files (x86)\\Battle.net)",
+            "update_found": "New version found",
+            "update_installed": "Update downloaded and installed. Please restart the application",
+            "already_latest": "You are on the latest version",
+            "update_check_failed": "Failed to check for updates",
+            "update_available_title": "New Version Available: {{version}}",
+            "update_desc": "Choose update method:",
+            "update_auto": "Auto Update (Installer Only)",
+            "update_manual": "Download Portable (Manual)",
+            "update_failed_auto": "Auto update failed",
+            "downloading": "Downloading...",
             "kill_success": "Mutexes killed successfully.",
             "config_saved": "Configuration saved.",
             "path_missing": "Game path not set! Please check settings.",
@@ -160,6 +219,8 @@ const resources = {
             "win_username": "Windows Username",
             "win_password": "Windows Password",
             "win_create_warning": "* Standard local user will be created. Needs Admin rights.",
+            "win_pass_never_expires": "Password Never Expires",
+            "win_pass_never_expires_hint": "Prevents Windows from forcing password changes (Fixes 0x80070532)",
             "note_placeholder": "e.g. Main Sorc, Crafting Mule...",
             "bnet_account": "Bnet Remark / ID",
             "scan_users": "Deep Scan (MS/Domain)",
@@ -174,8 +235,6 @@ const resources = {
             "delete_global_db_nuke": "Nuke Global Product.db (Clear State)",
             "direct_boot_title": "Independent Launch Attempt",
             "launch_as_identity": "Launch as Identity: {{user}}",
-            "atomic_logs": "Atomic Logs",
-            "clear_logs": "Clear",
             "waiting_ops": "Waiting for operations...",
             // Mirror Tool
             "mirror_title": "Directory Mirror (Junction)",
@@ -206,6 +265,16 @@ const resources = {
             "donate_alipay": "Alipay",
             "donate_wechat": "WeChat Pay",
             "donate_paypal": "PayPal",
+            "admin_mode": "Admin Mode",
+            "user_mode": "User Mode",
+            "avatar": "Avatar Select",
+            "about": "About",
+            "maintainer": "Maintainer",
+            "author_name": "SquareUncle",
+            "github_repo": "GitHub Repository",
+            "blog": "Personal Blog",
+            "check_update": "Check for Updates",
+            "current_version": "Current Version",
         }
     },
     "zh-TW": {
@@ -228,12 +297,14 @@ const resources = {
             "cancel": "取消",
             "username": "使用者名稱",
             "password": "密碼 (選填)",
+            "label_username": "使用者名稱",
+            "label_password": "密碼",
             "password_hint": "若 Windows 已設定免密登入，此處留空即可。",
             "logs_title": "系統日誌",
             "success": "成功",
             "error": "錯誤",
             "info": "資訊",
-            "launching": "正在啟動...",
+            "launching": "正在啟动...",
             "account_sanctum": "帳號營地",
             "setting_close_to_tray": "最小化到系統托盤",
             "setting_close_to_tray_desc": "點擊關閉按鈕時，保持應用在後台運行",
@@ -248,6 +319,7 @@ const resources = {
             "scan_users": "掃描更多用戶 (Deep Scan)",
             "select_win_user": "選擇 Windows 用戶 (僅列出本地)",
             "scan_hint": "默認僅顯示本地用戶。點擊掃描以獲取域/微軟帳號。可能會稍慢並出現重名。",
+            "avatar": "頭像選擇",
         }
     },
     "ja": {
@@ -270,6 +342,8 @@ const resources = {
             "cancel": "キャンセル",
             "username": "ユーザー名",
             "password": "パスワード (任意)",
+            "label_username": "ユーザー名",
+            "label_password": "パスワード",
             "password_hint": "パスワードがない場合は空欄にしてください。",
             "logs_title": "システムログ",
             "success": "成功",
@@ -287,6 +361,7 @@ const resources = {
             "scan_users": "詳細スキャン (MS/ドメイン)",
             "select_win_user": "Windowsユーザーを選択 (ローカルのみ)",
             "scan_hint": "デフォルトではローカルユーザーのみ表示されます。詳細スキャンでドメイン/MSアカウントを取得します。",
+            "avatar": "アバター選択",
         }
     },
     "ko": {
@@ -309,6 +384,8 @@ const resources = {
             "cancel": "취소",
             "username": "사용자 이름",
             "password": "비밀번호 (선택)",
+            "label_username": "사용자 이름",
+            "label_password": "비밀번호",
             "password_hint": "비밀번호가 없으면 비워두세요.",
             "logs_title": "시스템 로그",
             "success": "성공",
@@ -326,6 +403,7 @@ const resources = {
             "scan_users": "상세 스캔 (MS/도메인)",
             "select_win_user": "Windows 사용자 선택 (로컬 전용)",
             "scan_hint": "기본적으로 로컬 사용자만 표시됩니다. 상세 스캔으로 도메인/MS 계정을 가져옵니다.",
+            "avatar": "아바타 선택",
         }
     }
 };
@@ -343,17 +421,13 @@ i18n
 
 // Listen for language changes and update System Tray
 i18n.on('languageChanged', (lng) => {
-    import("@tauri-apps/api/core").then(({ invoke }) => {
-        invoke('update_tray_language', { lang: lng }).catch(console.error);
-    });
+    invoke('update_tray_language', { lang: lng }).catch(console.error);
 });
 
 // Initial update on load
 // We need to wait a tick or ensure invoke is ready, but typically it is.
 setTimeout(() => {
-    import("@tauri-apps/api/core").then(({ invoke }) => {
-        invoke('update_tray_language', { lang: i18n.language }).catch(console.error);
-    });
+    invoke('update_tray_language', { lang: i18n.language }).catch(console.error);
 }, 500);
 
 export default i18n;

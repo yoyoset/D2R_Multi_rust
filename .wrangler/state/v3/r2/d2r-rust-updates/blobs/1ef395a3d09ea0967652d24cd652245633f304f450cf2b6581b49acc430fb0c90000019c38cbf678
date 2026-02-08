@@ -1,0 +1,11 @@
+﻿{
+    "platforms":  {
+                      "windows-x86_64":  {
+                                             "signature":  "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5eFhtMENoOFZoODRWUG1pUFoxZk5iZjhpT3B2eVo2aCtQdE8vZ2FOOHA2MEFBQkFBQUFBQUFBQUFBQUlBQUFBQTNzcFVKdEQ0UG84WHZKRk5zZFdjcjZPWFdVR0VTZ3hRenRXVkdob2dzRkF0S3dtU3lUR2lqTytQRmxMYWZuMnhndUhLeWpra2ZIZTQ3ZnlZaGNnYjdKODVkcW9ET2J0eXNRZis5SDJFTnlzSEhqOG1kc3dKOCtxZldEaTNtTmRFUzJTbkl4NVU1SEU9Cg==",
+                                             "url":  "https://update.squareuncle.com/d2r-rust/d2r-rust_-US.nsis.zip"
+                                         }
+                  },
+    "pub_date":  "2026-02-07T23:50:03Z",
+    "version":  "0.2.0",
+    "notes":  "Release v0.2.0"
+}

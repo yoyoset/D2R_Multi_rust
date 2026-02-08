@@ -1,20 +1,29 @@
 use crate::modules::file_swap;
+use crate::modules::logger;
 use crate::modules::os::OSProvider;
 use crate::modules::process_killer;
 use crate::modules::win32_safe::mutex;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
-use tauri::AppHandle;
+use tauri::{AppHandle, Emitter};
+
+#[derive(serde::Serialize, Clone, Debug)]
+pub struct LaunchLogPayload {
+    pub account_id: String,
+    pub message: String,
+    pub level: String, // "info", "success", "error"
+}
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
 pub struct Account {
-    pub id: String,               // UUID
-    pub win_user: String,         // The bound Windows Username
-    pub win_pass: Option<String>, // Optional (for auto-launch)
-    pub bnet_account: String,     // Display only
-    pub note: Option<String>,     // Role remarks
-    pub avatar: Option<String>,   // Base64 encoded image or library icon ID
+    pub id: String,                   // UUID
+    pub win_user: String,             // The bound Windows Username
+    pub win_pass: Option<String>,     // Optional (for auto-launch)
+    pub bnet_account: String,         // Display only
+    pub note: Option<String>,         // Role remarks
+    pub avatar: Option<String>,       // Base64 encoded image or library icon ID
+    pub password_never_expires: bool, // Support for 0x80070532 fix
 }
 
 #[derive(serde::Serialize, Debug, Default, Clone)]
@@ -27,7 +36,7 @@ pub struct AccountStatus {
 pub enum AccountError {
     #[error("Launch failed: {0}")]
     LaunchError(#[from] anyhow::Error),
-    #[error("Game path not found")]
+    #[error("BNET_NOT_FOUND")]
     InvalidPath,
     #[error("File Swap Error: {0}")]
     FileSwap(#[from] file_swap::FileSwapError),
@@ -40,8 +49,37 @@ pub fn launch_game(
     _game_path: &str,
 ) -> Result<u32, AccountError> {
     // 1. Cleanup Environment (Kill Bnet and Mutexes)
-    process_killer::kill_battle_net_processes();
-    let _ = mutex::close_d2r_mutexes();
+    logger::log(app, "info", "清理运行环境 (Battle.net & Mutexes)...");
+    let killed = process_killer::kill_battle_net_processes();
+    if killed > 0 {
+        logger::log(
+            app,
+            "success",
+            &format!("已终止 {} 个 Battle.net 进程", killed),
+        );
+    }
+
+    // Try to enable SeDebugPrivilege to access other users' processes
+    if !crate::modules::win_admin::enable_debug_privilege() {
+        logger::log(
+            app,
+            "warn",
+            "无法启用调试权限 (SeDebugPrivilege)，句柄清理可能失败",
+        );
+    }
+
+    match mutex::close_d2r_mutexes(app) {
+        Ok(count) => {
+            if count > 0 {
+                logger::log(app, "success", &format!("已关闭 {} 个 D2R 互斥锁", count));
+            } else {
+                logger::log(app, "info", "未检测到活动的 D2R 互斥锁");
+            }
+        }
+        Err(e) => {
+            logger::log(app, "warn", &format!("互斥锁清理失败: {}", e));
+        }
+    }
 
     // 2. Load Config to check Last Active Account
     let mut config =
@@ -51,10 +89,14 @@ pub fn launch_game(
     let mut rotated = false;
     if let Some(last_id) = &config.last_active_account {
         if last_id != &account.id {
+            logger::log(
+                app,
+                "info",
+                &format!("正在备份前一个账号配置 (ID: {})...", last_id),
+            );
             if let Err(e) = file_swap::rotate_save(app, last_id) {
-                // Best Effort: Log warning but proceed to delete.
-                // It is critical to delete the old config to avoid "active client" contentions.
-                tracing::warn!("Backup failed (Proceeeding with cleanup): {}", e);
+                // Best Effort
+                tracing::warn!("Backup failed: {}", e);
             } else {
                 rotated = true;
             }
@@ -65,6 +107,7 @@ pub fn launch_game(
     file_swap::delete_config()?;
 
     // 5. Restore (Target): Load target account snapshot
+    logger::log(app, "info", "正在切换目标账号配置...");
     if let Err(e) = file_swap::restore_snapshot(app, &account.id) {
         // Rollback: If restore fails and we rotated the previous one, try to put it back
         if rotated {
@@ -102,6 +145,8 @@ pub fn launch_game(
         let child = cmd
             .spawn()
             .map_err(|e| anyhow::anyhow!("Failed to spawn process: {}", e))?;
+
+        logger::log(app, "success", &format!("游戏已启动 (PID: {})", child.id()));
         Ok(child.id())
     } else {
         // Sandbox launch with credentials
@@ -111,6 +156,24 @@ pub fn launch_game(
             (None, account.win_user.as_str())
         };
 
+        // Pre-flight: Force refresh password policy AND reset password to prevent 0x80070532
+        if account.password_never_expires {
+            logger::log(app, "info", "正在刷新密码策略 (防止过期拦截)...");
+            if let Err(e) = os.set_password_never_expires(user, true) {
+                logger::log(app, "warn", &format!("密码策略刷新失败: {}", e));
+            }
+        }
+
+        // Also reset the password to itself, which clears the "must change at next logon" flag
+        if let Some(pass) = &account.win_pass {
+            if !pass.is_empty() {
+                logger::log(app, "info", "正在重置密码以清除过期标记...");
+                if let Err(e) = os.reset_password(user, pass) {
+                    logger::log(app, "warn", &format!("密码重置失败: {}", e));
+                }
+            }
+        }
+
         let result = os.create_process_with_logon(
             user,
             domain,
@@ -119,6 +182,15 @@ pub fn launch_game(
             None,
             working_dir.as_deref(),
         )?;
+
+        let _ = app.emit(
+            "launch-log",
+            LaunchLogPayload {
+                account_id: account.id.clone(),
+                message: format!("游戏已启动 (PID: {})", result.process_id),
+                level: "success".into(),
+            },
+        );
         Ok(result.process_id)
     }
 }

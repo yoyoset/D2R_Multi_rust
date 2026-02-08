@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Account } from '../../lib/api';
 import { Button } from '../ui/Button';
 import { Edit2, Trash2, Plus, User } from 'lucide-react';
+import { ClassAvatar } from '../modals/AccountModal';
 
 interface AccountManagerProps {
     accounts: Account[];
@@ -49,7 +50,7 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, onAdd, onEdit
                             <div className="w-8 h-8 rounded-lg border border-white/5 bg-black/40 flex items-center justify-center overflow-hidden flex-shrink-0">
                                 {account.avatar ? (
                                     account.avatar.length <= 3 ? (
-                                        <span className="text-[10px] font-bold text-primary uppercase">{account.avatar}</span>
+                                        <ClassAvatar cls={account.avatar} size="sm" />
                                     ) : (
                                         <img src={account.avatar} alt="Avatar" className="w-full h-full object-cover" />
                                     )
@@ -77,22 +78,22 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, onAdd, onEdit
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => onEdit(account)}
-                                className="h-7 w-7 p-0 text-zinc-500 hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                                className="h-9 w-9 p-0 text-zinc-500 hover:text-primary hover:bg-white/5 rounded-lg transition-all"
                             >
-                                <Edit2 size={13} />
+                                <Edit2 size={16} />
                             </Button>
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setConfirmDeleteId(account.id)}
-                                className="h-7 w-7 p-0 text-zinc-700 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                                className="h-9 w-9 p-0 text-zinc-700 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                             >
-                                <Trash2 size={13} />
+                                <Trash2 size={16} />
                             </Button>
                         </div>
                     </div>
