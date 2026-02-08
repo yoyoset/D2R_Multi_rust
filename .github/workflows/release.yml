@@ -32,13 +32,12 @@ jobs:
         run: choco install rclone
 
       - name: Configure Rclone
-        shell: powershell
+        shell: pwsh
         run: |
           $rcloneConfigDir = "$env:USERPROFILE\.config\rclone"
           if (!(Test-Path $rcloneConfigDir)) { New-Item -ItemType Directory -Force -Path $rcloneConfigDir }
           $rcloneConf = "$rcloneConfigDir\rclone.conf"
           
-          # Added no_check_bucket = true to config to prevent CreateBucket/HeadBucket calls
           $configContent = @"
           [r2]
           type = s3
@@ -52,7 +51,6 @@ jobs:
           
           Set-Content -Path $rcloneConf -Value $configContent
           Write-Host "Rclone config created at $rcloneConf"
-          rclone listremotes
 
       - name: Install dependencies (npm)
         run: npm ci
@@ -71,13 +69,18 @@ jobs:
           prerelease: false
 
       - name: Prepare Artifacts for R2
-        shell: powershell
+        shell: pwsh
         run: |
+          # Robust version extraction from package.json
           $version = (Get-Content package.json | ConvertFrom-Json).version
           Write-Host "Detected version: $version"
           
           $dist = "dist_r2"
           if (!(Test-Path $dist)) { New-Item -ItemType Directory -Force -Path $dist }
+          
+          # Debug: List bundle directory to see exactly what was built
+          Write-Host "Listing build artifacts..."
+          Get-ChildItem -Path "src-tauri/target/release/bundle" -Recurse | Select-Object FullName
           
           # 1. Installer (.exe)
           $exeSource = "src-tauri/target/release/bundle/nsis/d2r-rust_${version}_x64-setup.exe"
@@ -97,7 +100,7 @@ jobs:
             }
           }
 
-          # 2. Portable (.zip) - We create it from the raw exe
+          # 2. Portable (.zip) - We create it from the raw exe for direct user download
           $rawExe = "src-tauri/target/release/d2r-rust.exe"
           $zipDest = "$dist/d2r-rust_${version}_x64-portable.zip"
           
@@ -109,11 +112,13 @@ jobs:
              exit 1
           }
           
-          # 3. Signature File (.sig)
-          $sigSource = Get-ChildItem "src-tauri/target/release/bundle/nsis/*.sig" | Select-Object -First 1
-          if ($sigSource) {
-             $sig = Get-Content $sigSource.FullName
-             Write-Host "Signature found in $($sigSource.Name): $sig"
+          # 3. Signature File (.sig) and latest.json
+          # Tauri 2.0 generates signatures for the update bundles
+          $sigFile = Get-ChildItem -Path "src-tauri/target/release/bundle" -Filter "*.sig" -Recurse | Select-Object -First 1
+          if ($sigFile) {
+             $sig = Get-Content $sigFile.FullName -Raw
+             $sig = $sig.Trim()
+             Write-Host "Signature found in $($sigFile.FullName)"
              
              # Generate latest.json for R2
              $json = @{
@@ -127,31 +132,29 @@ jobs:
                     }
                 }
              }
-             $json | ConvertTo-Json -Depth 5 | Out-File "$dist/latest.json" -Encoding utf8 -Force
-             Write-Host "Generated latest.json"
+             $json | ConvertTo-Json -Depth 5 | Out-File "$dist/latest.json" -Encoding utf8
+             Write-Host "Generated latest.json in $dist"
           } else {
-             Write-Warning "Signature file not found, latest.json will NOT be generated."
+             Write-Warning "Signature file (.sig) not found in bundle directory. Updater will not work."
+             # Still generate a basic json for debugging if needed, or just let it fail
           }
           
-          # 4. Upload Assets to GitHub Release
+          # 4. Upload Assets to GitHub Release (if tag)
           if ("${{ github.ref_type }}" -eq "tag") {
               Write-Host "Uploading assets to GitHub Release..."
               gh release upload ${{ github.ref_name }} $exeDest $zipDest --clobber
-          } else {
-              Write-Host "Skipping Github release upload because this is not a tag push."
           }
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload to Cloudflare R2
-        shell: powershell
+        shell: pwsh
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
           
-          # Sync everything in dist_r2 to R2
-          # Force --s3-no-check-bucket globally
+          # Sync everything in dist_r2 to R2 (including latest.json if it exists)
+          Write-Host "Syncing all artifacts to R2..."
           rclone copy dist_r2 r2:d2r-rust-updates/d2r-rust --progress --s3-no-check-bucket
           
           # Create "latest" copies for the website download buttons
+          Write-Host "Creating 'latest' shortcuts on R2..."
           rclone copyto "dist_r2/d2r-rust_${version}_x64-setup.exe" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-setup.exe" --s3-no-check-bucket
           rclone copyto "dist_r2/d2r-rust_${version}_x64-portable.zip" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-portable.zip" --s3-no-check-bucket
