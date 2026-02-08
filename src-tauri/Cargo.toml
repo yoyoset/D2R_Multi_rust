@@ -18,7 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.5.5", features = [] }
 
 [dependencies]
-tauri = { version = "2.10.2", features = ["tray-icon", "image", "updater"] }
+tauri = { version = "2.10.2", features = ["tray-icon", "image"] }
 tauri-plugin-opener = "2.5.3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -36,5 +36,5 @@ tauri-plugin-updater = "2.10.0"
 [profile.release]
 panic = "abort"
 codegen-units = 16
-lto = true
-strip = true
+lto = false
+strip = false
