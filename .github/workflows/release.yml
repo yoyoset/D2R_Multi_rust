@@ -23,30 +23,37 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
-
-      - name: Install Pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+          node-version: 20
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install dependencies (frontend)
-        run: pnpm install
+      - name: Install Rclone (Chocolatey)
+        run: choco install rclone
 
-      - name: Setup rclone
-        uses: animin/setup-rclone@v1
-        with:
-          rclone_config: |
-            [r2]
-            type = s3
-            provider = Cloudflare
-            access_key_id = ${{ secrets.R2_ACCESS_KEY_ID }}
-            secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
-            endpoint = https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
-            acl = private
+      - name: Configure Rclone
+        shell: powershell
+        run: |
+          $rcloneConfigDir = "$env:USERPROFILE\.config\rclone"
+          New-Item -ItemType Directory -Force -Path $rcloneConfigDir
+          $rcloneConf = "$rcloneConfigDir\rclone.conf"
+          
+          $configContent = @"
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${{ secrets.R2_ACCESS_KEY_ID }}
+          secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          endpoint = https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          acl = private
+          "@
+          
+          Set-Content -Path $rcloneConf -Value $configContent
+          Write-Host "Rclone config created at $rcloneConf"
+          rclone listremotes
+
+      - name: Install dependencies (npm)
+        run: npm ci
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
@@ -108,7 +115,6 @@ jobs:
                     }
                 }
              }
-             # Convert to JSON with UTF8 encoding
              $json | ConvertTo-Json -Depth 5 | Out-File "$dist/latest.json" -Encoding utf8
              Write-Host "Generated latest.json"
           } else {
@@ -118,13 +124,8 @@ jobs:
       - name: Upload to Cloudflare R2
         shell: powershell
         run: |
-          # Copy dist folder to R2 bucket root folder (d2r-rust-updates/d2r-rust)
-          # Assuming BUCKET structure is like in publish.ps1: d2r-rust-updates/d2r-rust/...
-          
-          # rclone copy source destination
           rclone copy dist_r2 r2:d2r-rust-updates/d2r-rust --progress
           
-          # Create "latest" copies for the website download buttons
           $version = "${{ github.ref_name }}".Substring(1)
           
           rclone copyto "dist_r2/d2r-rust_${version}_x64-setup.exe" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-setup.exe"
