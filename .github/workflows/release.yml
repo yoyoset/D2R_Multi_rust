@@ -133,6 +133,12 @@ jobs:
           } else {
              Write-Warning "Signature file not found, latest.json will NOT be generated."
           }
+          
+          # 4. Also upload the Portable ZIP to the GitHub Release (Draft or Published)
+          Write-Host "Uploading portable ZIP to GitHub Release..."
+          gh release upload ${{ github.ref_name }} $zipDest --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload to Cloudflare R2
         shell: powershell
