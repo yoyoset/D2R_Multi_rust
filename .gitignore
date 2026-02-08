@@ -25,3 +25,32 @@ dist-ssr
 
 # Rust
 src-tauri/target
+
+# Keys and Signatures (CRITICAL)
+*.key
+*.sig
+keys/
+raw_b64.key
+temp_signer.key
+
+# Build Artifacts & Temp
+dist-updates/
+RELEASES/
+update/
+*.zip
+*.msi
+*.exe
+!debug_sign.exe # (Optional: if user wants to keep the tool, but usually not)
+!src/assets/**/*.exe # (Only if needed)
+
+# Debug tools specifically
+debug_sign.exe
+debug_sign.pdb
+debug_sign_v2.exe
+debug_sign_v2.pdb
+
+# Others
+dummy.txt
+dummy.zip
+.wrangler/
+
