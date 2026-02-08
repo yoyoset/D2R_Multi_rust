@@ -55,12 +55,10 @@ jobs:
       - name: Install dependencies (npm)
         run: npm ci
 
-      - name: Build and Sign the app
-        # Use v0 which supports v2 via auto-detection
+      - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Tauri v2 signing keys
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
@@ -70,20 +68,19 @@ jobs:
           releaseDraft: true
           prerelease: false
 
-      - name: Debug - List All Artifacts
-        shell: pwsh
-        run: |
-           Write-Host "Listing recursive content of src-tauri/target/release/bundle:"
-           Get-ChildItem -Path "src-tauri/target/release/bundle" -Recurse | Select-Object FullName
-
       - name: Prepare Artifacts for R2
         shell: pwsh
         run: |
+          # Robust version extraction from package.json
           $version = (Get-Content package.json | ConvertFrom-Json).version
           Write-Host "Detected version: $version"
           
           $dist = "dist_r2"
           if (!(Test-Path $dist)) { New-Item -ItemType Directory -Force -Path $dist }
+          
+          # Debug: List bundle directory to see exactly what was built
+          Write-Host "Listing build artifacts..."
+          Get-ChildItem -Path "src-tauri/target/release/bundle" -Recurse | Select-Object FullName
           
           # 1. Installer (.exe)
           $exeSource = "src-tauri/target/release/bundle/nsis/d2r-rust_${version}_x64-setup.exe"
@@ -103,7 +100,7 @@ jobs:
             }
           }
 
-          # 2. Portable (.zip)
+          # 2. Portable (.zip) - We create it from the raw exe for direct user download
           $rawExe = "src-tauri/target/release/d2r-rust.exe"
           $zipDest = "$dist/d2r-rust_${version}_x64-portable.zip"
           
@@ -115,13 +112,18 @@ jobs:
              exit 1
           }
           
-          # 3. Signature Resolution (Tauri 2.0)
-          # In v2, the updater bundle is typically a .zip in the nsis folder (alongside the exe)
-          # OR in a separate 'updater' folder depending on configuration.
-          # We search broadly for any .sig file.
+          # 3. Signature Resolution
+          # The logs confirm: d2r-rust_0.2.1_x64-setup.exe.sig AND d2r-rust_0.2.1_x64-setup.nsis.zip.sig exist.
+          # We prefer the zip signature for the updater if available, or the exe signature.
           
-          $sigFile = Get-ChildItem -Path "src-tauri/target/release/bundle" -Filter "*.sig" -Recurse | Select-Object -First 1
+          # Try searching for the nsis.zip.sig first (standard for Tauri v2 updater)
+          $sigFile = Get-ChildItem -Path "src-tauri/target/release/bundle" -Filter "*nsis.zip.sig" -Recurse | Select-Object -First 1
           
+          # Fallback to exe.sig
+          if (!$sigFile) {
+             $sigFile = Get-ChildItem -Path "src-tauri/target/release/bundle" -Filter "*setup.exe.sig" -Recurse | Select-Object -First 1
+          }
+
           if ($sigFile) {
              $sig = Get-Content $sigFile.FullName -Raw
              $sig = $sig.Trim()
@@ -142,9 +144,8 @@ jobs:
              $json | ConvertTo-Json -Depth 5 | Out-File "$dist/latest.json" -Encoding utf8
              Write-Host "Generated latest.json in $dist"
           } else {
-             Write-Warning "Signature file (.sig) not found! Updater will NOT work."
-             Write-Host "DEBUG: Listing all files in bundle to help debug:"
-             Get-ChildItem "src-tauri/target/release/bundle" -Recurse | Select-Object FullName
+             Write-Warning "Signature file (.sig) not found in bundle directory. Updater will not work."
+             # Still generate a basic json for debugging if needed, or just let it fail
           }
           
           # 4. Upload Assets to GitHub Release (if tag)
