@@ -110,7 +110,6 @@ jobs:
           }
           
           # 3. Signature File (.sig)
-          # Tauri 2.0 generates signatures in paths like: src-tauri/target/release/bundle/nsis/d2r-rust_0.2.1_x64_en-US.nsis.zip.sig
           $sigSource = Get-ChildItem "src-tauri/target/release/bundle/nsis/*.sig" | Select-Object -First 1
           if ($sigSource) {
              $sig = Get-Content $sigSource.FullName
@@ -135,8 +134,13 @@ jobs:
           }
           
           # 4. Also upload the Portable ZIP to the GitHub Release (Draft or Published)
-          Write-Host "Uploading portable ZIP to GitHub Release..."
-          gh release upload ${{ github.ref_name }} $zipDest --clobber
+          # Note: Only works if tagName matches a real tag
+          if ("${{ github.ref_type }}" -eq "tag") {
+              Write-Host "Uploading portable ZIP to GitHub Release..."
+              gh release upload ${{ github.ref_name }} $zipDest --clobber
+          } else {
+              Write-Host "Skipping Github release upload because this is not a tag push."
+          }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -146,8 +150,9 @@ jobs:
           $version = (Get-Content package.json | ConvertFrom-Json).version
           
           # Sync everything in dist_r2 to R2
-          rclone copy dist_r2 r2:d2r-rust-updates/d2r-rust --progress
+          # Use --s3-no-check-bucket to avoid 403 Access Denied on CreateBucket
+          rclone copy dist_r2 r2:d2r-rust-updates/d2r-rust --progress --s3-no-check-bucket
           
           # Create "latest" copies for the website download buttons
-          rclone copyto "dist_r2/d2r-rust_${version}_x64-setup.exe" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-setup.exe"
-          rclone copyto "dist_r2/d2r-rust_${version}_x64-portable.zip" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-portable.zip"
+          rclone copyto "dist_r2/d2r-rust_${version}_x64-setup.exe" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-setup.exe" --s3-no-check-bucket
+          rclone copyto "dist_r2/d2r-rust_${version}_x64-portable.zip" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-portable.zip" --s3-no-check-bucket
