@@ -40,6 +40,7 @@
   },
   "plugins": {
     "updater": {
+      "active": true,
       "endpoints": [
         "https://update.squareuncle.com/d2r-rust/latest.json"
       ],
