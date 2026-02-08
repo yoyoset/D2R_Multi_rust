@@ -85,8 +85,8 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
     };
 
     const handleManualUpdate = () => {
-        // Fallback to GitHub releases or a specific download page
-        openUrl("https://github.com/SquareUncle/d2r-rust/releases/latest");
+        // Redirect to the new official download page
+        openUrl("https://squareuncle.com/download");
         setPendingUpdate(null);
     };
 
