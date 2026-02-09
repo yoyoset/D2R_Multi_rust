@@ -12,6 +12,8 @@ pub struct AppConfig {
     pub close_to_tray: Option<bool>,
     pub language: Option<String>,
     pub enable_logging: Option<bool>,
+    pub has_shown_guide: Option<bool>,
+    pub dashboard_view_mode: Option<String>,
 }
 
 #[derive(thiserror::Error, Debug)]
