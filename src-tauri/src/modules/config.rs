@@ -27,6 +27,15 @@ pub enum ConfigError {
 }
 
 impl AppConfig {
+    /// Returns a redacted version of the config for safe passing to frontend or logs
+    pub fn redacted(&self) -> Self {
+        let mut redacted = self.clone();
+        for account in &mut redacted.accounts {
+            account.win_pass = account.win_pass.as_ref().map(|_| "********".to_string());
+        }
+        redacted
+    }
+
     fn get_config_path(app: &AppHandle) -> Option<PathBuf> {
         // Resolve app data dir: e.g. %APPDATA%/com.d2rmultiplay.ui/config.json
         app.path()

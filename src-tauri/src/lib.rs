@@ -131,12 +131,33 @@ fn launch_game(
 
 #[tauri::command]
 fn get_config(app: tauri::AppHandle) -> Result<modules::config::AppConfig, String> {
-    modules::config::AppConfig::load(&app).map_err(|e| e.to_string())
+    let config = modules::config::AppConfig::load(&app).map_err(|e| e.to_string())?;
+    Ok(config.redacted())
 }
 
 #[tauri::command]
 fn save_config(app: tauri::AppHandle, config: modules::config::AppConfig) -> Result<(), String> {
-    config.save(&app).map_err(|e| e.to_string())
+    // 1. Load full config from disk
+    let mut full_config = modules::config::AppConfig::load(&app).map_err(|e| e.to_string())?;
+
+    // 2. Patch sensitive fields back from full_config to the incoming redacted config
+    let mut updated_config = config;
+    for account in &mut updated_config.accounts {
+        if let Some(pass) = &account.win_pass {
+            if pass == "********" {
+                // If it's redacted, restore from disk
+                if let Some(original) = full_config.accounts.iter().find(|a| a.id == account.id) {
+                    account.win_pass = original.win_pass.clone();
+                } else {
+                    // New account with redacted placeholder? Should not happen normally via UI
+                    account.win_pass = None;
+                }
+            }
+        }
+    }
+
+    // 3. Save the merged config
+    updated_config.save(&app).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
