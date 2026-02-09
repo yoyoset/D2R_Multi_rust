@@ -1,4 +1,5 @@
 use tauri::Manager;
+use std::os::windows::process::CommandExt;
 mod modules;
 mod state;
 
@@ -26,19 +27,19 @@ fn kill_processes() -> Result<String, String> {
 
 #[tauri::command]
 fn manual_backup_save(app: tauri::AppHandle, account_id: String) -> Result<String, String> {
-    modules::file_swap::rotate_save(&app, &account_id).map_err(|e| e.to_string())?;
+    modules::file_swap::rotate_save(&app, &account_id).map_err(|e: anyhow::Error| e.to_string())?;
     Ok("Backup successful".to_string())
 }
 
 #[tauri::command]
 fn manual_delete_config() -> Result<String, String> {
-    modules::file_swap::delete_config().map_err(|e| e.to_string())?;
+    modules::file_swap::delete_config().map_err(|e: anyhow::Error| e.to_string())?;
     Ok("Config deleted".to_string())
 }
 
 #[tauri::command]
 fn manual_restore_config(app: tauri::AppHandle, account_id: String) -> Result<String, String> {
-    modules::file_swap::restore_snapshot(&app, &account_id).map_err(|e| e.to_string())?;
+    modules::file_swap::restore_snapshot(&app, &account_id).map_err(|e: anyhow::Error| e.to_string())?;
     Ok("Restore successful".to_string())
 }
 
@@ -63,7 +64,7 @@ fn manual_launch_process(
             None,
             working_dir.as_deref(),
         )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e: anyhow::Error| e.to_string())?;
 
     Ok(format!("Launched PID: {}", res.process_id))
 }
@@ -86,7 +87,7 @@ fn get_windows_users(
     state
         .os
         .list_local_users(deep_scan.unwrap_or(false))
-        .map_err(|e| e.to_string())
+        .map_err(|e: anyhow::Error| e.to_string())
 }
 
 #[tauri::command]
@@ -99,7 +100,7 @@ fn create_windows_user(
     state
         .os
         .create_user(&username, &password, never_expires)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e: anyhow::Error| e.to_string())?;
     Ok("User created successfully".to_string())
 }
 
@@ -112,7 +113,7 @@ fn set_password_never_expires(
     state
         .os
         .set_password_never_expires(&username, never_expires)
-        .map_err(|e| e.to_string())
+        .map_err(|e: anyhow::Error| e.to_string())
 }
 
 #[tauri::command]
@@ -130,12 +131,12 @@ fn launch_game(
 
 #[tauri::command]
 fn get_config(app: tauri::AppHandle) -> Result<modules::config::AppConfig, String> {
-    modules::config::AppConfig::load(&app).map_err(|e| e.to_string())
+    modules::config::AppConfig::load(&app).map_err(|e: anyhow::Error| e.to_string())
 }
 
 #[tauri::command]
 fn save_config(app: tauri::AppHandle, config: modules::config::AppConfig) -> Result<(), String> {
-    config.save(&app).map_err(|e| e.to_string())
+    config.save(&app).map_err(|e: anyhow::Error| e.to_string())
 }
 
 #[tauri::command]
@@ -159,12 +160,12 @@ fn update_tray_language(app: tauri::AppHandle, lang: String) -> Result<(), Strin
                                                    // However, we can rebuild the menu easily for v2.
 
         let show_i = tauri::menu::MenuItem::with_id(&app, "show", show_text, true, None::<&str>)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e: tauri::Error| e.to_string())?;
         let quit_i = tauri::menu::MenuItem::with_id(&app, "quit", quit_text, true, None::<&str>)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e: tauri::Error| e.to_string())?;
         let menu =
-            tauri::menu::Menu::with_items(&app, &[&show_i, &quit_i]).map_err(|e| e.to_string())?;
-        tray.set_menu(Some(menu)).map_err(|e| e.to_string())?;
+            tauri::menu::Menu::with_items(&app, &[&show_i, &quit_i]).map_err(|e: tauri::Error| e.to_string())?;
+        tray.set_menu(Some(menu)).map_err(|e: tauri::Error| e.to_string())?;
     }
     Ok(())
 }
@@ -175,7 +176,7 @@ fn open_lusrmgr() -> Result<(), String> {
         .args(["/C", "start", "lusrmgr.msc"])
         .creation_flags(0x08000000) // CREATE_NO_WINDOW
         .spawn()
-        .map_err(|e| e.to_string())?;
+        .map_err(|e: std::io::Error| e.to_string())?;
     Ok(())
 }
 
@@ -185,7 +186,7 @@ fn open_netplwiz() -> Result<(), String> {
         .args(["/C", "start", "netplwiz"])
         .creation_flags(0x08000000) // CREATE_NO_WINDOW
         .spawn()
-        .map_err(|e| e.to_string())?;
+        .map_err(|e: std::io::Error| e.to_string())?;
     Ok(())
 }
 
