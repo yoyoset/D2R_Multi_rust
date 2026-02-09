@@ -154,6 +154,10 @@ const resources = {
             "reinstall_hint_title": "如何修复？",
             "reinstall_hint_desc": "如果你的战网已经安装在其他位置，请先卸载，然后重新下载战网安装程序，并保持默认设置安装。这不会影响你已经下载好的游戏内容。",
             "got_it": "我知道了",
+            "system_utils": "系统工具",
+            "open_local_users": "本地用户和组",
+            "open_adv_users": "高级用户面板",
+            "launch_tools": "启动工具",
         }
     },
     "en": {
@@ -300,6 +304,10 @@ const resources = {
             "reinstall_hint_title": "How to Fix?",
             "reinstall_hint_desc": "If Battle.net is installed elsewhere, please uninstall it and reinstall using the default settings. This won't affect your downloaded game data.",
             "got_it": "Got it",
+            "system_utils": "System Utilities",
+            "open_local_users": "Local Users & Groups",
+            "open_adv_users": "Advanced User Panel",
+            "launch_tools": "Launch Tools",
         }
     },
     "zh-TW": {
