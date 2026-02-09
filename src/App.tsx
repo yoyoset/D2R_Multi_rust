@@ -89,10 +89,44 @@ function App() {
         }
     };
 
+    const validateAccounts = async (accounts: Account[]) => {
+        if (accounts.length === 0) return;
+        try {
+            const systemUsers = await getWindowsUsers(false);
+            const invalidUsers = accounts.filter(acc => 
+                !systemUsers.some(u => u.toLowerCase() === acc.win_user.toLowerCase()) &&
+                !acc.win_user.includes("\\") // Skip domain accounts as they might not be in local list
+            );
+
+            if (invalidUsers.length > 0) {
+                const names = invalidUsers.map(u => u.win_user).join(", ");
+                addLog({ 
+                    message: `检测到失效的系统用户: ${names}。这些账户在系统中不存在，可能已被删除。`, 
+                    level: 'warn' 
+                });
+                
+                showBlocking(
+                    t('invalid_users_found') || '检测到失效账户',
+                    (t('invalid_users_desc') || '以下账户在当前系统中不存在，请确认是否删除或重新创建：') + `\n\n${names}`,
+                    [{ label: t('confirm') || '知道了', variant: 'primary', onClick: () => {} }],
+                    'warning'
+                );
+            }
+        } catch (e) {
+            console.error("Failed to validate accounts:", e);
+        }
+    };
+
     useEffect(() => {
-        loadConfig();
-        checkAdminStatus();
-        checkUpdateOnLaunch();
+        const init = async () => {
+            const cfg = await getConfig();
+            setConfig(cfg);
+            checkAdminStatus();
+            checkUpdateOnLaunch();
+            // Validate accounts after loading config
+            validateAccounts(cfg.accounts);
+        };
+        init();
 
         const unlisten = listen('launch-log', (event: any) => {
             const payload = event.payload;

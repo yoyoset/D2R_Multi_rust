@@ -140,6 +140,9 @@ const resources = {
             "blog": "个人博客",
             "check_update": "检查更新",
             "current_version": "当前版本",
+            "invalid_users_found": "检测到失效系统账户",
+            "invalid_users_desc": "以下账户在当前 Windows 系统中不存在，可能已被删除。这会导致游戏无法正常启动：",
+            "confirm": "明白了",
         }
     },
     "en": {

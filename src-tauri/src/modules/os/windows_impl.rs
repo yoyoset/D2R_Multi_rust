@@ -6,8 +6,8 @@ use std::ptr;
 use windows::core::{PCWSTR, PWSTR};
 use windows::Win32::Foundation::{CloseHandle, LocalFree, HANDLE, HLOCAL};
 use windows::Win32::NetworkManagement::NetManagement::{
-    NetApiBufferFree, NetGroupAddUser, NetUserAdd, NetUserEnum, FILTER_NORMAL_ACCOUNT,
-    USER_ACCOUNT_FLAGS, USER_INFO_0, USER_INFO_1, USER_PRIV,
+    NetApiBufferFree, NetLocalGroupAddMembers, NetUserAdd, NetUserEnum, FILTER_NORMAL_ACCOUNT,
+    LOCALGROUP_MEMBERS_INFO_3, USER_ACCOUNT_FLAGS, USER_INFO_0, USER_INFO_1, USER_PRIV,
 };
 use windows::Win32::Security::Authorization::ConvertStringSidToSidW;
 use windows::Win32::Security::{
@@ -135,17 +135,32 @@ impl OSProvider for WindowsProvider {
             let status = NetUserAdd(PCWSTR::null(), 1, &user_info as *const _ as *const _, None);
 
             if status != 0 {
-                return Err(anyhow!("NetUserAdd failed with status: {}", status));
+                if status == 2224 {
+                    // NERR_UserExists: User already exists. This might happen if user was deleted but registry remains.
+                    // We can try to continue and just add to group, or report specifically.
+                    tracing::info!("User {} already exists in system", username);
+                } else {
+                    return Err(anyhow!("NetUserAdd failed with status: {} (Win32 Error)", status));
+                }
             }
 
             let group_name = self.get_localized_users_group_name();
             let group_name_u16 = to_pcwstr(&group_name);
 
-            let _ = NetGroupAddUser(
+            let mut member_info = LOCALGROUP_MEMBERS_INFO_3::default();
+            member_info.lgrmi3_domainandname = PWSTR(username_u16.as_ptr() as *mut _);
+
+            let group_status = NetLocalGroupAddMembers(
                 PCWSTR::null(),
                 PCWSTR(group_name_u16.as_ptr()),
-                PCWSTR(username_u16.as_ptr()),
+                3,
+                &member_info as *const _ as *const _,
+                1,
             );
+            
+            if group_status != 0 && group_status != 1320 { // 1320 is ERROR_MEMBER_IN_GROUP
+                 tracing::warn!("NetLocalGroupAddMembers failed with status: {}", group_status);
+            }
 
             Ok(())
         }

@@ -239,9 +239,19 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
                                         )}
                                         <button
                                             onClick={() => { setIsCreatingNew(!isCreatingNew); setIsManualInput(true); }}
-                                            className="text-xs text-zinc-500 hover:text-white transition-colors underline underline-offset-4"
+                                            className={cn(
+                                                "text-[10px] px-2 py-1 rounded transition-all flex items-center gap-1",
+                                                isCreatingNew 
+                                                    ? "text-zinc-400 hover:text-white underline underline-offset-4" 
+                                                    : "bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 font-bold shadow-[0_0_10px_rgb(var(--color-primary)/0.2)]"
+                                            )}
                                         >
-                                            {isCreatingNew ? t('use_existing_user') : t('create_new_win_user')}
+                                            {isCreatingNew ? t('use_existing_user') : (
+                                                <>
+                                                    <Sparkles size={10} />
+                                                    {t('create_new_win_user')}
+                                                </>
+                                            )}
                                         </button>
                                     </div>
                                 </div>
