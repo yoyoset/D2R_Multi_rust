@@ -26,6 +26,7 @@ export interface AppConfig {
     language?: string;
     enable_logging?: boolean;
     dashboard_view_mode?: 'card' | 'list';
+    has_shown_guide?: boolean;
 }
 
 export async function getWindowsUsers(deepScan: boolean = false): Promise<string[]> {

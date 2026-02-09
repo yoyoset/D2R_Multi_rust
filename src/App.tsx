@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { getConfig, launchGame, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers } from "./lib/api";
 import { listen } from "@tauri-apps/api/event";
-import { Settings, Globe, LayoutGrid, Users, Wrench, Heart, ShieldCheck } from "lucide-react";
+import { Settings, Globe, LayoutGrid, Users, Wrench, Heart, ShieldCheck, BookOpen } from "lucide-react";
 import { SettingsModal } from "./components/modals/SettingsModal";
 import { AccountModal } from "./components/modals/AccountModal";
 import { DonateModal } from "./components/modals/DonateModal";
+import { GuideModal } from "./components/modals/GuideModal";
 import { useTranslation } from "react-i18next";
 import Dashboard from "./components/views/Dashboard";
 import AccountManager from "./components/views/AccountManager";
@@ -144,6 +145,11 @@ function App() {
             checkUpdateOnLaunch();
             // Validate accounts after loading config
             validateAccounts(cfg.accounts);
+
+            // Show guide on first launch
+            if (!cfg.has_shown_guide) {
+                setIsGuideOpen(true);
+            }
         };
         init();
 
@@ -181,6 +187,7 @@ function App() {
     // Modals
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+    const [isGuideOpen, setIsGuideOpen] = useState(false);
     const [isDonateOpen, setIsDonateOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined);
 
@@ -197,6 +204,19 @@ function App() {
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
+    };
+
+    const handleCloseGuide = async () => {
+        setIsGuideOpen(false);
+        if (!config.has_shown_guide) {
+            const newConfig = { ...config, has_shown_guide: true };
+            setConfig(newConfig);
+            try {
+                await saveConfig(newConfig);
+            } catch (e) {
+                console.error("Failed to save guide status", e);
+            }
+        }
     };
 
     const handleLaunch = async () => {
@@ -279,6 +299,10 @@ function App() {
                 config={config}
                 onSave={setConfig}
             />
+            <GuideModal
+                isOpen={isGuideOpen}
+                onClose={handleCloseGuide}
+            />
             <NotificationManager />
 
 
@@ -338,6 +362,14 @@ function App() {
                 </div>
 
                 <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setIsGuideOpen(true)}
+                        className="text-zinc-500 hover:text-white transition-colors p-1"
+                        title={t('user_guide_title')}
+                    >
+                        <BookOpen size={18} />
+                    </button>
+
                     <div className="flex items-center gap-2">
                         <Globe size={14} className="text-zinc-500" />
                         <select
