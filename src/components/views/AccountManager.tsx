@@ -2,17 +2,19 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Account } from '../../lib/api';
 import { Button } from '../ui/Button';
-import { Edit2, Trash2, Plus, User } from 'lucide-react';
+import { Edit2, Trash2, Plus, User, Ghost } from 'lucide-react';
 import { ClassAvatar } from '../modals/AccountModal';
+import { cn } from '../../lib/utils';
 
 interface AccountManagerProps {
     accounts: Account[];
+    invalidAccountIds: Set<string>;
     onAdd: () => void;
     onEdit: (account: Account) => void;
     onDelete: (id: string) => void;
 }
 
-const AccountManager: React.FC<AccountManagerProps> = ({ accounts, onAdd, onEdit, onDelete }) => {
+const AccountManager: React.FC<AccountManagerProps> = ({ accounts, invalidAccountIds, onAdd, onEdit, onDelete }) => {
     const { t } = useTranslation();
     const [confirmDeleteId, setConfirmDeleteId] = React.useState<string | null>(null);
 
@@ -44,10 +46,18 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, onAdd, onEdit
                 {accounts.map((account) => (
                     <div
                         key={account.id}
-                        className="flex items-center justify-between p-2.5 bg-zinc-900/20 border border-white/5 rounded-xl hover:bg-zinc-900/40 hover:border-white/10 transition-all group"
+                        className={cn(
+                            "flex items-center justify-between p-2.5 bg-zinc-900/20 border rounded-xl hover:bg-zinc-900/40 transition-all group",
+                            invalidAccountIds.has(account.id) ? "border-rose-500/30 bg-rose-500/5" : "border-white/5 hover:border-white/10"
+                        )}
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg border border-white/5 bg-black/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <div className="w-8 h-8 rounded-lg border border-white/5 bg-black/40 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
+                                {invalidAccountIds.has(account.id) && (
+                                    <div className="absolute inset-0 bg-rose-950/40 flex items-center justify-center z-10">
+                                        <Ghost size={12} className="text-rose-500" />
+                                    </div>
+                                )}
                                 {account.avatar ? (
                                     account.avatar.length <= 3 ? (
                                         <ClassAvatar cls={account.avatar} size="sm" />

@@ -22,6 +22,7 @@ type View = 'dashboard' | 'accounts' | 'manual';
 function App() {
     const { t, i18n } = useTranslation();
     const [config, setConfig] = useState<AppConfig>({ accounts: [], game_path: '' });
+    const [invalidAccountIds, setInvalidAccountIds] = useState<Set<string>>(new Set());
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const addLog = useLogs((state) => state.addLog);
     const launchLogs = useLogs((state) => state.logs);
@@ -86,6 +87,7 @@ function App() {
             const systemUsers = await getWindowsUsers(false);
             const lowerSystemUsers = systemUsers.map(u => u.toLowerCase());
             
+            const invalidIds = new Set<string>();
             const invalidUsers = accounts.filter((acc: Account) => {
                 const winUser = acc.win_user.toLowerCase();
                 
@@ -99,8 +101,6 @@ function App() {
                     const winShort = winParts[winParts.length - 1];
                     
                     if (uShort === winShort) {
-                        // If one is qualified and the other isn't, or both are, but shorts match
-                        // For local validation, matching short name is usually enough
                         return true;
                     }
                     return false;
@@ -108,16 +108,14 @@ function App() {
 
                 if (exists) return false;
 
-                // If not found in system list:
-                // 1. If it's a simple name (no backslash), it's definitely missing.
-                // 2. If it starts with .\ , it's a local name and it's missing.
-                // 3. Otherwise (e.g. DOMAIN\user), we skip warning to avoid false positives 
-                //    since domain accounts might not appear in local enum.
                 if (!acc.win_user.includes("\\") || acc.win_user.startsWith(".\\")) {
+                    invalidIds.add(acc.id);
                     return true;
                 }
                 return false;
             });
+
+            setInvalidAccountIds(invalidIds);
 
             if (invalidUsers.length > 0) {
                 const names = invalidUsers.map(u => u.win_user).join(", ");
@@ -370,6 +368,7 @@ function App() {
                 {currentView === 'dashboard' && (
                     <Dashboard
                         accounts={config.accounts}
+                        invalidAccountIds={invalidAccountIds}
                         selectedAccountId={selectedAccountId}
                         onSelectAccount={setSelectedAccountId}
                         onLaunch={handleLaunch}
@@ -385,6 +384,7 @@ function App() {
                 {currentView === 'accounts' && (
                     <AccountManager
                         accounts={config.accounts}
+                        invalidAccountIds={invalidAccountIds}
                         onAdd={handleAddAccount}
                         onEdit={handleEditAccount}
                         onDelete={handleDeleteAccount}

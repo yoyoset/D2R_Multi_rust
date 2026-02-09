@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Account, AccountStatus, getAccountsProcessStatus } from '../../lib/api';
-import { Play, User, LayoutGrid, List, GripVertical, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Play, User, LayoutGrid, List, GripVertical, Edit2, ChevronUp, ChevronDown, Ghost } from 'lucide-react';
 import { ClassAvatar } from '../modals/AccountModal';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
@@ -26,6 +26,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 interface DashboardProps {
     accounts: Account[];
+    invalidAccountIds: Set<string>;
     selectedAccountId: string | null;
     onSelectAccount: (id: string) => void;
     onLaunch: () => void;
@@ -40,6 +41,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({
     accounts,
+    invalidAccountIds,
     selectedAccountId,
     onSelectAccount,
     onLaunch,
@@ -140,6 +142,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 <SortableAccountItem
                                     key={account.id}
                                     account={account}
+                                    isInvalid={invalidAccountIds.has(account.id)}
                                     viewMode={viewMode}
                                     selectedAccountId={selectedAccountId}
                                     onSelectAccount={onSelectAccount}
@@ -227,6 +230,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
 interface SortableAccountItemProps {
     account: Account;
+    isInvalid: boolean;
     viewMode: 'card' | 'list';
     selectedAccountId: string | null;
     onSelectAccount: (id: string) => void;
@@ -234,7 +238,7 @@ interface SortableAccountItemProps {
     status: AccountStatus | undefined;
 }
 
-function SortableAccountItem({ account, viewMode, selectedAccountId, onSelectAccount, onEdit, status }: SortableAccountItemProps) {
+function SortableAccountItem({ account, isInvalid, viewMode, selectedAccountId, onSelectAccount, onEdit, status }: SortableAccountItemProps) {
     const {
         attributes,
         listeners,
@@ -259,11 +263,19 @@ function SortableAccountItem({ account, viewMode, selectedAccountId, onSelectAcc
             className={cn(
                 "relative rounded-xl border cursor-pointer transition-colors duration-300 group overflow-hidden flex flex-col",
                 viewMode === 'card' ? "p-3 aspect-square justify-between shadow-sm" : "p-3 flex-row items-center",
+                isInvalid ? "border-rose-500/50 bg-rose-500/5 hover:bg-rose-500/10" :
                 selectedAccountId === account.id
                     ? 'bg-zinc-900/90 border-primary/50 shadow-lg'
                     : 'bg-zinc-900/20 border-white/5 hover:bg-zinc-900/40 hover:border-white/10'
             )}
         >
+
+            {/* Invalid Label/Ghost Icon */}
+            {isInvalid && (
+                <div className="absolute top-2 left-2 z-30 animate-pulse">
+                    <Ghost size={14} className="text-rose-500 drop-shadow-[0_0_5px_rgba(244,63,94,0.8)]" />
+                </div>
+            )}
 
             {/* Card Mode: Custom Layout */}
             {viewMode === 'card' ? (
