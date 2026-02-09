@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Account, invoke } from '../../lib/api';
 import { Button } from '../ui/Button';
-import { ShieldAlert, Trash, Play, Skull, FolderPlus } from 'lucide-react';
+import { ShieldAlert, Trash, Play, Skull, FolderPlus, MonitorSmartphone, Settings2 } from 'lucide-react';
 import MirrorModal from '../modals/MirrorModal';
 
 interface ManualToolsProps {
@@ -111,6 +111,36 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                                 onClick={() => runCommand('manual_delete_config')}
                             >
                                 <Trash size={16} className="mr-3 opacity-60" /> {t('delete_global_db_nuke')}
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* New Card: System Utilities (Blue) */}
+                    <div className="space-y-6 bg-blue-500/5 p-6 rounded-2xl border border-blue-500/10 relative overflow-hidden group">
+                        <div className="absolute -top-4 -right-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+                            <Settings2 size={120} className="text-blue-400" />
+                        </div>
+
+                        <h4 className="text-blue-400/80 text-xs font-bold uppercase tracking-widest flex items-center gap-2 relative z-10">
+                            <MonitorSmartphone size={14} className="text-blue-400" /> {t('system_utils') || 'System Utilities'}
+                        </h4>
+
+                        <div className="space-y-3 relative z-10">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full justify-start h-11 border-blue-500/20 text-blue-100/70 hover:text-blue-400 hover:bg-blue-500/5 text-xs"
+                                onClick={() => runCommand('open_lusrmgr')}
+                            >
+                                <User size={16} className="mr-3 opacity-60" /> {t('open_local_users') || 'Open Local Users & Groups'}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full justify-start h-11 border-blue-500/20 text-blue-100/70 hover:text-blue-400 hover:bg-blue-500/5 text-xs"
+                                onClick={() => runCommand('open_netplwiz')}
+                            >
+                                <ShieldAlert size={16} className="mr-3 opacity-60" /> {t('open_adv_users') || 'Open Advanced User Panel'}
                             </Button>
                         </div>
                     </div>

@@ -75,3 +75,11 @@ export async function checkAdmin(): Promise<boolean> {
     return await invoke<boolean>('check_admin');
 }
 
+export async function openLusrmgr(): Promise<void> {
+    await invoke('open_lusrmgr');
+}
+
+export async function openNetplwiz(): Promise<void> {
+    await invoke('open_netplwiz');
+}
+

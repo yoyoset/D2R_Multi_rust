@@ -169,6 +169,26 @@ fn update_tray_language(app: tauri::AppHandle, lang: String) -> Result<(), Strin
     Ok(())
 }
 
+#[tauri::command]
+fn open_lusrmgr() -> Result<(), String> {
+    std::process::Command::new("cmd")
+        .args(["/C", "start", "lusrmgr.msc"])
+        .creation_flags(0x08000000) // CREATE_NO_WINDOW
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn open_netplwiz() -> Result<(), String> {
+    std::process::Command::new("cmd")
+        .args(["/C", "start", "netplwiz"])
+        .creation_flags(0x08000000) // CREATE_NO_WINDOW
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -202,7 +222,9 @@ pub fn run() {
             modules::mirror::create_mirror_junction,
             update_tray_language,
             set_password_never_expires,
-            clear_logs
+            clear_logs,
+            open_lusrmgr,
+            open_netplwiz
         ])
         .setup(|app| {
             // Load config to determine initial language
