@@ -57,15 +57,15 @@ jobs:
         run: npm ci
 
       - name: Build the app
-        uses: tauri-apps/tauri-action@dev
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
+          tagName: v__VERSION__ # this replaces the v0.0.0 tag with the actual version
+          releaseName: "v__VERSION__"
+          releaseBody: "See the assets below."
+          releaseDraft: true
+          prerelease: false
           args: --target x86_64-pc-windows-msvc
 
       - name: Prepare Artifacts for R2
@@ -100,19 +100,15 @@ jobs:
           
           # 3. Signature & latest.json
           Write-Host "Searching for signatures..."
-          # Look for the .sig file that corresponds to the updater package
-          # In Tauri v2 Windows, it's often the .nsis.zip.sig or .exe.sig
           $sigFile = Get-ChildItem -Path $buildDir -Filter "*.sig" -Recurse | Where-Object { $_.Name -like "*nsis.zip.sig" -or $_.Name -like "*setup.exe.sig" } | Select-Object -First 1
 
           if ($sigFile) {
              $sig = (Get-Content $sigFile.FullName -Raw).Trim()
              Write-Host "Found signature in: $($sigFile.FullName)"
              
-             # Determine the actual update file name (strip .sig)
              $updateFileName = $sigFile.Name.Replace(".sig", "")
              $updateFileFullPath = $sigFile.FullName.Replace(".sig", "")
              
-             # Final update file name for R2
              $targetUpdateName = "d2r-rust_${version}_x64-setup.update"
              if ($updateFileName.EndsWith(".zip")) { $targetUpdateName += ".zip" }
              elseif ($updateFileName.EndsWith(".exe")) { $targetUpdateName += ".exe" }
@@ -138,6 +134,7 @@ jobs:
           }
           
           if ("${{ github.ref_type }}" -eq "tag") {
+              Write-Host "Uploading artifacts to release ${{ github.ref_name }}..."
               gh release upload ${{ github.ref_name }} (Get-ChildItem "$dist/*" | Select-Object -ExpandProperty FullName) --clobber
           }
 
