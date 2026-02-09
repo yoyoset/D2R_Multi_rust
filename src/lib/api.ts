@@ -84,3 +84,7 @@ export async function openNetplwiz(): Promise<void> {
     await invoke('open_netplwiz');
 }
 
+export async function openUserSwitch(): Promise<void> {
+    await invoke('open_user_switch');
+}
+
