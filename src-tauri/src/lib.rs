@@ -27,22 +27,19 @@ fn kill_processes() -> Result<String, String> {
 
 #[tauri::command]
 fn manual_backup_save(app: tauri::AppHandle, account_id: String) -> Result<String, String> {
-    modules::file_swap::rotate_save(&app, &account_id)
-        .map_err(|e: modules::file_swap::FileSwapError| e.to_string())?;
+    modules::file_swap::rotate_save(&app, &account_id).map_err(|e| e.to_string())?;
     Ok("Backup successful".to_string())
 }
 
 #[tauri::command]
 fn manual_delete_config() -> Result<String, String> {
-    modules::file_swap::delete_config()
-        .map_err(|e: modules::file_swap::FileSwapError| e.to_string())?;
+    modules::file_swap::delete_config().map_err(|e| e.to_string())?;
     Ok("Config deleted".to_string())
 }
 
 #[tauri::command]
 fn manual_restore_config(app: tauri::AppHandle, account_id: String) -> Result<String, String> {
-    modules::file_swap::restore_snapshot(&app, &account_id)
-        .map_err(|e: modules::file_swap::FileSwapError| e.to_string())?;
+    modules::file_swap::restore_snapshot(&app, &account_id).map_err(|e| e.to_string())?;
     Ok("Restore successful".to_string())
 }
 
@@ -67,7 +64,7 @@ fn manual_launch_process(
             None,
             working_dir.as_deref(),
         )
-        .map_err(|e: anyhow::Error| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     Ok(format!("Launched PID: {}", res.process_id))
 }
@@ -90,7 +87,7 @@ fn get_windows_users(
     state
         .os
         .list_local_users(deep_scan.unwrap_or(false))
-        .map_err(|e: anyhow::Error| e.to_string())
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -103,7 +100,7 @@ fn create_windows_user(
     state
         .os
         .create_user(&username, &password, never_expires)
-        .map_err(|e: anyhow::Error| e.to_string())?;
+        .map_err(|e| e.to_string())?;
     Ok("User created successfully".to_string())
 }
 
@@ -116,7 +113,7 @@ fn set_password_never_expires(
     state
         .os
         .set_password_never_expires(&username, never_expires)
-        .map_err(|e: anyhow::Error| e.to_string())
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -134,12 +131,12 @@ fn launch_game(
 
 #[tauri::command]
 fn get_config(app: tauri::AppHandle) -> Result<modules::config::AppConfig, String> {
-    modules::config::AppConfig::load(&app).map_err(|e: anyhow::Error| e.to_string())
+    modules::config::AppConfig::load(&app).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn save_config(app: tauri::AppHandle, config: modules::config::AppConfig) -> Result<(), String> {
-    config.save(&app).map_err(|e: anyhow::Error| e.to_string())
+    config.save(&app).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -158,15 +155,17 @@ fn update_tray_language(app: tauri::AppHandle, lang: String) -> Result<(), Strin
     };
 
     if let Some(tray) = app.tray_by_id("main") {
-        let _ = tray.set_tooltip(Some(show_text)); 
+        let _ = tray.set_tooltip(Some(show_text)); // Optional: tooltip
+                                                   // Note: Tauri v2 Tray Menu Item dynamic update is tricky if we don't hold references to items.
+                                                   // However, we can rebuild the menu easily for v2.
 
         let show_i = tauri::menu::MenuItem::with_id(&app, "show", show_text, true, None::<&str>)
-            .map_err(|e: tauri::Error| e.to_string())?;
+            .map_err(|e| e.to_string())?;
         let quit_i = tauri::menu::MenuItem::with_id(&app, "quit", quit_text, true, None::<&str>)
-            .map_err(|e: tauri::Error| e.to_string())?;
+            .map_err(|e| e.to_string())?;
         let menu =
-            tauri::menu::Menu::with_items(&app, &[&show_i, &quit_i]).map_err(|e: tauri::Error| e.to_string())?;
-        tray.set_menu(Some(menu)).map_err(|e: tauri::Error| e.to_string())?;
+            tauri::menu::Menu::with_items(&app, &[&show_i, &quit_i]).map_err(|e| e.to_string())?;
+        tray.set_menu(Some(menu)).map_err(|e| e.to_string())?;
     }
     Ok(())
 }
@@ -177,7 +176,7 @@ fn open_lusrmgr() -> Result<(), String> {
         .args(["/C", "start", "lusrmgr.msc"])
         .creation_flags(0x08000000) // CREATE_NO_WINDOW
         .spawn()
-        .map_err(|e: std::io::Error| e.to_string())?;
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -187,17 +186,18 @@ fn open_netplwiz() -> Result<(), String> {
         .args(["/C", "start", "netplwiz"])
         .creation_flags(0x08000000) // CREATE_NO_WINDOW
         .spawn()
-        .map_err(|e: std::io::Error| e.to_string())?;
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
 fn open_user_switch() -> Result<(), String> {
+    // Rundll32 to open user switch screen
     std::process::Command::new("cmd")
         .args(["/C", "tsdiscon"])
         .creation_flags(0x08000000) // CREATE_NO_WINDOW
         .spawn()
-        .map_err(|e: std::io::Error| e.to_string())?;
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -208,6 +208,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            // 当检测到第二个实例启动时，激活并显示主窗口
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.show();
                 let _ = window.set_focus();
@@ -239,6 +240,7 @@ pub fn run() {
             open_user_switch
         ])
         .setup(|app| {
+            // Load config to determine initial language
             let config = modules::config::AppConfig::load(app.handle())
                 .unwrap_or_else(|_| modules::config::AppConfig::default());
             let lang = config.language.unwrap_or_else(|| "zh-CN".to_string());
