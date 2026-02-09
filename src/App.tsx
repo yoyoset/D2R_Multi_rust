@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getConfig, launchGame, saveConfig, AppConfig, Account, checkAdmin } from "./lib/api";
+import { getConfig, launchGame, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers } from "./lib/api";
 import { listen } from "@tauri-apps/api/event";
 import { Settings, Globe, LayoutGrid, Users, Wrench, Heart, ShieldCheck } from "lucide-react";
 import { SettingsModal } from "./components/modals/SettingsModal";
@@ -27,15 +27,6 @@ function App() {
     const launchLogs = useLogs((state) => state.logs);
     const clearLogs = useLogs((state) => state.clearLogs);
 
-
-    const loadConfig = async () => {
-        try {
-            const cfg = await getConfig();
-            setConfig(cfg);
-        } catch (e) {
-            console.error(e);
-        }
-    };
 
     const { show: showBlocking } = useBlockingNotification();
 
@@ -93,8 +84,8 @@ function App() {
         if (accounts.length === 0) return;
         try {
             const systemUsers = await getWindowsUsers(false);
-            const invalidUsers = accounts.filter(acc => 
-                !systemUsers.some(u => u.toLowerCase() === acc.win_user.toLowerCase()) &&
+            const invalidUsers = accounts.filter((acc: Account) => 
+                !systemUsers.some((u: string) => u.toLowerCase() === acc.win_user.toLowerCase()) &&
                 !acc.win_user.includes("\\") // Skip domain accounts as they might not be in local list
             );
 
