@@ -81,6 +81,9 @@ jobs:
               $buildDir = "src-tauri/target/release/bundle"
           }
           
+          Write-Host "Listing all files in $buildDir for debugging..."
+          Get-ChildItem -Path $buildDir -Recurse
+          
           # 1. Installer
           $exeSource = Get-ChildItem "$buildDir/nsis/*.exe" | Select-Object -First 1
           if ($exeSource) { Copy-Item $exeSource.FullName "$dist/d2r-rust_${version}_x64-setup.exe" }
@@ -92,13 +95,28 @@ jobs:
             Compress-Archive -Path $rawExe -DestinationPath "$dist/d2r-rust_${version}_x64-portable.zip" -Force
           }
           
-          # 3. Signature
+          # 3. Signature & latest.json
           Write-Host "Searching for signatures..."
-          $sigFile = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter "*.sig" -Recurse | Where-Object { $_.Name -like "*nsis.zip.sig" -or $_.Name -like "*.sig" } | Select-Object -First 1
+          # Look for the .sig file that corresponds to the updater package
+          # In Tauri v2 Windows, it's often the .nsis.zip.sig or .exe.sig
+          $sigFile = Get-ChildItem -Path $buildDir -Filter "*.sig" -Recurse | Where-Object { $_.Name -like "*nsis.zip.sig" -or $_.Name -like "*setup.exe.sig" } | Select-Object -First 1
 
           if ($sigFile) {
              $sig = (Get-Content $sigFile.FullName -Raw).Trim()
-             Write-Host "Using signature: $sig"
+             Write-Host "Found signature in: $($sigFile.FullName)"
+             
+             # Determine the actual update file name (strip .sig)
+             $updateFileName = $sigFile.Name.Replace(".sig", "")
+             $updateFileFullPath = $sigFile.FullName.Replace(".sig", "")
+             
+             # Final update file name for R2
+             $targetUpdateName = "d2r-rust_${version}_x64-setup.update"
+             if ($updateFileName.EndsWith(".zip")) { $targetUpdateName += ".zip" }
+             elseif ($updateFileName.EndsWith(".exe")) { $targetUpdateName += ".exe" }
+             
+             Write-Host "Mapping $updateFileName to $targetUpdateName"
+             Copy-Item $updateFileFullPath "$dist/$targetUpdateName"
+
              $json = @{
                 version = $version
                 notes = "Update v$version"
@@ -106,21 +124,18 @@ jobs:
                 platforms = @{
                     "windows-x86_64" = @{
                         signature = $sig
-                        url = "https://update.squareuncle.com/d2r-rust/d2r-rust_${version}_x64-setup.nsis.zip"
+                        url = "https://update.squareuncle.com/d2r-rust/$targetUpdateName"
                     }
                 }
              }
              $json | ConvertTo-Json -Depth 5 | Out-File "$dist/latest.json" -Encoding utf8
-             
-             $actualZip = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter "*nsis.zip" -Recurse | Select-Object -First 1
-             if ($actualZip) { Copy-Item $actualZip.FullName "$dist/d2r-rust_${version}_x64-setup.nsis.zip" }
           } else {
-             Write-Error "CRITICAL: No .sig file found. Build failed to sign."
+             Write-Error "CRITICAL: No valid .sig file found for updater. Build failed to sign."
              exit 1
           }
           
           if ("${{ github.ref_type }}" -eq "tag") {
-              gh release upload ${{ github.ref_name }} "$dist/d2r-rust_${version}_x64-setup.exe" "$dist/d2r-rust_${version}_x64-setup.nsis.zip" --clobber
+              gh release upload ${{ github.ref_name }} (Get-ChildItem "$dist/*" | Select-Object -ExpandProperty FullName) --clobber
           }
 
       - name: Upload to Cloudflare R2
@@ -128,5 +143,6 @@ jobs:
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
           rclone copy dist_r2 r2:d2r-rust-updates/d2r-rust --progress --s3-no-check-bucket
+          # Maintain 'latest' alias for manual downloads
           rclone copyto "dist_r2/d2r-rust_${version}_x64-setup.exe" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-setup.exe" --s3-no-check-bucket
           rclone copyto "dist_r2/d2r-rust_${version}_x64-portable.zip" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-portable.zip" --s3-no-check-bucket
