@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Account, invoke } from '../../lib/api';
 import { Button } from '../ui/Button';
-import { ShieldAlert, Trash, Play, Skull, FolderPlus, MonitorSmartphone, Settings2 } from 'lucide-react';
+import { ShieldAlert, Trash, Play, Skull, FolderPlus, MonitorSmartphone, Settings2, User } from 'lucide-react';
 import MirrorModal from '../modals/MirrorModal';
 
 interface ManualToolsProps {
