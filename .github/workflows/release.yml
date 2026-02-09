@@ -128,7 +128,7 @@ jobs:
                 platforms = @{
                     "windows-x86_64" = @{
                         signature = $sig
-                        # IMPORTANT: Tauri v2 updater on Windows expects a .zip archive
+                        # Tauri v2 updater expects a .zip or .msi
                         url = "https://update.squareuncle.com/d2r-rust/d2r-rust_${version}_x64-setup.nsis.zip"
                     }
                 }
@@ -139,7 +139,11 @@ jobs:
              $actualZip = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter "*nsis.zip" -Recurse | Select-Object -First 1
              if ($actualZip) {
                  Copy-Item $actualZip.FullName "$dist/d2r-rust_${version}_x64-setup.nsis.zip"
+                 Write-Host "Prepared NSIS ZIP for updater: $($actualZip.Name)"
              }
+          } else {
+             Write-Error "CRITICAL: Signature file (.sig) not found even with updater feature enabled. Check build logs for __TAURI_BUNDLE_TYPE errors."
+             exit 1
           }
           
           # 4. Upload Assets to GitHub Release
