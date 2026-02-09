@@ -132,19 +132,26 @@ jobs:
           }
           
           # 3. Signature Resolution
-          # Search for .sig files recursively in the target directory
-          Write-Host "Searching for signature files..."
-          $sigFiles = Get-ChildItem -Path "src-tauri/target" -Filter "*.sig" -Recurse
+          # Search for .sig files everywhere in the workspace to be 100% sure
+          Write-Host "Searching for all .sig files in workspace..."
+          $sigFiles = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter "*.sig" -Recurse
           foreach ($f in $sigFiles) { Write-Host "Found sig file: $($f.FullName)" }
           
-          $sigFile = $sigFiles | Select-Object -First 1
+          # Prioritize the setup.exe.sig or nsis.zip.sig
+          $sigFile = $sigFiles | Where-Object { $_.Name -match "setup.exe.sig" -or $_.Name -match "nsis.zip.sig" } | Select-Object -First 1
+          
+          if (!$sigFile) {
+              $sigFile = $sigFiles | Select-Object -First 1
+          }
 
           if ($sigFile) {
              $sig = Get-Content $sigFile.FullName -Raw
              $sig = $sig.Trim()
-             Write-Host "Using signature: $sig"
+             Write-Host "Using signature from $($sigFile.Name)"
+             Write-Host "Signature content: $sig"
              
              # Generate latest.json for R2
+             # Note: url must match exactly where the file will be on R2
              $json = @{
                 version = $version
                 notes = "Update v$version"
@@ -158,8 +165,9 @@ jobs:
              }
              $json | ConvertTo-Json -Depth 5 | Out-File "$dist/latest.json" -Encoding utf8
              Write-Host "Generated latest.json in $dist"
+             cat "$dist/latest.json"
           } else {
-             Write-Error "Signature file (.sig) not found! Build might not be signed. Ensure TAURI_SIGNING_PRIVATE_KEY is set."
+             Write-Error "CRITICAL: No .sig files found anywhere! Tauri signature generation failed. Check TAURI_SIGNING_PRIVATE_KEY."
              exit 1
           }
           
@@ -176,9 +184,10 @@ jobs:
           
           # Sync everything in dist_r2 to R2 (including latest.json if it exists)
           Write-Host "Syncing all artifacts to R2..."
+          # Force upload latest.json separately if needed to ensure it's there
           rclone copy dist_r2 r2:d2r-rust-updates/d2r-rust --progress --s3-no-check-bucket
           
           # Create "latest" copies for the website download buttons
           Write-Host "Creating 'latest' shortcuts on R2..."
-          rclone copyto "dist_r2/d2r-rust_${version}_x64-setup.exe" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-setup.exe" --s3-no-check-bucket
-          rclone copyto "dist_r2/d2r-rust_${version}_x64-portable.zip" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-portable.zip" --s3-no-check-bucket
+          rclone copyto "$dist_r2/d2r-rust_${version}_x64-setup.exe" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-setup.exe" --s3-no-check-bucket
+          rclone copyto "$dist_r2/d2r-rust_${version}_x64-portable.zip" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-portable.zip" --s3-no-check-bucket
