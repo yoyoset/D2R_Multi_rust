@@ -9,6 +9,9 @@
     "core:default",
     "opener:default",
     "core:window:allow-show",
-    "core:window:allow-set-focus"
+    "core:window:allow-set-focus",
+    "updater:default",
+    "dialog:default",
+    "single-instance:default"
   ]
 }
