@@ -40,7 +40,6 @@ jobs:
           if (!(Test-Path $rcloneConfigDir)) { New-Item -ItemType Directory -Force -Path $rcloneConfigDir }
           $rcloneConf = "$rcloneConfigDir\rclone.conf"
           
-          # Added no_check_bucket = true to config to prevent CreateBucket/HeadBucket calls
           $configContent = @"
           [r2]
           type = s3
@@ -53,19 +52,36 @@ jobs:
           "@
           
           Set-Content -Path $rcloneConf -Value $configContent
-          Write-Host "Rclone config created at $rcloneConf"
 
       - name: Install dependencies (npm)
         run: npm ci
+
+      - name: Sanitize Secrets
+        shell: pwsh
+        run: |
+          # Use regex to strip ALL whitespace including newlines from the private key
+          $rawKey = @"
+          ${{ secrets.TAURI_PRIVATE_KEY }}
+          "@
+          $cleanKey = $rawKey -replace '\s+', ''
+          echo "TAURI_CLEAN_KEY=$cleanKey" >> $env:GITHUB_ENV
+          
+          # Trim only leading/trailing from password as inner spaces might be intentional (though unlikely here)
+          $rawPass = @"
+          ${{ secrets.TAURI_KEY_PASSWORD }}
+          "@
+          $cleanPass = $rawPass.Trim()
+          echo "TAURI_CLEAN_PASSWORD=$cleanPass" >> $env:GITHUB_ENV
+          Write-Host "Secrets sanitized."
 
       - name: Build the app
         uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ env.TAURI_CLEAN_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ env.TAURI_CLEAN_PASSWORD }}
+          TAURI_PRIVATE_KEY: ${{ env.TAURI_CLEAN_KEY }}
+          TAURI_KEY_PASSWORD: ${{ env.TAURI_CLEAN_PASSWORD }}
         with:
           args: --target x86_64-pc-windows-msvc
 
@@ -73,54 +89,34 @@ jobs:
         shell: pwsh
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
-          Write-Host "Detected version: $version"
-          
           $dist = "dist_r2"
           if (!(Test-Path $dist)) { New-Item -ItemType Directory -Force -Path $dist }
           
-          # Dynamic Path Resolution
-          $basePath = "src-tauri/target/release/bundle"
           $targetPath = "src-tauri/target/x86_64-pc-windows-msvc/release/bundle"
-          
           if (Test-Path $targetPath) {
               $buildDir = $targetPath
-          } elseif (Test-Path $basePath) {
-              $buildDir = $basePath
           } else {
-              Write-Error "Could not find bundle directory"
-              exit 1
+              $buildDir = "src-tauri/target/release/bundle"
           }
           
-          # 1. Installer (.exe)
-          $exeSource = "$buildDir/nsis/d2r-rust_${version}_x64-setup.exe"
-          $exeDest = "$dist/d2r-rust_${version}_x64-setup.exe"
-          
-          if (Test-Path $exeSource) {
-            Copy-Item $exeSource $exeDest
-          } else {
-            $anyExe = Get-ChildItem "$buildDir/nsis/*.exe" | Select-Object -First 1
-            if ($anyExe) { Copy-Item $anyExe.FullName $exeDest }
-          }
+          # 1. Installer
+          $exeSource = Get-ChildItem "$buildDir/nsis/*.exe" | Select-Object -First 1
+          if ($exeSource) { Copy-Item $exeSource.FullName "$dist/d2r-rust_${version}_x64-setup.exe" }
 
-          # 2. Portable (.zip) - Needed for Tauri v2 Updater
-          $rawExeDir = Split-Path $buildDir -Parent
-          $rawExe = "$rawExeDir/d2r-rust.exe"
-          $zipDest = "$dist/d2r-rust_${version}_x64-portable.zip"
-          
+          # 2. Portable
+          $rawExe = "src-tauri/target/x86_64-pc-windows-msvc/release/d2r-rust.exe"
+          if (!(Test-Path $rawExe)) { $rawExe = "src-tauri/target/release/d2r-rust.exe" }
           if (Test-Path $rawExe) {
-            Compress-Archive -Path $rawExe -DestinationPath $zipDest -Force
+            Compress-Archive -Path $rawExe -DestinationPath "$dist/d2r-rust_${version}_x64-portable.zip" -Force
           }
           
-          # 3. Signature Resolution
+          # 3. Signature
           Write-Host "Searching for signatures..."
-          $sigFiles = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter "*.sig" -Recurse
-          $sigFile = $sigFiles | Where-Object { $_.Name -like "*nsis.zip.sig" -or $_.Name -like "*.sig" } | Select-Object -First 1
+          $sigFile = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter "*.sig" -Recurse | Where-Object { $_.Name -like "*nsis.zip.sig" -or $_.Name -like "*.sig" } | Select-Object -First 1
 
           if ($sigFile) {
              $sig = (Get-Content $sigFile.FullName -Raw).Trim()
              Write-Host "Using signature: $sig"
-             
-             # Generate latest.json
              $json = @{
                 version = $version
                 notes = "Update v$version"
@@ -128,27 +124,21 @@ jobs:
                 platforms = @{
                     "windows-x86_64" = @{
                         signature = $sig
-                        # Tauri v2 updater expects a .zip or .msi
                         url = "https://update.squareuncle.com/d2r-rust/d2r-rust_${version}_x64-setup.nsis.zip"
                     }
                 }
              }
              $json | ConvertTo-Json -Depth 5 | Out-File "$dist/latest.json" -Encoding utf8
              
-             # Also copy the actual zip file to dist
              $actualZip = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter "*nsis.zip" -Recurse | Select-Object -First 1
-             if ($actualZip) {
-                 Copy-Item $actualZip.FullName "$dist/d2r-rust_${version}_x64-setup.nsis.zip"
-                 Write-Host "Prepared NSIS ZIP for updater: $($actualZip.Name)"
-             }
+             if ($actualZip) { Copy-Item $actualZip.FullName "$dist/d2r-rust_${version}_x64-setup.nsis.zip" }
           } else {
-             Write-Error "CRITICAL: Signature file (.sig) not found even with updater feature enabled. Check build logs for __TAURI_BUNDLE_TYPE errors."
+             Write-Error "CRITICAL: No .sig file found. Build failed to sign."
              exit 1
           }
           
-          # 4. Upload Assets to GitHub Release
           if ("${{ github.ref_type }}" -eq "tag") {
-              gh release upload ${{ github.ref_name }} $exeDest "$dist/d2r-rust_${version}_x64-setup.nsis.zip" --clobber
+              gh release upload ${{ github.ref_name }} "$dist/d2r-rust_${version}_x64-setup.exe" "$dist/d2r-rust_${version}_x64-setup.nsis.zip" --clobber
           }
 
       - name: Upload to Cloudflare R2
