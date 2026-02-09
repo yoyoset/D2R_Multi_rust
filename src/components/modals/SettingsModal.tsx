@@ -147,7 +147,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <Palette size={14} className="text-zinc-500" />
-                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest text-[10px]">
+                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                                     {t('appearance')}
                                 </label>
                             </div>
@@ -192,7 +192,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <ShieldAlert size={14} className="text-zinc-500" />
-                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest text-[10px]">
+                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                                     {t('advanced_settings')}
                                 </label>
                             </div>
@@ -242,7 +242,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <Info size={14} className="text-zinc-500" />
-                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest text-[10px]">
+                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                                     {t('about')}
                                 </label>
                             </div>
