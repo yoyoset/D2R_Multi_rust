@@ -84,15 +84,45 @@ function App() {
         if (accounts.length === 0) return;
         try {
             const systemUsers = await getWindowsUsers(false);
-            const invalidUsers = accounts.filter((acc: Account) => 
-                !systemUsers.some((u: string) => u.toLowerCase() === acc.win_user.toLowerCase()) &&
-                !acc.win_user.includes("\\") // Skip domain accounts as they might not be in local list
-            );
+            const lowerSystemUsers = systemUsers.map(u => u.toLowerCase());
+            
+            const invalidUsers = accounts.filter((acc: Account) => {
+                const winUser = acc.win_user.toLowerCase();
+                
+                // Check if exists in any form (short or long)
+                const exists = lowerSystemUsers.some(u => {
+                    if (u === winUser) return true;
+                    // Handle .\user or MACHINE\user vs user
+                    const uParts = u.split("\\");
+                    const winParts = winUser.split("\\");
+                    const uShort = uParts[uParts.length - 1];
+                    const winShort = winParts[winParts.length - 1];
+                    
+                    if (uShort === winShort) {
+                        // If one is qualified and the other isn't, or both are, but shorts match
+                        // For local validation, matching short name is usually enough
+                        return true;
+                    }
+                    return false;
+                });
+
+                if (exists) return false;
+
+                // If not found in system list:
+                // 1. If it's a simple name (no backslash), it's definitely missing.
+                // 2. If it starts with .\ , it's a local name and it's missing.
+                // 3. Otherwise (e.g. DOMAIN\user), we skip warning to avoid false positives 
+                //    since domain accounts might not appear in local enum.
+                if (!acc.win_user.includes("\\") || acc.win_user.startsWith(".\\")) {
+                    return true;
+                }
+                return false;
+            });
 
             if (invalidUsers.length > 0) {
                 const names = invalidUsers.map(u => u.win_user).join(", ");
                 addLog({ 
-                    message: `检测到失效的系统用户: ${names}。这些账户在系统中不存在，可能已被删除。`, 
+                    message: `检测到失效的系统用户: ${names}。这些账户在系统中不存在，请确认是否已手动删除或重命名。`, 
                     level: 'warn' 
                 });
                 
