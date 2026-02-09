@@ -56,32 +56,14 @@ jobs:
       - name: Install dependencies (npm)
         run: npm ci
 
-      - name: Sanitize Secrets
-        shell: pwsh
-        run: |
-          # Use regex to strip ALL whitespace including newlines from the private key
-          $rawKey = @"
-          ${{ secrets.TAURI_PRIVATE_KEY }}
-          "@
-          $cleanKey = $rawKey -replace '\s+', ''
-          echo "TAURI_CLEAN_KEY=$cleanKey" >> $env:GITHUB_ENV
-          
-          # Trim only leading/trailing from password as inner spaces might be intentional (though unlikely here)
-          $rawPass = @"
-          ${{ secrets.TAURI_KEY_PASSWORD }}
-          "@
-          $cleanPass = $rawPass.Trim()
-          echo "TAURI_CLEAN_PASSWORD=$cleanPass" >> $env:GITHUB_ENV
-          Write-Host "Secrets sanitized."
-
       - name: Build the app
         uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ env.TAURI_CLEAN_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ env.TAURI_CLEAN_PASSWORD }}
-          TAURI_PRIVATE_KEY: ${{ env.TAURI_CLEAN_KEY }}
-          TAURI_KEY_PASSWORD: ${{ env.TAURI_CLEAN_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
           args: --target x86_64-pc-windows-msvc
 
