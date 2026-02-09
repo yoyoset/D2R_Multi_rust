@@ -79,22 +79,15 @@ jobs:
           if (!(Test-Path $dist)) { New-Item -ItemType Directory -Force -Path $dist }
           
           # Dynamic Path Resolution
-          # When using --target, artifacts are in src-tauri/target/x86_64-pc-windows-msvc/release/bundle
-          # Otherwise they are in src-tauri/target/release/bundle
-          
           $basePath = "src-tauri/target/release/bundle"
           $targetPath = "src-tauri/target/x86_64-pc-windows-msvc/release/bundle"
           
           if (Test-Path $targetPath) {
               $buildDir = $targetPath
-              Write-Host "Found build artifacts in TARGET override path: $buildDir"
           } elseif (Test-Path $basePath) {
               $buildDir = $basePath
-              Write-Host "Found build artifacts in DEFAULT path: $buildDir"
           } else {
-              Write-Error "Could not find bundle directory in either $targetPath or $basePath"
-              # Debug output if missing
-              Get-ChildItem "src-tauri/target" -Recurse -Depth 3 | Select-Object FullName
+              Write-Error "Could not find bundle directory"
               exit 1
           }
           
@@ -104,54 +97,30 @@ jobs:
           
           if (Test-Path $exeSource) {
             Copy-Item $exeSource $exeDest
-            Write-Host "Copied EXE to $exeDest"
           } else {
-            # Robust fallback search
             $anyExe = Get-ChildItem "$buildDir/nsis/*.exe" | Select-Object -First 1
-            if ($anyExe) {
-                Copy-Item $anyExe.FullName $exeDest
-                Write-Host "Found alternative EXE: $($anyExe.Name), copied to $exeDest"
-            } else {
-                Write-Error "EXE not found at $exeSource"
-                exit 1
-            }
+            if ($anyExe) { Copy-Item $anyExe.FullName $exeDest }
           }
 
-          # 2. Portable (.zip)
-          # Note: The raw exe is usually in the parent folder of the bundle
+          # 2. Portable (.zip) - Needed for Tauri v2 Updater
           $rawExeDir = Split-Path $buildDir -Parent
           $rawExe = "$rawExeDir/d2r-rust.exe"
           $zipDest = "$dist/d2r-rust_${version}_x64-portable.zip"
           
           if (Test-Path $rawExe) {
             Compress-Archive -Path $rawExe -DestinationPath $zipDest -Force
-            Write-Host "Created Portable ZIP from $rawExe"
-          } else {
-             Write-Error "Raw EXE not found at $rawExe"
-             exit 1
           }
           
           # 3. Signature Resolution
-          # Search for .sig files everywhere in the workspace to be 100% sure
-          Write-Host "Searching for all .sig files in workspace..."
+          Write-Host "Searching for signatures..."
           $sigFiles = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter "*.sig" -Recurse
-          foreach ($f in $sigFiles) { Write-Host "Found sig file: $($f.FullName)" }
-          
-          # Prioritize the setup.exe.sig or nsis.zip.sig
-          $sigFile = $sigFiles | Where-Object { $_.Name -match "setup.exe.sig" -or $_.Name -match "nsis.zip.sig" } | Select-Object -First 1
-          
-          if (!$sigFile) {
-              $sigFile = $sigFiles | Select-Object -First 1
-          }
+          $sigFile = $sigFiles | Where-Object { $_.Name -like "*nsis.zip.sig" -or $_.Name -like "*.sig" } | Select-Object -First 1
 
           if ($sigFile) {
-             $sig = Get-Content $sigFile.FullName -Raw
-             $sig = $sig.Trim()
-             Write-Host "Using signature from $($sigFile.Name)"
-             Write-Host "Signature content: $sig"
+             $sig = (Get-Content $sigFile.FullName -Raw).Trim()
+             Write-Host "Using signature: $sig"
              
-             # Generate latest.json for R2
-             # Note: url must match exactly where the file will be on R2
+             # Generate latest.json
              $json = @{
                 version = $version
                 notes = "Update v$version"
@@ -159,35 +128,29 @@ jobs:
                 platforms = @{
                     "windows-x86_64" = @{
                         signature = $sig
-                        url = "https://update.squareuncle.com/d2r-rust/d2r-rust_${version}_x64-setup.exe"
+                        # IMPORTANT: Tauri v2 updater on Windows expects a .zip archive
+                        url = "https://update.squareuncle.com/d2r-rust/d2r-rust_${version}_x64-setup.nsis.zip"
                     }
                 }
              }
              $json | ConvertTo-Json -Depth 5 | Out-File "$dist/latest.json" -Encoding utf8
-             Write-Host "Generated latest.json in $dist"
-             cat "$dist/latest.json"
-          } else {
-             Write-Error "CRITICAL: No .sig files found anywhere! Tauri signature generation failed. Check TAURI_SIGNING_PRIVATE_KEY."
-             exit 1
+             
+             # Also copy the actual zip file to dist
+             $actualZip = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter "*nsis.zip" -Recurse | Select-Object -First 1
+             if ($actualZip) {
+                 Copy-Item $actualZip.FullName "$dist/d2r-rust_${version}_x64-setup.nsis.zip"
+             }
           }
           
-          # 4. Upload Assets to GitHub Release (if tag)
+          # 4. Upload Assets to GitHub Release
           if ("${{ github.ref_type }}" -eq "tag") {
-              Write-Host "Uploading assets to GitHub Release..."
-              gh release upload ${{ github.ref_name }} $exeDest $zipDest --clobber
+              gh release upload ${{ github.ref_name }} $exeDest "$dist/d2r-rust_${version}_x64-setup.nsis.zip" --clobber
           }
 
       - name: Upload to Cloudflare R2
         shell: pwsh
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
-          
-          # Sync everything in dist_r2 to R2 (including latest.json if it exists)
-          Write-Host "Syncing all artifacts to R2..."
-          # Force upload latest.json separately if needed to ensure it's there
           rclone copy dist_r2 r2:d2r-rust-updates/d2r-rust --progress --s3-no-check-bucket
-          
-          # Create "latest" copies for the website download buttons
-          Write-Host "Creating 'latest' shortcuts on R2..."
-          rclone copyto "$dist_r2/d2r-rust_${version}_x64-setup.exe" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-setup.exe" --s3-no-check-bucket
-          rclone copyto "$dist_r2/d2r-rust_${version}_x64-portable.zip" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-portable.zip" --s3-no-check-bucket
+          rclone copyto "dist_r2/d2r-rust_${version}_x64-setup.exe" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-setup.exe" --s3-no-check-bucket
+          rclone copyto "dist_r2/d2r-rust_${version}_x64-portable.zip" "r2:d2r-rust-updates/d2r-rust/d2r-rust_latest_x64-portable.zip" --s3-no-check-bucket
