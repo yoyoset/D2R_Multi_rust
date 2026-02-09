@@ -190,6 +190,17 @@ fn open_netplwiz() -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn open_user_switch() -> Result<(), String> {
+    // Rundll32 to open user switch screen
+    std::process::Command::new("cmd")
+        .args(["/C", "tsdiscon"])
+        .creation_flags(0x08000000) // CREATE_NO_WINDOW
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -225,7 +236,8 @@ pub fn run() {
             set_password_never_expires,
             clear_logs,
             open_lusrmgr,
-            open_netplwiz
+            open_netplwiz,
+            open_user_switch
         ])
         .setup(|app| {
             // Load config to determine initial language

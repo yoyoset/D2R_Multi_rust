@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { UserRound, Sparkles, AlertCircle, ChevronLeft, Check } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
+import { useBlockingNotification } from "../../store/useBlockingNotification";
 
 // Import Avatar Assets
 import amaImg from "../../assets/avatars/ama.png";
@@ -65,6 +66,7 @@ export const ClassAvatar = ({ cls, size = "md", className }: { cls: string; size
 export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }: AccountModalProps) {
     const { t } = useTranslation();
     const { addNotification } = useNotification();
+    const { show: showBlocking } = useBlockingNotification();
     const addLog = useLogs(state => state.addLog);
 
 
@@ -192,6 +194,34 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
             onSave(newConfig);
             addNotification('success', t('save_success') || 'Saved successfully');
             onClose();
+
+            // If a new user was actually created in the system, show the jump dialog
+            if (isCreatingNew) {
+                showBlocking(
+                    t('jump_to_login_title') || 'New User Created',
+                    t('jump_to_login_desc') || 'Switch to login screen?',
+                    [
+                        {
+                            label: t('jump_to_login_cancel') || 'Later',
+                            variant: 'outline',
+                            onClick: () => {}
+                        },
+                        {
+                            label: t('jump_to_login_btn') || 'Go to Login',
+                            variant: 'primary',
+                            onClick: async () => {
+                                try {
+                                    // Trigger Windows user switch screen
+                                    await invoke('open_user_switch');
+                                } catch (e) {
+                                    console.error("Failed to trigger user switch", e);
+                                }
+                            }
+                        }
+                    ],
+                    'info'
+                );
+            }
         } catch (e) {
             addNotification('error', `${e}`);
             addLog({ message: `保存账户失败: ${e}`, level: 'error' });

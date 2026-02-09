@@ -17,6 +17,7 @@ interface AccountManagerProps {
 const AccountManager: React.FC<AccountManagerProps> = ({ accounts, invalidAccountIds, onAdd, onEdit, onDelete }) => {
     const { t } = useTranslation();
     const [confirmDeleteId, setConfirmDeleteId] = React.useState<string | null>(null);
+    const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
     const handleDelete = (id: string) => {
         setConfirmDeleteId(null);
@@ -46,9 +47,11 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, invalidAccoun
                 {accounts.map((account) => (
                     <div
                         key={account.id}
+                        onClick={() => setSelectedId(account.id)}
                         className={cn(
-                            "flex items-center justify-between p-2.5 bg-zinc-900/20 border rounded-xl hover:bg-zinc-900/40 transition-all group",
-                            invalidAccountIds.has(account.id) ? "border-rose-500/30 bg-rose-500/5" : "border-white/5 hover:border-white/10"
+                            "flex items-center justify-between p-2.5 border rounded-xl transition-all group cursor-pointer",
+                            selectedId === account.id ? "bg-zinc-800/80 border-primary/50 shadow-lg" : "bg-zinc-900/20 border-white/5 hover:bg-zinc-900/40 hover:border-white/10",
+                            invalidAccountIds.has(account.id) ? "border-rose-500/30 bg-rose-500/5" : ""
                         )}
                     >
                         <div className="flex items-center gap-3">
