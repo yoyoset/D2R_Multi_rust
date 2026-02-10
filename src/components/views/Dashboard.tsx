@@ -73,7 +73,8 @@ const Dashboard: React.FC<DashboardProps> = ({
         if (over && active.id !== over.id) {
             const oldIndex = accounts.findIndex((a) => a.id === active.id);
             const newIndex = accounts.findIndex((a) => a.id === over.id);
-            onReorder(arrayMove(accounts, oldIndex, newIndex));
+            const newAccounts = arrayMove(accounts, oldIndex, newIndex);
+            onReorder(newAccounts);
         }
     };
 
@@ -90,9 +91,15 @@ const Dashboard: React.FC<DashboardProps> = ({
         };
 
         poll();
-        const interval = setInterval(poll, 5000);
+        // 降低轮询频率到 2s，让 UI 响应更即时
+        const interval = setInterval(poll, 2000);
         return () => clearInterval(interval);
     }, [accounts]);
+
+    const selectedAccountStatus = selectedAccountId 
+        ? accountStatuses[accounts.find(a => a.id === selectedAccountId)?.win_user || ''] 
+        : undefined;
+    const isLaunchDisabled = accounts.length === 0 || !selectedAccountId || isLaunching || selectedAccountStatus?.d2r_active || selectedAccountStatus?.bnet_active;
 
     return (
         <div className="flex flex-col h-full p-4 md:p-6 gap-4 md:gap-6 items-center w-full overflow-hidden">
@@ -105,7 +112,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     </h2>
                     <p className="text-[9px] text-zinc-500 uppercase tracking-widest pl-4">{t('entities_registered', { count: accounts.length })}</p>
                 </div>
-                <div className="flex bg-zinc-900 border border-white/5 p-1 rounded-lg">
+                <div className="flex bg-zinc-900/80 border border-white/10 p-1 rounded-lg backdrop-blur-md">
                     <button
                         onClick={() => onViewModeChange('card')}
                         className={cn("p-1.5 rounded-md transition-all", viewMode === 'card' ? "bg-zinc-800 text-primary shadow-sm" : "text-zinc-600 hover:text-zinc-300")}
@@ -168,15 +175,15 @@ const Dashboard: React.FC<DashboardProps> = ({
                     variant="solid"
                     size="lg"
                     onClick={onLaunch}
-                    disabled={accounts.length === 0 || !selectedAccountId || isLaunching}
+                    disabled={isLaunchDisabled}
                     className={cn(
                         "w-full h-12 md:h-14 text-base md:text-lg rounded-lg shadow-lg tracking-widest font-bold transition-all",
-                        (!selectedAccountId || accounts.length === 0) ? "bg-zinc-800 text-zinc-500 opacity-50 cursor-not-allowed" : "bg-primary text-white hover:opacity-90"
+                        isLaunchDisabled ? "bg-zinc-800 text-zinc-500 opacity-50 cursor-not-allowed" : "bg-primary text-white hover:opacity-90 shadow-primary/20"
                     )}
                 >
                     <div className="flex items-center gap-3">
                         <Play size={18} className={cn("transition-transform fill-current", isLaunching ? "animate-pulse" : "group-hover:translate-x-1")} />
-                        <span>{isLaunching ? t('launching') : t('launch_game')}</span>
+                        <span>{selectedAccountStatus?.d2r_active ? t('ready') : (isLaunching ? t('launching') : t('launch_game'))}</span>
                     </div>
                 </Button>
             </div>
@@ -239,6 +246,7 @@ interface SortableAccountItemProps {
 }
 
 function SortableAccountItem({ account, isInvalid, viewMode, selectedAccountId, onSelectAccount, onEdit, status }: SortableAccountItemProps) {
+    const { t } = useTranslation();
     const {
         attributes,
         listeners,
@@ -255,17 +263,19 @@ function SortableAccountItem({ account, isInvalid, viewMode, selectedAccountId, 
         opacity: isDragging ? 0.6 : 1,
     };
 
+    const isActive = status?.bnet_active || status?.d2r_active;
+
     return (
         <div
             ref={setNodeRef}
             style={style}
             onClick={() => onSelectAccount(account.id)}
             className={cn(
-                "relative rounded-xl border cursor-pointer transition-colors duration-300 group overflow-hidden flex flex-col",
+                "relative rounded-xl border cursor-pointer transition-all duration-500 group overflow-hidden flex flex-col",
                 viewMode === 'card' ? "p-3 aspect-square justify-between shadow-sm" : "p-3 flex-row items-center",
                 isInvalid ? "border-rose-500/50 bg-rose-500/5 hover:bg-rose-500/10" :
                 selectedAccountId === account.id
-                    ? 'bg-zinc-900/90 border-primary/50 shadow-lg'
+                    ? 'bg-zinc-900/90 border-primary/50 shadow-[0_0_20px_rgba(var(--color-primary),0.15)] ring-1 ring-primary/20'
                     : 'bg-zinc-900/20 border-white/5 hover:bg-zinc-900/40 hover:border-white/10'
             )}
         >
@@ -283,7 +293,8 @@ function SortableAccountItem({ account, isInvalid, viewMode, selectedAccountId, 
                     {/* Integrated Action & Status Bar (Top Right) - Card Mode Only */}
                     <div className={cn(
                         "absolute top-2 right-2 flex flex-col items-center p-1 rounded-lg bg-black/40 border border-white/5 backdrop-blur-md z-20 transition-all",
-                        "opacity-40 group-hover:opacity-100 group-hover:bg-black/60 group-hover:border-white/10"
+                        "opacity-40 group-hover:opacity-100 group-hover:bg-black/60 group-hover:border-white/10",
+                        isActive && "opacity-100 border-primary/20 bg-black/60"
                     )}>
                         <div className="flex items-center gap-1.5 mb-1 pb-1 border-b border-white/10">
                             <button
@@ -307,17 +318,18 @@ function SortableAccountItem({ account, isInvalid, viewMode, selectedAccountId, 
                     </div>
                     <div className="flex justify-between items-start w-full">
                         <div className={cn(
-                            "w-10 h-10 rounded-lg border flex items-center justify-center transition-all overflow-hidden bg-black/40",
-                            selectedAccountId === account.id ? "border-primary/30" : "border-white/5 group-hover:border-white/20"
+                            "w-10 h-10 rounded-lg border flex items-center justify-center transition-all overflow-hidden bg-black/40 relative",
+                            selectedAccountId === account.id ? "border-primary/30" : "border-white/5 group-hover:border-white/20",
+                            isActive && "border-primary/40 ring-2 ring-primary/20"
                         )}>
                             {account.avatar ? (
                                 account.avatar.length <= 3 ? (
-                                    <ClassAvatar cls={account.avatar} className="w-full h-full border-0" />
+                                    <ClassAvatar cls={account.avatar} className="w-full h-full border-0 relative z-10" />
                                 ) : (
-                                    <img src={account.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                                    <img src={account.avatar} alt="Avatar" className="w-full h-full object-cover relative z-10" />
                                 )
                             ) : (
-                                <div className="flex flex-col items-center justify-center w-full h-full bg-zinc-800/50">
+                                <div className="flex flex-col items-center justify-center w-full h-full bg-zinc-800/50 relative z-10">
                                     <User size={18} className={selectedAccountId === account.id ? "text-primary/60" : "text-zinc-700"} />
                                 </div>
                             )}
@@ -325,12 +337,19 @@ function SortableAccountItem({ account, isInvalid, viewMode, selectedAccountId, 
                     </div>
 
                     <div className="flex flex-col gap-0.5 mt-2">
-                        <span className={cn(
-                            "text-[10px] uppercase tracking-widest font-medium opacity-50",
-                            selectedAccountId === account.id ? "text-primary" : "text-zinc-500"
-                        )}>
-                            {account.win_user}
-                        </span>
+                        <div className="flex items-center justify-between">
+                            <span className={cn(
+                                "text-[10px] uppercase tracking-widest font-medium opacity-50",
+                                selectedAccountId === account.id ? "text-primary" : "text-zinc-500"
+                            )}>
+                                {account.win_user}
+                            </span>
+                            {status?.d2r_active && (
+                                <span className="text-[9px] bg-emerald-500/20 text-emerald-500 px-1 rounded font-bold animate-pulse">
+                                    RUNNING
+                                </span>
+                            )}
+                        </div>
                         <span className={cn(
                             "text-base font-bold truncate leading-tight transition-colors",
                             selectedAccountId === account.id ? "text-white" : "text-zinc-300 group-hover:text-white"
@@ -339,13 +358,16 @@ function SortableAccountItem({ account, isInvalid, viewMode, selectedAccountId, 
                         </span>
                     </div>
 
-                    {account.note && (
-                        <div className="mt-auto pt-2 border-t border-white/5">
-                            <p className="text-sm font-bold text-primary/80 truncate italic">
-                                {account.note}
-                            </p>
-                        </div>
-                    )}
+                    <div className="mt-auto pt-2 border-t border-white/5 flex items-center justify-between overflow-hidden">
+                        <p className="text-sm font-bold text-primary/80 truncate italic flex-1">
+                            {account.note}
+                        </p>
+                        {status?.bnet_active && !status?.d2r_active && (
+                            <span className="text-[8px] text-blue-400 font-bold ml-2 flex-shrink-0">
+                                BNET
+                            </span>
+                        )}
+                    </div>
                 </>
             ) : (
                 /* List Mode: Horizontal Horizontal Row */
@@ -384,8 +406,8 @@ function SortableAccountItem({ account, isInvalid, viewMode, selectedAccountId, 
                     </span>
 
                     <div className="flex items-center gap-1.5 ml-4 flex-shrink-0">
-                        <div className={cn("w-1.5 h-1.5 rounded-full", status?.bnet_active ? "bg-blue-500" : "bg-zinc-800")}></div>
-                        <div className={cn("w-1.5 h-1.5 rounded-full", status?.d2r_active ? "bg-emerald-500" : "bg-zinc-800")}></div>
+                        <div className={cn("w-1.5 h-1.5 rounded-full transition-all duration-700", status?.bnet_active ? "bg-blue-500 shadow-[0_0_8px_#3b82f6]" : "bg-zinc-800")}></div>
+                        <div className={cn("w-1.5 h-1.5 rounded-full transition-all duration-700", status?.d2r_active ? "bg-emerald-500 shadow-[0_0_8px_#10b981]" : "bg-zinc-800")}></div>
                     </div>
 
                     {/* Edit & Drag Handle in list mode */}

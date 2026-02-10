@@ -222,6 +222,20 @@ fn open_user_switch() -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn nuke_reset(app: tauri::AppHandle) -> Result<String, String> {
+    // 1. Kill everything
+    let killed = modules::process_killer::kill_all_related_processes();
+    
+    // 2. Delete global config
+    modules::file_swap::delete_config().map_err(|e| e.to_string())?;
+    
+    // 3. Clear all snapshots
+    modules::file_swap::clear_all_snapshots(&app).map_err(|e| e.to_string())?;
+    
+    Ok(format!("Nuke complete: {} processes killed. All state cleared.", killed))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -243,6 +257,7 @@ pub fn run() {
             get_config,
             save_config,
             kill_processes,
+            nuke_reset,
             manual_backup_save,
             manual_delete_config,
             manual_restore_config,

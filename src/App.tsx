@@ -44,6 +44,11 @@ function App() {
                     t('update_available_title', { version: update.version }) + "\n\n" + t('update_desc'),
                     [
                         {
+                            label: t('cancel'),
+                            variant: 'outline',
+                            onClick: () => {}
+                        },
+                        {
                             label: t('update_manual'),
                             variant: 'outline',
                             onClick: () => {
@@ -56,19 +61,9 @@ function App() {
                             label: t('update_auto'),
                             variant: 'primary',
                             onClick: async () => {
-                                // Close is handled by wrapper
                                 try {
-                                    // Feedback
-                                    // addNotification('info', t('downloading')); 
-                                    // We need to access addNotification from store here, which we have in component scope
-                                    // But to keep it clean, we can just invoke the promise. 
-                                    // Actually the onClick in component handles the async await.
                                     await update.downloadAndInstall();
-                                    // Success feedback handled by component? No, we need to do it here.
-                                    // But addNotification variable is available in scope? Yes.
                                 } catch (e) {
-                                    throw e; // Let wrapper handle error? Wrapper just closes.
-                                    // We should handle error feedback here.
                                     console.error(e);
                                 }
                             }

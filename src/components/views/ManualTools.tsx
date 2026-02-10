@@ -11,11 +11,26 @@ interface ManualToolsProps {
     selectedAccountId: string | null;
 }
 
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Account, invoke } from '../../lib/api';
+import { Button } from '../ui/Button';
+import { ShieldAlert, Trash, Play, Skull, FolderPlus, MonitorSmartphone, Settings2, User, ChevronDown, ChevronUp } from 'lucide-react';
+import MirrorModal from '../modals/MirrorModal';
+import { cn } from '../../lib/utils';
+import { useBlockingNotification } from '../../store/useBlockingNotification';
+
+interface ManualToolsProps {
+    accounts: Account[];
+    selectedAccountId: string | null;
+}
+
 const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }) => {
     const { t } = useTranslation();
     const [log, setLog] = useState<any[]>([]);
     const [isMirrorOpen, setIsMirrorOpen] = useState(false);
     const [isLogsExpanded, setIsLogsExpanded] = useState(true);
+    const { show: showBlocking } = useBlockingNotification();
 
     const addLog = (message: string, level: 'info' | 'success' | 'error' = 'info') => {
         setLog(prev => [{
@@ -35,6 +50,33 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
             addLog(`✖ Error: ${e}`, 'error');
             throw e;
         }
+    };
+
+    const handleNukeReset = () => {
+        showBlocking(
+            t('nuke_confirm_title'),
+            t('nuke_confirm_desc'),
+            [
+                {
+                    label: t('cancel'),
+                    variant: 'outline',
+                    onClick: () => addLog('Nuke reset cancelled.', 'info')
+                },
+                {
+                    label: 'NUKE IT',
+                    variant: 'danger',
+                    onClick: async () => {
+                        // For critical actions, we still use a simple prompt for the "yes" typing 
+                        // as suggested by the user "强校验，输入yes确认".
+                        const typed = window.prompt(t('nuke_confirm_desc'));
+                        if (typed?.toLowerCase() === 'yes') {
+                            await runCommand('nuke_reset');
+                        }
+                    }
+                }
+            ],
+            'warning'
+        );
     };
 
     const selectedAccount = accounts.find(a => a.id === selectedAccountId);
@@ -64,10 +106,19 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                             <FolderPlus size={16} className="mr-3 opacity-60" /> {t('mirror_title')}
                         </Button>
 
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full justify-start h-11 border-emerald-500/20 text-emerald-100/70 hover:text-emerald-400 hover:bg-emerald-500/5 text-xs"
+                            onClick={() => runCommand('open_user_switch')}
+                        >
+                            <MonitorSmartphone size={16} className="mr-3 opacity-60" /> {t('open_user_switch')}
+                        </Button>
+
                         {selectedAccount ? (
                             <Button
                                 variant="outline"
-                                className="w-full h-20 border-emerald-500/30 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 font-bold tracking-widest shadow-xl transition-all group"
+                                className="w-full h-20 border-emerald-500/30 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 font-bold tracking-widest shadow-xl transition-all group mt-2"
                                 onClick={() => runCommand('manual_launch_process', { username: selectedAccount.win_user, password: selectedAccount.win_pass })}
                             >
                                 <div className="flex flex-col items-center gap-1">
@@ -79,7 +130,7 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                                 </div>
                             </Button>
                         ) : (
-                            <div className="text-[10px] text-emerald-500/40 flex items-center justify-center border border-dashed border-emerald-500/10 rounded-xl py-8 bg-black/10 italic h-20">
+                            <div className="text-[10px] text-emerald-500/40 flex items-center justify-center border border-dashed border-emerald-500/10 rounded-xl py-8 bg-black/10 italic h-20 mt-2">
                                 {t('no_accounts_hint')}
                             </div>
                         )}
@@ -100,10 +151,10 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                         <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-start h-11 border-rose-500/20 text-rose-100/70 hover:text-rose-400 hover:bg-rose-500/5 text-xs"
+                            className="w-full justify-start h-11 border-rose-500/20 text-rose-100/70 hover:text-rose-400 hover:bg-rose-500/5 text-xs shadow-lg shadow-rose-500/5"
                             onClick={() => runCommand('kill_processes')}
                         >
-                            <Skull size={16} className="mr-3 opacity-60" /> {t('kill_processes_clashpad')}
+                            <Skull size={16} className="mr-3 opacity-60 group-hover:animate-pulse" /> {t('kill_processes_clashpad')}
                         </Button>
                         <Button
                             variant="outline"
@@ -112,14 +163,6 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                             onClick={() => runCommand('kill_mutexes')}
                         >
                             <ShieldAlert size={16} className="mr-3 opacity-60" /> {t('kill_mutex_force')}
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full justify-start h-11 border-rose-500/20 text-rose-100/70 hover:text-rose-600 hover:bg-rose-500/5 text-xs"
-                            onClick={() => runCommand('manual_delete_config')}
-                        >
-                            <Trash size={16} className="mr-3 opacity-60" /> {t('delete_global_db_nuke')}
                         </Button>
                     </div>
                 </div>
@@ -150,6 +193,14 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                             onClick={() => runCommand('open_netplwiz')}
                         >
                             <ShieldAlert size={16} className="mr-3 opacity-60" /> {t('open_adv_users')}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full justify-start h-11 border-rose-500/30 bg-rose-500/5 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 text-xs font-bold"
+                            onClick={handleNukeReset}
+                        >
+                            <Skull size={16} className="mr-3 opacity-60" /> {t('nuke_reset')}
                         </Button>
                     </div>
                 </div>

@@ -8,9 +8,14 @@ All notable changes to this project will be documented in this file.
 - **Manual Tool: Language Expansion**: Enabled full support for Traditional Chinese (TW), Japanese (JA), and Korean (KO) in the UI.
 - **Custom Language Selector**: Implemented a dark-mode styled custom dropdown to replace browser defaults for better UX.
 - **User Guide Persistence**: Added "Don't show again" option to the User Guide modal with default checked state.
+- **Process Feedback Enhancement**: "Launch" button now correctly disables if Battle.net or D2R is already active for the selected account.
+- **Visual Running Indicator**: Added avatar breathing (pulse) effect and status glow when an account is active.
+- **Nuke Tool**: Enhanced "Kill Processes" to include D2R.exe, renamed to "Nuke" for total environment cleanup.
 
 ### Changed
 - **Settings UI Refinement**: Removed the descriptive text under the "Minimize to Tray" toggle for a cleaner layout.
+- **Aesthetics Upgrade**: Improved Glassmorphism effect for all modals and UI panels with higher-fidelity borders and blurs.
+- **Status Polling**: Increased process status polling frequency to 2 seconds for snappier UI feedback.
 - **I18n Cleanup**: Synchronized and cleaned up redundant localization keys across all languages.
 
 ## [0.3.0] - 2026-02-10

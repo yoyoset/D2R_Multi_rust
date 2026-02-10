@@ -93,3 +93,13 @@ pub fn restore_snapshot(app: &AppHandle, account_id: &str) -> Result<(), FileSwa
     }
     Ok(())
 }
+
+pub fn clear_all_snapshots(app: &AppHandle) -> Result<(), FileSwapError> {
+    let snapshot_dir = get_snapshot_dir(app)?;
+    if snapshot_dir.exists() {
+        fs::remove_dir_all(&snapshot_dir)?;
+        fs::create_dir_all(&snapshot_dir)?;
+    }
+    Ok(())
+}
+
