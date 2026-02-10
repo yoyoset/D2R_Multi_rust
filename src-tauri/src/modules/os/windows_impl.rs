@@ -140,7 +140,10 @@ impl OSProvider for WindowsProvider {
                     // We can try to continue and just add to group, or report specifically.
                     tracing::info!("User {} already exists in system", username);
                 } else {
-                    return Err(anyhow!("NetUserAdd failed with status: {} (Win32 Error)", status));
+                    return Err(anyhow!(
+                        "NetUserAdd failed with status: {} (Win32 Error)",
+                        status
+                    ));
                 }
             }
 
@@ -157,9 +160,13 @@ impl OSProvider for WindowsProvider {
                 &member_info as *const _ as *const _,
                 1,
             );
-            
-            if group_status != 0 && group_status != 1320 { // 1320 is ERROR_MEMBER_IN_GROUP
-                 tracing::warn!("NetLocalGroupAddMembers failed with status: {}", group_status);
+
+            if group_status != 0 && group_status != 1320 {
+                // 1320 is ERROR_MEMBER_IN_GROUP
+                tracing::warn!(
+                    "NetLocalGroupAddMembers failed with status: {}",
+                    group_status
+                );
             }
 
             Ok(())
@@ -334,6 +341,39 @@ impl OSProvider for WindowsProvider {
                 thread_id: process_info2.dwThreadId,
             })
         }
+    }
+
+    fn is_process_running_for_user(&self, username: &str, process_names: &[&str]) -> Result<bool> {
+        let normalized_user = username.to_lowercase();
+
+        for &p_name in process_names {
+            // Remove .exe extension for Get-Process
+            let base_name = p_name.replace(".exe", "");
+
+            // Using PowerShell to get processes and their owners
+            let ps_cmd = format!(
+                "Get-Process -Name {} -IncludeUserName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty UserName",
+                base_name
+            );
+
+            let output = std::process::Command::new("powershell")
+                .args(["-NoProfile", "-Command", &ps_cmd])
+                .creation_flags(0x08000000) // CREATE_NO_WINDOW
+                .output()
+                .map_err(|e| anyhow!("Failed to execute powershell: {}", e))?;
+
+            if output.status.success() {
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                for line in stdout.lines() {
+                    // line will typically be like "PC_NAME\username" or "username"
+                    if line.to_lowercase().contains(&normalized_user) {
+                        return Ok(true);
+                    }
+                }
+            }
+        }
+
+        Ok(false)
     }
 }
 

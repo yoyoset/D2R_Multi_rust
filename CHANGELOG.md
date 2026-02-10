@@ -2,9 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.5] - 2026-02-10
+
+### Added
+
+- **Native Title Bar**: Implementation of custom window title bar with theme-consistent controls.
+- **Improved Nuke Flow**: Professional system reset modal with "yes" validation requirement.
+- **Enhanced UI Aesthetics**: Swapped theme colors for better semantic clarity (Cleanup is now Red, System Tools Blue).
+
+### Changed
+
+- **Layout Optimization**: Realigned all tool buttons to consistent heights (h-11) and fixed spacing inconsistencies.
+- **Scrolling Behavior**: Refined Dashboard scrolling priority to keep the "Launch" footer visible at all times.
+- **Dimension Reversion**: Set default and minimum window size back to 800x600 for better compatibility.
+
+### Fixed
+
+- **Language Selector**: Resolved z-index conflicts and click-through issues with the native title bar.
+- **I18n Keys**: Added missing localization strings for the advanced reset confirmation flow.
+
 ## [0.3.2] - 2026-02-10
 
 ### Added
+
 - **Manual Tool: Language Expansion**: Enabled full support for Traditional Chinese (TW), Japanese (JA), and Korean (KO) in the UI.
 - **Custom Language Selector**: Implemented a dark-mode styled custom dropdown to replace browser defaults for better UX.
 - **User Guide Persistence**: Added "Don't show again" option to the User Guide modal with default checked state.
@@ -13,6 +33,7 @@ All notable changes to this project will be documented in this file.
 - **Nuke Tool**: Added a total system reset button in the System Tools card to terminate all processes and wipe login credentials with a "yes" confirmation.
 
 ### Changed
+
 - **Settings UI Refinement**: Removed the descriptive text under the "Minimize to Tray" toggle for a cleaner layout.
 - **Aesthetics Upgrade**: Improved Glassmorphism effect for all modals and UI panels with higher-fidelity borders and blurs.
 - **Status Polling**: Increased process status polling frequency to 2 seconds for snappier UI feedback.
@@ -26,6 +47,7 @@ All notable changes to this project will be documented in this file.
 ## [0.3.0] - 2026-02-10
 
 ### Added
+
 - **Ghost Detector**: Visual ghost icon (👻) and pulse effect for accounts in config but missing from Windows system.
 - **Flame Portal Icon**: New dark-style portal icon for both installer and taskbar.
 - **CI/CD Optimization**: Restored signing password to GitHub Actions and mapped R2 artifacts to `.update` suffix.

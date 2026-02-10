@@ -28,7 +28,7 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, invalidAccoun
     };
 
     return (
-        <div className="flex flex-col h-full p-4 md:p-6 max-w-4xl mx-auto w-full overflow-hidden">
+        <div className="flex flex-col p-4 md:p-6 mx-auto w-full">
             <div className="flex justify-between items-end mb-4 flex-shrink-0 px-2">
                 <div className="flex flex-col gap-0.5">
                     <h2 className="text-lg md:text-xl font-bold text-white tracking-tight flex items-center gap-3">
@@ -43,7 +43,7 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, invalidAccoun
                 </Button>
             </div>
 
-            <div className="flex-1 overflow-y-auto min-h-0 px-2 space-y-2 pb-4 scrollbar-thin scrollbar-thumb-zinc-800">
+            <div className="flex-1 px-2 space-y-2 pb-10">
                 {accounts.map((account) => (
                     <div
                         key={account.id}

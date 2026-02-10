@@ -22,6 +22,7 @@ pub trait OSProvider: Send + Sync {
         command_line: Option<&str>,
         current_directory: Option<&str>,
     ) -> Result<ProcessLaunchResult>;
+    fn is_process_running_for_user(&self, username: &str, process_names: &[&str]) -> Result<bool>;
 }
 
 pub mod windows_impl;

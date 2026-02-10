@@ -23,7 +23,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-card border border-gray-800 rounded;
+  @apply bg-zinc-700/80 border border-white/5 rounded;
 }
 
 ::-webkit-scrollbar-thumb:hover {

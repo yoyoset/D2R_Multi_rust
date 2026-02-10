@@ -14,6 +14,7 @@ import { LanguageSelector } from "./components/ui/LanguageSelector";
 import { cn } from "./lib/utils";
 import { ToastContainer } from "./components/ui/Toast";
 import { useLogs } from "./store/useLogs";
+import TitleBar from "./components/ui/TitleBar";
 
 
 import { NotificationManager } from "./components/ui/NotificationManager";
@@ -46,7 +47,7 @@ function App() {
                         {
                             label: t('cancel'),
                             variant: 'outline',
-                            onClick: () => {}
+                            onClick: () => { }
                         },
                         {
                             label: t('update_manual'),
@@ -83,11 +84,11 @@ function App() {
         try {
             const systemUsers = await getWindowsUsers(false);
             const lowerSystemUsers = systemUsers.map(u => u.toLowerCase());
-            
+
             const invalidIds = new Set<string>();
             const invalidUsers = accounts.filter((acc: Account) => {
                 const winUser = acc.win_user.toLowerCase();
-                
+
                 // Check if exists in any form (short or long)
                 const exists = lowerSystemUsers.some(u => {
                     if (u === winUser) return true;
@@ -96,7 +97,7 @@ function App() {
                     const winParts = winUser.split("\\");
                     const uShort = uParts[uParts.length - 1];
                     const winShort = winParts[winParts.length - 1];
-                    
+
                     if (uShort === winShort) {
                         return true;
                     }
@@ -116,15 +117,15 @@ function App() {
 
             if (invalidUsers.length > 0) {
                 const names = invalidUsers.map(u => u.win_user).join(", ");
-                addLog({ 
-                    message: `检测到失效的系统用户: ${names}。这些账户在系统中不存在，请确认是否已手动删除或重命名。`, 
-                    level: 'warn' 
+                addLog({
+                    message: `检测到失效的系统用户: ${names}。这些账户在系统中不存在，请确认是否已手动删除或重命名。`,
+                    level: 'warn'
                 });
-                
+
                 showBlocking(
                     t('invalid_users_found') || '检测到失效账户',
                     (t('invalid_users_desc') || '以下账户在当前系统中不存在，请确认是否删除或重新创建：') + `\n\n${names}`,
-                    [{ label: t('confirm') || '知道了', variant: 'primary', onClick: () => {} }],
+                    [{ label: t('confirm') || '知道了', variant: 'primary', onClick: () => { } }],
                     'warning'
                 );
             }
@@ -291,9 +292,10 @@ function App() {
     };
 
     return (
-        <div className="h-screen overflow-hidden bg-zinc-950 text-gray-200 flex flex-col font-sans selection:bg-gold/30 selection:text-black">
-            <div className="fixed inset-0 bg-[url('/bg-pattern.svg')] opacity-5 pointer-events-none"></div>
+        <div className="h-screen w-full overflow-hidden bg-zinc-950 text-gray-200 flex flex-col font-sans selection:bg-gold/30 selection:text-black shadow-2xl relative">
+            <TitleBar />
 
+            <div className="fixed inset-0 bg-[url('/bg-pattern.svg')] opacity-5 pointer-events-none"></div>
 
             <SettingsModal
                 isOpen={isSettingsOpen}
@@ -307,9 +309,7 @@ function App() {
             />
             <NotificationManager />
 
-
             <AccountModal
-                // ...
                 isOpen={isAccountModalOpen}
                 onClose={() => setIsAccountModalOpen(false)}
                 config={config}
@@ -321,7 +321,7 @@ function App() {
                 onClose={() => setIsDonateOpen(false)}
             />
 
-            <header className="h-16 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md z-50 flex items-center px-6 justify-between shadow-xl">
+            <header className="h-16 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md z-50 flex items-center px-6 justify-between shadow-xl flex-shrink-0 relative">
                 <div className="flex items-center gap-8">
                     <div className="flex flex-col">
                         <span className="font-bold text-lg text-white tracking-tight leading-none">D2R <span className="text-zinc-500 font-normal">Multi</span></span>
@@ -388,7 +388,7 @@ function App() {
                 </div>
             </header>
 
-            <main className="flex-1 relative overflow-hidden min-h-0">
+            <main className="flex-1 min-h-0 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700/80 relative">
                 {currentView === 'dashboard' && (
                     <Dashboard
                         accounts={config.accounts}

@@ -88,3 +88,19 @@ export async function openUserSwitch(): Promise<void> {
     await invoke('open_user_switch');
 }
 
+export async function cleanupArchives(): Promise<string> {
+    return await invoke('cleanup_archives');
+}
+
+export async function stopBnetProcesses(): Promise<string> {
+    return await invoke('stop_bnet_processes');
+}
+
+export async function isUserProcessActive(username: string): Promise<boolean> {
+    return await invoke('is_user_process_active', { username });
+}
+
+export async function nukeReset(): Promise<string> {
+    return await invoke('nuke_reset');
+}
+

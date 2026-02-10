@@ -1,5 +1,5 @@
-use tauri::Manager;
 use std::os::windows::process::CommandExt;
+use tauri::Manager;
 mod modules;
 mod state;
 
@@ -138,7 +138,7 @@ fn get_config(app: tauri::AppHandle) -> Result<modules::config::AppConfig, Strin
 #[tauri::command]
 fn save_config(app: tauri::AppHandle, config: modules::config::AppConfig) -> Result<(), String> {
     // 1. Load full config from disk
-    let mut full_config = modules::config::AppConfig::load(&app).map_err(|e| e.to_string())?;
+    let full_config = modules::config::AppConfig::load(&app).map_err(|e| e.to_string())?;
 
     // 2. Patch sensitive fields back from full_config to the incoming redacted config
     let mut updated_config = config;
@@ -223,17 +223,45 @@ fn open_user_switch() -> Result<(), String> {
 }
 
 #[tauri::command]
+fn cleanup_archives() -> Result<String, String> {
+    modules::file_swap::cleanup_bnet_archives().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn stop_bnet_processes() -> Result<String, String> {
+    let count = modules::process_killer::kill_bnet_processes_except_game();
+    Ok(format!("Killed {} Battle.net processes", count))
+}
+
+#[tauri::command]
+fn is_user_process_active(
+    state: tauri::State<'_, state::AppState>,
+    username: String,
+) -> Result<bool, String> {
+    state
+        .os
+        .is_process_running_for_user(&username, &["D2R.exe", "Battle.net.exe"])
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn nuke_reset(app: tauri::AppHandle) -> Result<String, String> {
     // 1. Kill everything
     let killed = modules::process_killer::kill_all_related_processes();
-    
+
     // 2. Delete global config
-    modules::file_swap::delete_config().map_err(|e| e.to_string())?;
-    
+    let _ = modules::file_swap::delete_config();
+
     // 3. Clear all snapshots
-    modules::file_swap::clear_all_snapshots(&app).map_err(|e| e.to_string())?;
-    
-    Ok(format!("Nuke complete: {} processes killed. All state cleared.", killed))
+    let _ = modules::file_swap::clear_all_snapshots(&app);
+
+    // 4. Also cleanup archives for a true deep reset
+    let _ = modules::file_swap::cleanup_bnet_archives();
+
+    Ok(format!(
+        "Nuke complete: {} processes killed. All state and archives cleared.",
+        killed
+    ))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -273,7 +301,10 @@ pub fn run() {
             clear_logs,
             open_lusrmgr,
             open_netplwiz,
-            open_user_switch
+            open_user_switch,
+            cleanup_archives,
+            stop_bnet_processes,
+            is_user_process_active
         ])
         .setup(|app| {
             // Load config to determine initial language

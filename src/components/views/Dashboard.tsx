@@ -96,40 +96,62 @@ const Dashboard: React.FC<DashboardProps> = ({
         return () => clearInterval(interval);
     }, [accounts]);
 
-    const selectedAccountStatus = selectedAccountId 
-        ? accountStatuses[accounts.find(a => a.id === selectedAccountId)?.win_user || ''] 
+    const selectedAccountStatus = selectedAccountId
+        ? accountStatuses[accounts.find(a => a.id === selectedAccountId)?.win_user || '']
         : undefined;
     const isLaunchDisabled = accounts.length === 0 || !selectedAccountId || isLaunching || selectedAccountStatus?.d2r_active || selectedAccountStatus?.bnet_active;
 
     return (
-        <div className="flex flex-col h-full p-4 md:p-6 gap-4 md:gap-6 items-center w-full overflow-hidden">
-            {/* View Mode Toggle - Fixed Top */}
-            <div className="w-full max-w-5xl flex justify-between items-center sm:items-end flex-shrink-0 px-2 mt-2">
-                <div className="flex flex-col gap-0.5">
-                    <h2 className="text-lg md:text-xl font-bold text-white tracking-tight flex items-center gap-3">
-                        <div className="w-1 h-5 bg-primary rounded-full shadow-[0_0_10px_rgb(var(--color-primary)/0.5)]"></div>
-                        {t('account_sanctum')}
-                    </h2>
-                    <p className="text-[9px] text-zinc-500 uppercase tracking-widest pl-4">{t('entities_registered', { count: accounts.length })}</p>
+        <div className="flex flex-col items-center w-full p-4 md:p-6 gap-4 md:gap-6">
+            {/* Sticky Header Wrapper - Prioritizing Actions */}
+            <div className="sticky top-0 z-30 w-full flex flex-col items-center bg-zinc-950/80 backdrop-blur-lg border-b border-white/5 px-4 md:px-6 py-2 shadow-2xl">
+                {/* View Mode Toggle */}
+                <div className="w-full flex justify-between items-center sm:items-end flex-shrink-0 px-2">
+                    <div className="flex flex-col gap-0.5">
+                        <h2 className="text-lg md:text-xl font-bold text-white tracking-tight flex items-center gap-3">
+                            <div className="w-1 h-5 bg-primary rounded-full shadow-[0_0_10px_rgb(var(--color-primary)/0.5)]"></div>
+                            {t('account_sanctum')}
+                        </h2>
+                        <p className="text-[9px] text-zinc-500 uppercase tracking-widest pl-4">{t('entities_registered', { count: accounts.length })}</p>
+                    </div>
+                    <div className="flex bg-zinc-900/40 border border-white/10 p-1 rounded-lg">
+                        <button
+                            onClick={() => onViewModeChange('card')}
+                            className={cn("p-1.5 rounded-md transition-all", viewMode === 'card' ? "bg-zinc-800 text-primary shadow-sm" : "text-zinc-600 hover:text-zinc-300")}
+                        >
+                            <LayoutGrid size={14} />
+                        </button>
+                        <button
+                            onClick={() => onViewModeChange('list')}
+                            className={cn("p-1.5 rounded-md transition-all", viewMode === 'list' ? "bg-zinc-800 text-primary shadow-sm" : "text-zinc-600 hover:text-zinc-300")}
+                        >
+                            <List size={14} />
+                        </button>
+                    </div>
                 </div>
-                <div className="flex bg-zinc-900/80 border border-white/10 p-1 rounded-lg backdrop-blur-md">
-                    <button
-                        onClick={() => onViewModeChange('card')}
-                        className={cn("p-1.5 rounded-md transition-all", viewMode === 'card' ? "bg-zinc-800 text-primary shadow-sm" : "text-zinc-600 hover:text-zinc-300")}
+
+                {/* Launch Action */}
+                <div className="w-full pt-3 pb-1 px-4">
+                    <Button
+                        variant="solid"
+                        size="lg"
+                        onClick={onLaunch}
+                        disabled={isLaunchDisabled}
+                        className={cn(
+                            "w-full h-12 md:h-14 text-base md:text-lg rounded-lg shadow-lg tracking-widest font-bold transition-all",
+                            isLaunchDisabled ? "bg-zinc-800 text-zinc-500 opacity-50 cursor-not-allowed" : "bg-primary text-white hover:opacity-90 shadow-primary/20"
+                        )}
                     >
-                        <LayoutGrid size={14} />
-                    </button>
-                    <button
-                        onClick={() => onViewModeChange('list')}
-                        className={cn("p-1.5 rounded-md transition-all", viewMode === 'list' ? "bg-zinc-800 text-primary shadow-sm" : "text-zinc-600 hover:text-zinc-300")}
-                    >
-                        <List size={14} />
-                    </button>
+                        <div className="flex items-center gap-3">
+                            <Play size={18} className={cn("transition-transform fill-current", isLaunching ? "animate-pulse" : "group-hover:translate-x-1")} />
+                            <span>{selectedAccountStatus?.d2r_active ? t('ready') : (isLaunching ? t('launching') : t('launch_game'))}</span>
+                        </div>
+                    </Button>
                 </div>
             </div>
 
-            {/* Account Selection Area - Scrollable Center */}
-            <div className="flex-1 w-full max-w-6xl overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-zinc-800 pr-1 px-2">
+            {/* Account Selection Area - Visible Content */}
+            <div className="w-full shrink-0 pb-10">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -169,24 +191,6 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </DndContext>
             </div>
 
-            {/* Launch Action - Fixed Bottom */}
-            <div className="flex-shrink-0 w-full max-w-5xl border-t border-white/5 bg-zinc-950/80 backdrop-blur-sm pt-4 pb-2 z-10 px-4">
-                <Button
-                    variant="solid"
-                    size="lg"
-                    onClick={onLaunch}
-                    disabled={isLaunchDisabled}
-                    className={cn(
-                        "w-full h-12 md:h-14 text-base md:text-lg rounded-lg shadow-lg tracking-widest font-bold transition-all",
-                        isLaunchDisabled ? "bg-zinc-800 text-zinc-500 opacity-50 cursor-not-allowed" : "bg-primary text-white hover:opacity-90 shadow-primary/20"
-                    )}
-                >
-                    <div className="flex items-center gap-3">
-                        <Play size={18} className={cn("transition-transform fill-current", isLaunching ? "animate-pulse" : "group-hover:translate-x-1")} />
-                        <span>{selectedAccountStatus?.d2r_active ? t('ready') : (isLaunching ? t('launching') : t('launch_game'))}</span>
-                    </div>
-                </Button>
-            </div>
 
             {/* Atomic Launch Logs - Dashboard Integration */}
             {launchLogs.length > 0 && (
@@ -273,9 +277,9 @@ function SortableAccountItem({ account, isInvalid, viewMode, selectedAccountId, 
                 "relative rounded-xl border cursor-pointer transition-all duration-500 group overflow-hidden flex flex-col",
                 viewMode === 'card' ? "p-3 aspect-square justify-between shadow-sm" : "p-3 flex-row items-center",
                 isInvalid ? "border-rose-500/50 bg-rose-500/5 hover:bg-rose-500/10" :
-                selectedAccountId === account.id
-                    ? 'bg-zinc-900/90 border-primary/50 shadow-[0_0_20px_rgba(var(--color-primary),0.15)] ring-1 ring-primary/20'
-                    : 'bg-zinc-900/20 border-white/5 hover:bg-zinc-900/40 hover:border-white/10'
+                    selectedAccountId === account.id
+                        ? 'bg-zinc-900/90 border-primary/50 shadow-[0_0_20px_rgba(var(--color-primary),0.15)] ring-1 ring-primary/20'
+                        : 'bg-zinc-900/20 border-white/5 hover:bg-zinc-900/40 hover:border-white/10'
             )}
         >
 
