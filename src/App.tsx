@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getConfig, launchGame, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers } from "./lib/api";
 import { listen } from "@tauri-apps/api/event";
-import { Settings, Globe, LayoutGrid, Users, Wrench, Heart, ShieldCheck, BookOpen } from "lucide-react";
+import { Settings, LayoutGrid, Users, Wrench, Heart, ShieldCheck, BookOpen } from "lucide-react";
 import { SettingsModal } from "./components/modals/SettingsModal";
 import { AccountModal } from "./components/modals/AccountModal";
 import { DonateModal } from "./components/modals/DonateModal";
@@ -197,10 +197,6 @@ function App() {
             document.documentElement.style.setProperty('--color-primary', `${r} ${g} ${b}`);
         }
     }, [config.theme_color]);
-
-    const changeLanguage = (lng: string) => {
-        i18n.changeLanguage(lng);
-    };
 
     const handleCloseGuide = async (dontShowAgain?: boolean) => {
         setIsGuideOpen(false);

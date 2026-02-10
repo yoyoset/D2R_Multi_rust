@@ -246,7 +246,6 @@ interface SortableAccountItemProps {
 }
 
 function SortableAccountItem({ account, isInvalid, viewMode, selectedAccountId, onSelectAccount, onEdit, status }: SortableAccountItemProps) {
-    const { t } = useTranslation();
     const {
         attributes,
         listeners,
