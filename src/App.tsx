@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import Dashboard from "./components/views/Dashboard";
 import AccountManager from "./components/views/AccountManager";
 import ManualTools from "./components/views/ManualTools";
+import { LanguageSelector } from "./components/ui/LanguageSelector";
 import { cn } from "./lib/utils";
 import { ToastContainer } from "./components/ui/Toast";
 import { useLogs } from "./store/useLogs";
@@ -206,10 +207,20 @@ function App() {
         i18n.changeLanguage(lng);
     };
 
-    const handleCloseGuide = async () => {
+    const handleCloseGuide = async (dontShowAgain?: boolean) => {
         setIsGuideOpen(false);
-        if (!config.has_shown_guide) {
+        if (dontShowAgain === true && !config.has_shown_guide) {
             const newConfig = { ...config, has_shown_guide: true };
+            setConfig(newConfig);
+            try {
+                await saveConfig(newConfig);
+            } catch (e) {
+                console.error("Failed to save guide status", e);
+            }
+        } else if (dontShowAgain === false && config.has_shown_guide) {
+            // User unchecked it, maybe they want to see it again? 
+            // Although usually this only happens once.
+            const newConfig = { ...config, has_shown_guide: false };
             setConfig(newConfig);
             try {
                 await saveConfig(newConfig);
@@ -370,17 +381,7 @@ function App() {
                         <BookOpen size={18} />
                     </button>
 
-                    <div className="flex items-center gap-2">
-                        <Globe size={14} className="text-zinc-500" />
-                        <select
-                            className="bg-transparent text-xs text-zinc-400 outline-none cursor-pointer hover:text-zinc-200"
-                            value={i18n.language}
-                            onChange={(e) => changeLanguage(e.target.value)}
-                        >
-                            <option value="zh-CN">ZH</option>
-                            <option value="en">EN</option>
-                        </select>
-                    </div>
+                    <LanguageSelector />
 
                     <button
                         onClick={() => setIsDonateOpen(true)}

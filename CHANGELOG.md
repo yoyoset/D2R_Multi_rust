@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-02-10
+
+### Added
+- **Manual Tool: Language Expansion**: Enabled full support for Traditional Chinese (TW), Japanese (JA), and Korean (KO) in the UI.
+- **Custom Language Selector**: Implemented a dark-mode styled custom dropdown to replace browser defaults for better UX.
+- **User Guide Persistence**: Added "Don't show again" option to the User Guide modal with default checked state.
+
+### Changed
+- **Settings UI Refinement**: Removed the descriptive text under the "Minimize to Tray" toggle for a cleaner layout.
+- **I18n Cleanup**: Synchronized and cleaned up redundant localization keys across all languages.
+
+## [0.3.0] - 2026-02-10
+
+### Added
+- **Ghost Detector**: Visual ghost icon (👻) and pulse effect for accounts in config but missing from Windows system.
+- **Flame Portal Icon**: New dark-style portal icon for both installer and taskbar.
+- **CI/CD Optimization**: Restored signing password to GitHub Actions and mapped R2 artifacts to `.update` suffix.
+
+---
+
 ## [0.2.0] - 2026-02-07
 
 ### Added

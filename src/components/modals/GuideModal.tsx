@@ -1,26 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { AlertCircle, Download, CheckCircle2 } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 interface GuideModalProps {
     isOpen: boolean;
-    onClose: () => void;
+    onClose: (dontShowAgain: boolean) => void;
 }
 
 export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
     const { t } = useTranslation();
+    const [dontShowAgain, setDontShowAgain] = useState(true);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal isOpen={isOpen} onClose={() => onClose(dontShowAgain)}>
             <ModalContent className="max-w-2xl">
-                <ModalHeader onClose={onClose}>
+                <ModalHeader onClose={() => onClose(dontShowAgain)}>
                     {t('user_guide_title') || '使用手册 & 环境要求'}
                 </ModalHeader>
                 
                 <ModalBody className="space-y-6 text-zinc-300">
-                    {/* Critical Requirement Section */}
+                    {/* ... (rest of the body content remains the same) */}
                     <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-5 space-y-3">
                         <div className="flex items-center gap-3 text-rose-400">
                             <AlertCircle size={20} />
@@ -65,8 +67,27 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                     </div>
                 </ModalBody>
 
-                <ModalFooter>
-                    <Button variant="solid" onClick={onClose} className="bg-primary text-white px-8">
+                <ModalFooter className="flex justify-between items-center">
+                    <div 
+                        className="flex items-center gap-2 cursor-pointer group"
+                        onClick={() => setDontShowAgain(!dontShowAgain)}
+                    >
+                        <div className={cn(
+                            "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                            dontShowAgain ? "bg-primary border-primary" : "border-zinc-600 group-hover:border-zinc-500"
+                        )}>
+                            {dontShowAgain && (
+                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                            )}
+                        </div>
+                        <span className="text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors">
+                            {t('dont_show_again')}
+                        </span>
+                    </div>
+
+                    <Button variant="solid" onClick={() => onClose(dontShowAgain)} className="bg-primary text-white px-8">
                         {t('got_it') || '知道了'}
                     </Button>
                 </ModalFooter>
@@ -74,3 +95,4 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         </Modal>
     );
 };
+

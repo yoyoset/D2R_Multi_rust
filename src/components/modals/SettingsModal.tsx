@@ -175,7 +175,6 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
                             onClick={() => setCloseToTray(!closeToTray)}>
                             <div className="space-y-0.5">
                                 <div className="text-sm font-bold text-zinc-200">{t('setting_close_to_tray')}</div>
-                                <div className="text-[11px] text-zinc-500 pr-4 leading-tight opacity-80">{t('setting_close_to_tray_desc')}</div>
                             </div>
                             <div className={cn(
                                 "w-10 h-5 rounded-full relative transition-colors duration-200 shrink-0",

@@ -6,7 +6,7 @@ const resources = {
     "zh-CN": {
         translation: {
             "app_title": "暗黑2重制版 多开助手",
-            "version": "Rust 重写版 v0.1.0-alpha",
+            "version": "Rust 重写版 v0.3.1",
             "isolation_mode": "安全隔离引擎",
             "kill_mutex": "清理多开限制 (Mutex)",
             "add_account": "添加账号",
@@ -158,6 +158,7 @@ const resources = {
             "jump_to_login_desc": "新用户必须先登录一次，系统才会初始化用户文件夹。是否立即跳转到 Windows 登录界面进行初始化？",
             "jump_to_login_btn": "立即去初始化 (推荐)",
             "jump_to_login_cancel": "稍后手动处理",
+            "dont_show_again": "不再显示",
             "system_utils": "系统工具",
             "open_local_users": "本地用户和组",
             "open_adv_users": "高级用户面板",
@@ -167,7 +168,7 @@ const resources = {
     "en": {
         translation: {
             "app_title": "D2R Multiplay",
-            "version": "Rust Rewrite v0.1.0-alpha",
+            "version": "Rust Rewrite v0.3.1",
             "isolation_mode": "Isolation Engine",
             "kill_mutex": "Kill Mutexes",
             "add_account": "Add Account",
@@ -313,6 +314,7 @@ const resources = {
             "jump_to_login_desc": "New users must log in once for Windows to initialize their profile folders. Switch to the Windows login screen now?",
             "jump_to_login_btn": "Go to Login (Recommended)",
             "jump_to_login_cancel": "Handle Manually Later",
+            "dont_show_again": "Don't show again",
             "system_utils": "System Utilities",
             "open_local_users": "Local Users & Groups",
             "open_adv_users": "Advanced User Panel",
@@ -322,7 +324,7 @@ const resources = {
     "zh-TW": {
         translation: {
             "app_title": "暗黑2重製版 多開助手",
-            "version": "Rust 重寫版 v0.1.0-alpha",
+            "version": "Rust 重寫版 v0.3.1",
             "isolation_mode": "安全隔離引擎",
             "kill_mutex": "清理多開限制 (Mutex)",
             "add_account": "新增帳號",
@@ -349,7 +351,6 @@ const resources = {
             "launching": "正在啟动...",
             "account_sanctum": "帳號營地",
             "setting_close_to_tray": "最小化到系統托盤",
-            "setting_close_to_tray_desc": "點擊關閉按鈕時，保持應用在後台運行",
             "appearance": "外觀定制",
             "entities_registered": "{{count}} 個實體已註冊",
             "isolation_core_ready": "隔離核心已就緒",
@@ -367,7 +368,7 @@ const resources = {
     "ja": {
         translation: {
             "app_title": "D2R マルチプレイ",
-            "version": "Rust Rewrite v0.1.0-alpha",
+            "version": "Rust Rewrite v0.3.1",
             "isolation_mode": "分離エンジン",
             "kill_mutex": "多重起動制限解除 (Mutex)",
             "add_account": "アカウント追加",
@@ -375,6 +376,7 @@ const resources = {
             "launch": "起動",
             "ready": "準備完了",
             "settings": "設定",
+            "setting_close_to_tray": "システムトレイに最小化",
             "game_path": "ゲームパス (D2R.exe)",
             "dashboard": "ダッシュボード",
             "accounts": "アカウント管理",
@@ -409,7 +411,7 @@ const resources = {
     "ko": {
         translation: {
             "app_title": "D2R 멀티플레이",
-            "version": "Rust Rewrite v0.1.0-alpha",
+            "version": "Rust Rewrite v0.3.1",
             "isolation_mode": "격리 엔진",
             "kill_mutex": "다중 실행 제한 해제 (Mutex)",
             "add_account": "계정 추가",
@@ -417,6 +419,7 @@ const resources = {
             "launch": "실행",
             "ready": "준비됨",
             "settings": "설정",
+            "setting_close_to_tray": "시스템 트레이로 최소화",
             "game_path": "게임 경로 (D2R.exe)",
             "dashboard": "대시보드",
             "accounts": "계정 관리",
