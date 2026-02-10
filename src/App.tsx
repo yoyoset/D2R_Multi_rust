@@ -22,7 +22,7 @@ import { useBlockingNotification } from "./store/useBlockingNotification";
 type View = 'dashboard' | 'accounts' | 'manual';
 
 function App() {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const [config, setConfig] = useState<AppConfig>({ accounts: [], game_path: '' });
     const [invalidAccountIds, setInvalidAccountIds] = useState<Set<string>>(new Set());
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
