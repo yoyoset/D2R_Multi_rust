@@ -157,14 +157,14 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
             );
 
             if (isCreatingNew) {
-                addLog({ message: `正在尝试创建系统用户: ${winUser}`, level: 'info' });
+                addLog({ message: t('log_creating_user', { name: winUser }), level: 'info' });
                 await Promise.race([
                     createWindowsUser(winUser, winPass, passNeverExpires),
                     timeoutPromise
                 ]);
                 addNotification('success', t('user_created_success') || 'User created successfully');
             } else if (editingAccount && passNeverExpires !== editingAccount.password_never_expires) {
-                addLog({ message: `正在同步用户密码策略: ${winUser}`, level: 'info' });
+                addLog({ message: t('log_syncing_policy', { name: winUser }), level: 'info' });
                 await Promise.race([
                     invoke('set_password_never_expires', { username: winUser, neverExpires: passNeverExpires }),
                     timeoutPromise
@@ -193,22 +193,22 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
             const newConfig = { ...config, accounts: newAccounts };
             await saveConfig(newConfig);
             onSave(newConfig);
-            addNotification('success', t('save_success') || 'Saved successfully');
+            addNotification('success', t('save_success'));
             onClose();
 
             // If a new user was actually created in the system, show the jump dialog
             if (isCreatingNew) {
                 showBlocking(
-                    t('jump_to_login_title') || 'New User Created',
-                    t('jump_to_login_desc') || 'Switch to login screen?',
+                    t('jump_to_login_title'),
+                    t('jump_to_login_desc'),
                     [
                         {
-                            label: t('jump_to_login_cancel') || 'Later',
+                            label: t('jump_to_login_cancel'),
                             variant: 'outline',
-                            onClick: () => {}
+                            onClick: () => { }
                         },
                         {
-                            label: t('jump_to_login_btn') || 'Go to Login',
+                            label: t('jump_to_login_btn'),
                             variant: 'primary',
                             onClick: async () => {
                                 try {
@@ -225,7 +225,7 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
             }
         } catch (e) {
             addNotification('error', `${e}`);
-            addLog({ message: `保存账户失败: ${e}`, level: 'error' });
+            addLog({ message: t('log_save_account_failed', { error: String(e) }), level: 'error' });
         } finally {
             setIsSaving(false);
         }
@@ -272,8 +272,8 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
                                             onClick={() => { setIsCreatingNew(!isCreatingNew); setIsManualInput(true); }}
                                             className={cn(
                                                 "text-[10px] px-2 py-1 rounded transition-all flex items-center gap-1",
-                                                isCreatingNew 
-                                                    ? "text-zinc-400 hover:text-white underline underline-offset-4" 
+                                                isCreatingNew
+                                                    ? "text-zinc-400 hover:text-white underline underline-offset-4"
                                                     : "bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 font-bold shadow-[0_0_10px_rgb(var(--color-primary)/0.2)]"
                                             )}
                                         >
@@ -391,10 +391,10 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
                                 <div className="flex items-start gap-2 p-3 bg-amber-500/5 border border-amber-500/10 rounded-lg text-xs text-amber-500/80 leading-relaxed">
                                     <AlertCircle size={14} className="mt-0.5 shrink-0" />
                                     <span>
-                                        {t('pin_warning') || "Real Login Password required. NO PIN/Hello."}
+                                        {t('pin_warning')}
                                         {isHost && (
                                             <span className="block mt-0.5 text-green-500 font-bold">
-                                                {t('host_no_pass_hint') || "Current User [Host] doesn't need password."}
+                                                {t('host_no_pass_hint')}
                                             </span>
                                         )}
                                     </span>

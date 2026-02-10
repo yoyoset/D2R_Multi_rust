@@ -1,6 +1,6 @@
 export default {
     "app_title": "D2R マルチプレイ",
-    "version": "Rust Rewrite v0.3.2",
+    "version": "Rust Rewrite v0.3.6",
     "isolation_mode": "分離エンジン",
     "kill_mutex": "多重起動制限解除 (Mutex)",
     "add_account": "アカウント追加",
@@ -44,4 +44,10 @@ export default {
     "open_local_users": "ローカルユーザーとグループ",
     "open_adv_users": "詳細ユーザーパネル",
     "launch_tools": "ツール",
+    "archive_conflict_title": "アーカイブの競合",
+    "archive_conflict_desc": "product.dbが既に存在します（権限の問題またはプロセスが実行中の可能性があります）。アクションを選択してください：",
+    "delete_and_continue": "削除して続行",
+    "reset_and_continue": "リセットして続行",
+    "conflict_resolve_failed": "競合の解決に失敗しました: {{error}}",
+    "double_cleanup_failed": "ダブルクリーンアップに失敗しました: {{error}}",
 };

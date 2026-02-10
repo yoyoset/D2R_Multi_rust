@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getConfig, launchGame, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers } from "./lib/api";
+import { getConfig, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers } from "./lib/api";
 import { listen } from "@tauri-apps/api/event";
 import { Settings, LayoutGrid, Users, Wrench, Heart, ShieldCheck, BookOpen } from "lucide-react";
 import { SettingsModal } from "./components/modals/SettingsModal";
@@ -18,6 +18,7 @@ import TitleBar from "./components/ui/TitleBar";
 
 
 import { NotificationManager } from "./components/ui/NotificationManager";
+import { useLaunchSequence } from "./hooks/useLaunchSequence";
 import { useBlockingNotification } from "./store/useBlockingNotification";
 
 type View = 'dashboard' | 'accounts' | 'manual';
@@ -179,7 +180,6 @@ function App() {
 
     // Dashboard State
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
-    const [isLaunching, setIsLaunching] = useState(false);
 
     // Modals
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -211,6 +211,7 @@ function App() {
             }
         } else if (dontShowAgain === false && config.has_shown_guide) {
             // User unchecked it, maybe they want to see it again? 
+            // User unchecked it, maybe they want to see it again?
             // Although usually this only happens once.
             const newConfig = { ...config, has_shown_guide: false };
             setConfig(newConfig);
@@ -222,27 +223,14 @@ function App() {
         }
     };
 
+    const { isLaunching, performLaunch } = useLaunchSequence();
+
     const handleLaunch = async () => {
         if (!selectedAccountId) return;
         const account = config.accounts.find(a => a.id === selectedAccountId);
         if (!account) return;
 
-        try {
-            setIsLaunching(true);
-            await launchGame(account, "");
-        } catch (e) {
-            const errorMsg = String(e);
-            const displayMsg = errorMsg.includes('BNET_NOT_FOUND')
-                ? t('bnet_not_found')
-                : `${t('launch_failed')}: ${errorMsg}`;
-            addLog({
-                message: displayMsg,
-                level: 'error',
-                category: 'launch'
-            });
-        } finally {
-            setIsLaunching(false);
-        }
+        await performLaunch(account);
     };
 
     const handleAddAccount = () => {
@@ -251,13 +239,13 @@ function App() {
         // Log not strictly necessary for "opening" add, but good for consistency if user wants "click" logs.
         // But usually we log "Actions". Opening a modal is a passive action.
         // However, user specifically asked for "Clicking Edit".
-        addLog({ message: `打开添加账号窗口`, level: 'info' });
+        addLog({ message: t('log_open_add_account'), level: 'info' });
     };
 
     const handleEditAccount = (acc: Account) => {
         setEditingAccount(acc);
         setIsAccountModalOpen(true);
-        addLog({ message: `编辑账号: ${acc.win_user}`, level: 'info' });
+        addLog({ message: t('log_edit_account', { name: acc.win_user }), level: 'info' });
     };
 
     const handleDeleteAccount = async (id: string) => {
@@ -267,7 +255,7 @@ function App() {
         setConfig(newConfig);
         try {
             await saveConfig(newConfig);
-            addLog({ message: `删除账号: ${target?.win_user || id}`, level: 'warn' });
+            addLog({ message: t('log_delete_account', { name: target?.win_user || id }), level: 'warn' });
         } catch (e) { console.error(e); }
     };
 

@@ -1,6 +1,6 @@
 export default {
     "app_title": "D2R Multiplay",
-    "version": "Rust Rewrite v0.3.5",
+    "version": "Rust Rewrite v0.3.6",
     "isolation_mode": "Isolation Engine",
     "kill_mutex": "Kill Mutexes",
     "add_account": "Add Account",
@@ -168,5 +168,18 @@ export default {
     "jump_to_login_desc": "New users must log in once for Windows to initialize their profile folders. Switch to the Windows login screen now?",
     "jump_to_login_btn": "Go to Login (Recommended)",
     "jump_to_login_cancel": "Handle Manually Later",
-    "dont_show_again": "Don't show again"
+    "dont_show_again": "Don't show again",
+    "archive_conflict_title": "Archive Conflict",
+    "archive_conflict_desc": "product.db already exists at the target location (likely due to permissions or a running process). Choose action:",
+    "delete_and_continue": "Delete & Continue",
+    "reset_and_continue": "Reset & Continue",
+    "conflict_resolve_failed": "Failed to resolve conflict: {{error}}",
+    "double_cleanup_failed": "Double cleanup failed: {{error}}",
+    "log_open_add_account": "Opened add account window",
+    "log_edit_account": "Editing account: {{name}}",
+    "log_delete_account": "Deleted account: {{name}}",
+    "err_timeout_admin": "System response timeout. Please confirm admin rights or if the account is locked.",
+    "log_creating_user": "Attempting to create system user: {{name}}",
+    "log_syncing_policy": "Syncing user password policy: {{name}}",
+    "log_save_account_failed": "Failed to save account: {{error}}",
 };

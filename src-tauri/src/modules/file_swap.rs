@@ -11,6 +11,8 @@ pub enum FileSwapError {
     EnvError,
     #[error("IO Error: {0}")]
     Io(#[from] std::io::Error),
+    #[error("Conflict: product.db still exists")]
+    Conflict,
 }
 
 fn get_bnet_config_path() -> Result<PathBuf, FileSwapError> {
@@ -87,6 +89,12 @@ pub fn delete_config() -> Result<(), FileSwapError> {
 /// Restore a specific account's snapshot to the active position
 pub fn restore_snapshot(app: &AppHandle, account_id: &str) -> Result<(), FileSwapError> {
     let target_db = get_bnet_config_path()?;
+
+    // Task 2: Critical check before restore
+    if target_db.exists() {
+        return Err(FileSwapError::Conflict);
+    }
+
     let snapshot_path = get_snapshot_path(app, account_id)?;
 
     if snapshot_path.exists() {
@@ -95,6 +103,15 @@ pub fn restore_snapshot(app: &AppHandle, account_id: &str) -> Result<(), FileSwa
         }
         fs::copy(&snapshot_path, &target_db)?;
         tracing::debug!("Restored snapshot: {:?}", snapshot_path);
+    }
+    Ok(())
+}
+
+/// Delete a specific account's snapshot file
+pub fn delete_snapshot(app: &AppHandle, account_id: &str) -> Result<(), FileSwapError> {
+    let snapshot_path = get_snapshot_path(app, account_id)?;
+    if snapshot_path.exists() {
+        fs::remove_file(snapshot_path)?;
     }
     Ok(())
 }

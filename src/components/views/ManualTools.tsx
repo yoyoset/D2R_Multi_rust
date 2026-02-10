@@ -118,25 +118,28 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                         </Button>
 
                         {selectedAccount ? (
-                            <div className="space-y-2">
+                            <div className="space-y-3 relative z-10 flex-1">
                                 <Button
                                     variant="outline"
                                     disabled={isUserActive || isCheckingActive}
                                     className={cn(
-                                        "w-full h-11 border-emerald-500/30 bg-emerald-500/5 text-emerald-400 font-bold tracking-widest shadow-xl transition-all group",
-                                        isUserActive ? "opacity-50 grayscale cursor-not-allowed" : "hover:bg-emerald-500/10"
+                                        "w-full h-11 border-emerald-500/30 bg-emerald-500/5 text-emerald-400 font-bold tracking-widest transition-all",
+                                        isUserActive ? "opacity-40 grayscale cursor-not-allowed border-rose-500/20 text-rose-300/50" : "hover:bg-emerald-500/10 shadow-lg"
                                     )}
                                     onClick={() => runCommand('manual_launch_process', { username: selectedAccount.win_user, password: selectedAccount.win_pass })}
                                 >
-                                    <div className="flex items-center gap-2">
-                                        <Play size={16} className={cn("text-emerald-400 transition-transform fill-current", !isUserActive && "group-hover:scale-110")} />
-                                        <span className="text-xs truncate font-bold">{isUserActive ? t('game_running_prevent_launch') : (t('launch_as_identity', { user: selectedAccount.win_user }))}</span>
-                                    </div>
+                                    <Play size={16} className={cn("mr-3", isUserActive ? "text-rose-400/40" : "text-emerald-400")} />
+                                    <span className="text-xs font-bold truncate">
+                                        {t('launch_as_identity', { user: selectedAccount.win_user })}
+                                    </span>
                                 </Button>
                                 {isUserActive && (
-                                    <p className="text-[10px] text-rose-400/80 text-center px-2 animate-pulse">
-                                        {t('game_running_prevent_launch')}
-                                    </p>
+                                    <div className="flex items-start gap-2.5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 animate-in fade-in slide-in-from-top-1">
+                                        <ShieldAlert size={14} className="text-rose-400 shrink-0 mt-0.5" />
+                                        <p className="text-[10px] text-rose-400/90 leading-normal font-medium">
+                                            {t('game_running_prevent_launch')}
+                                        </p>
+                                    </div>
                                 )}
                             </div>
                         ) : (

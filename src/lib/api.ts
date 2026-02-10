@@ -104,3 +104,7 @@ export async function nukeReset(): Promise<string> {
     return await invoke('nuke_reset');
 }
 
+export async function resolveLaunchConflict(accountId: string, action: 'delete' | 'reset'): Promise<void> {
+    await invoke('resolve_launch_conflict', { accountId, action });
+}
+

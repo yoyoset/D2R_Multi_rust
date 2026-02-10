@@ -304,7 +304,8 @@ pub fn run() {
             open_user_switch,
             cleanup_archives,
             stop_bnet_processes,
-            is_user_process_active
+            is_user_process_active,
+            modules::account::resolve_launch_conflict
         ])
         .setup(|app| {
             // Load config to determine initial language

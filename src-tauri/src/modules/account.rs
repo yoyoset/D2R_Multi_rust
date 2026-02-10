@@ -40,6 +40,27 @@ pub enum AccountError {
     InvalidPath,
     #[error("File Swap Error: {0}")]
     FileSwap(#[from] file_swap::FileSwapError),
+    #[error("CONFLICT")]
+    Conflict,
+}
+
+#[tauri::command]
+pub fn resolve_launch_conflict(
+    app: AppHandle,
+    account_id: String,
+    action: String, // "delete" or "reset"
+) -> Result<(), String> {
+    match action.as_str() {
+        "delete" => {
+            file_swap::delete_config().map_err(|e| e.to_string())?;
+        }
+        "reset" => {
+            file_swap::delete_config().map_err(|e| e.to_string())?;
+            file_swap::delete_snapshot(&app, &account_id).map_err(|e| e.to_string())?;
+        }
+        _ => return Err("Invalid action".to_string()),
+    }
+    Ok(())
 }
 
 pub fn launch_game(
@@ -109,13 +130,25 @@ pub fn launch_game(
     // 5. Restore (Target): Load target account snapshot
     logger::log(app, "info", "正在切换目标账号配置...");
     if let Err(e) = file_swap::restore_snapshot(app, &account.id) {
-        // Rollback: If restore fails and we rotated the previous one, try to put it back
-        if rotated {
-            if let Some(last_id) = &config.last_active_account {
-                let _ = file_swap::restore_snapshot(app, last_id);
+        match e {
+            file_swap::FileSwapError::Conflict => {
+                logger::log(
+                    app,
+                    "error",
+                    "检测到档案冲突 (product.db 已存在且未能自动清理)",
+                );
+                return Err(AccountError::Conflict);
+            }
+            _ => {
+                // Rollback: If restore fails and we rotated the previous one, try to put it back
+                if rotated {
+                    if let Some(last_id) = &config.last_active_account {
+                        let _ = file_swap::restore_snapshot(app, last_id);
+                    }
+                }
+                return Err(e.into());
             }
         }
-        return Err(e.into());
     }
 
     // 6. Update Last Active Account
@@ -257,11 +290,13 @@ pub fn get_accounts_process_status(
     // Refresh user list to handle identity changes/additions
     users.refresh();
 
-    // Granular refresh: only process names and user information
+    // Granular refresh: focus on process existence and user info
     sys.refresh_processes_specifics(
         sysinfo::ProcessesToUpdate::All,
-        false,
-        sysinfo::ProcessRefreshKind::nothing().with_user(sysinfo::UpdateKind::Always),
+        true, // Refresh even if processes were not previously known (or just all)
+        sysinfo::ProcessRefreshKind::nothing()
+            .with_user(sysinfo::UpdateKind::Always)
+            .with_exe(sysinfo::UpdateKind::Always),
     );
 
     let mut status_map = HashMap::new();

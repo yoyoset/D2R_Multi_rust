@@ -1,6 +1,6 @@
 export default {
     "app_title": "暗黑2重製版 多開助手",
-    "version": "Rust 重寫版 v0.3.2",
+    "version": "Rust 重寫版 v0.3.6",
     "isolation_mode": "安全隔離引擎",
     "kill_mutex": "清理多開限制 (Mutex)",
     "add_account": "新增帳號",
@@ -49,4 +49,10 @@ export default {
     "open_local_users": "本地用戶和組",
     "open_adv_users": "高級用戶面板",
     "launch_tools": "工具",
+    "archive_conflict_title": "檔案流轉衝突",
+    "archive_conflict_desc": "目標位置已存在 product.db (可能由於權限、進程未關閉等原因導致刪除失敗)。請選擇操作方式：",
+    "delete_and_continue": "刪除繼續",
+    "reset_and_continue": "重新設置繼續",
+    "conflict_resolve_failed": "衝突解決失敗: {{error}}",
+    "double_cleanup_failed": "雙向清理失敗: {{error}}",
 };

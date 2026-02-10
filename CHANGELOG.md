@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.6] - 2026-02-11
+
+### Added
+
+- **Archive Conflict Resolution**: Interactive dialog to handle `product.db` conflicts with "Delete", "Reset", and "Cancel" options.
+- **Modular Launch Hook**: Introduced `useLaunchSequence` to centralize and decouple launch business logic from UI components.
+
+### Changed
+
+- **UI Simplification**: Optimized "Independent Launch" layout in Tools view to prevent text overflow when a game is running.
+- **I18n Modernization**: Complete audit and removal of hardcoded strings in frontend logs and errors, syncing all 5 localization files.
+- **Process Monitoring**: Switched to aggressive status refesh in the backend to ensure real-time UI response when Battle.net closes.
+
+### Fixed
+
+- **Battle.net Status Bug**: Resolved the issue where the "Launch" button remained disabled after Battle.net was closed.
+- **Snapshot Robustness**: Enhanced file swap logic to handle edge cases where restore paths might be partially corrupted or occupied.
+
 ## [0.3.5] - 2026-02-10
 
 ### Added
