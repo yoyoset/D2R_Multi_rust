@@ -7,18 +7,25 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - **Archive Conflict Resolution**: Interactive dialog to handle `product.db` conflicts with "Delete", "Reset", and "Cancel" options.
+  **存档冲突解决**: 新增交互式对话框，支持通过“删除”、“重置”和“取消”选项处理 `product.db` 冲突。
 - **Modular Launch Hook**: Introduced `useLaunchSequence` to centralize and decouple launch business logic from UI components.
+  **模块化启动钩子**: 引入 `useLaunchSequence` 以集中并解耦启动业务逻辑与 UI 组件。
 
 ### Changed
 
 - **UI Simplification**: Optimized "Independent Launch" layout in Tools view to prevent text overflow when a game is running.
+  **UI 简化**: 优化了工具视图中的“独立启动”布局，防止游戏运行时出现文本溢出。
 - **I18n Modernization**: Complete audit and removal of hardcoded strings in frontend logs and errors, syncing all 5 localization files.
-- **Process Monitoring**: Switched to aggressive status refesh in the backend to ensure real-time UI response when Battle.net closes.
+  **国际化现代化**: 完成对前端日志和错误中硬编码字符串的全面审计与移除，并同步了所有 5 个语言文件。
+- **Process Monitoring**: Switched to aggressive status refresh in the backend to ensure real-time UI response when Battle.net closes.
+  **进程监控**: 后端切换到激进的状态更新机制，确保战网关闭时 UI 能实时响应。
 
 ### Fixed
 
 - **Battle.net Status Bug**: Resolved the issue where the "Launch" button remained disabled after Battle.net was closed.
+  **战网状态修复**: 解决了战网关闭后“启动”按钮仍处于禁用状态的问题。
 - **Snapshot Robustness**: Enhanced file swap logic to handle edge cases where restore paths might be partially corrupted or occupied.
+  **快照稳健性**: 增强了文件交换逻辑，以处理还原路径可能部分损坏或被占用的边缘情况。
 
 ## [0.3.5] - 2026-02-10
 
