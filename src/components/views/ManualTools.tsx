@@ -5,19 +5,6 @@ import { Button } from '../ui/Button';
 import { ShieldAlert, Trash, Play, Skull, FolderPlus, MonitorSmartphone, Settings2, User, ChevronDown, ChevronUp } from 'lucide-react';
 import MirrorModal from '../modals/MirrorModal';
 import { cn } from '../../lib/utils';
-
-interface ManualToolsProps {
-    accounts: Account[];
-    selectedAccountId: string | null;
-}
-
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Account, invoke } from '../../lib/api';
-import { Button } from '../ui/Button';
-import { ShieldAlert, Trash, Play, Skull, FolderPlus, MonitorSmartphone, Settings2, User, ChevronDown, ChevronUp } from 'lucide-react';
-import MirrorModal from '../modals/MirrorModal';
-import { cn } from '../../lib/utils';
 import { useBlockingNotification } from '../../store/useBlockingNotification';
 
 interface ManualToolsProps {
