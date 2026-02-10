@@ -22,7 +22,6 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                 </ModalHeader>
                 
                 <ModalBody className="space-y-6 text-zinc-300">
-                    {/* ... (rest of the body content remains the same) */}
                     <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-5 space-y-3">
                         <div className="flex items-center gap-3 text-rose-400">
                             <AlertCircle size={20} />

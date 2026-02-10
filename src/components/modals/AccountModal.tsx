@@ -149,6 +149,7 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
 
     const handleSave = async () => {
         if (!winUser.trim()) return;
+        setIsSaving(true);
         try {
             // Setup a safety timeout for backend calls
             const timeoutPromise = new Promise((_, reject) =>
