@@ -6,7 +6,7 @@ const resources = {
     "zh-CN": {
         translation: {
             "app_title": "暗黑2重制版 多开助手",
-            "version": "Rust 重写版 v0.3.1",
+            "version": "Rust 重写版 v0.3.2",
             "isolation_mode": "安全隔离引擎",
             "kill_mutex": "清理多开限制 (Mutex)",
             "add_account": "添加账号",
@@ -171,7 +171,7 @@ const resources = {
     "en": {
         translation: {
             "app_title": "D2R Multiplay",
-            "version": "Rust Rewrite v0.3.1",
+            "version": "Rust Rewrite v0.3.2",
             "isolation_mode": "Isolation Engine",
             "kill_mutex": "Kill Mutexes",
             "add_account": "Add Account",
@@ -331,7 +331,7 @@ const resources = {
     "zh-TW": {
         translation: {
             "app_title": "暗黑2重製版 多開助手",
-            "version": "Rust 重寫版 v0.3.1",
+            "version": "Rust 重寫版 v0.3.2",
             "isolation_mode": "安全隔離引擎",
             "kill_mutex": "清理多開限制 (Mutex)",
             "add_account": "新增帳號",
@@ -385,7 +385,7 @@ const resources = {
     "ja": {
         translation: {
             "app_title": "D2R マルチプレイ",
-            "version": "Rust Rewrite v0.3.1",
+            "version": "Rust Rewrite v0.3.2",
             "isolation_mode": "分離エンジン",
             "kill_mutex": "多重起動制限解除 (Mutex)",
             "add_account": "アカウント追加",
@@ -435,7 +435,7 @@ const resources = {
     "ko": {
         translation: {
             "app_title": "D2R 멀티플레이",
-            "version": "Rust Rewrite v0.3.1",
+            "version": "Rust Rewrite v0.3.2",
             "isolation_mode": "격리 엔진",
             "kill_mutex": "다중 실행 제한 해제 (Mutex)",
             "add_account": "계정 추가",
