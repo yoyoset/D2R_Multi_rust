@@ -32,18 +32,18 @@ export const LaunchActions: React.FC<LaunchActionsProps> = ({
                         onClick={() => onLaunch(false)}
                         disabled={isLaunchDisabled}
                         className={cn(
-                            "flex-1 h-12 md:h-14 text-sm md:text-base rounded-lg shadow-lg font-bold transition-all relative overflow-hidden group",
+                            "flex-1 h-12 md:h-14 rounded-xl shadow-lg font-bold transition-all relative overflow-hidden group border border-white/5",
                             isLaunchDisabled
-                                ? "bg-zinc-800 text-zinc-500 opacity-50 cursor-not-allowed"
-                                : "bg-[rgb(var(--color-success))] text-white hover:opacity-90 shadow-[rgb(var(--color-success)/0.2)]"
+                                ? "bg-zinc-900 text-zinc-600 opacity-50 cursor-not-allowed"
+                                : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:opacity-90 shadow-emerald-500/20"
                         )}
                     >
-                        <div className="flex flex-col items-center leading-tight relative z-10">
-                            <div className="flex items-center gap-2">
-                                <Play size={16} className={cn("fill-current", isLaunching ? "animate-pulse" : "group-hover:scale-110 transition-transform")} />
-                                <span>{isLaunching ? t('launching') : (selectedAccountStatus?.d2r_active ? t('ready') : t('launch_full'))}</span>
-                            </div>
-                            <span className="text-[9px] opacity-60 font-normal uppercase tracking-tighter mt-0.5">{t('full_preparation')}</span>
+                        <div className="flex items-center gap-2 relative z-10">
+                            <Play size={16} className={cn("transition-all fill-current", isLaunching ? "animate-pulse" : "group-hover:scale-110")} />
+                            <span className="text-sm md:text-base">
+                                {isLaunching ? t('launching') : (selectedAccountStatus?.d2r_active ? t('ready') : t('launch_full'))}
+                            </span>
+                            <span className="text-[10px] opacity-60 font-normal hidden md:inline-block">({t('full_preparation')})</span>
                         </div>
                         {!isLaunchDisabled && <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />}
                     </Button>
@@ -54,18 +54,18 @@ export const LaunchActions: React.FC<LaunchActionsProps> = ({
                         onClick={() => onLaunch(true)}
                         disabled={isLaunchDisabled}
                         className={cn(
-                            "flex-1 h-12 md:h-14 text-sm md:text-base rounded-lg shadow-lg font-bold transition-all relative overflow-hidden group",
+                            "flex-1 h-12 md:h-14 rounded-xl shadow-lg font-bold transition-all relative overflow-hidden group border border-white/5",
                             isLaunchDisabled
-                                ? "bg-zinc-800 text-zinc-500 opacity-50 cursor-not-allowed"
-                                : "bg-[rgb(var(--color-info))] text-white hover:opacity-90 shadow-[rgb(var(--color-info)/0.2)]"
+                                ? "bg-zinc-900 text-zinc-600 opacity-50 cursor-not-allowed"
+                                : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 shadow-blue-500/20"
                         )}
                     >
-                        <div className="flex flex-col items-center leading-tight relative z-10">
-                            <div className="flex items-center gap-2">
-                                <Play size={16} className={cn("fill-current", isLaunching ? "animate-pulse" : "group-hover:scale-110 transition-transform")} />
-                                <span>{isLaunching ? t('launching') : (selectedAccountStatus?.bnet_active ? t('ready') : t('launch_bnet_only'))}</span>
-                            </div>
-                            <span className="text-[9px] opacity-60 font-normal uppercase tracking-tighter mt-0.5">{t('identity_only')}</span>
+                        <div className="flex items-center gap-2 relative z-10">
+                            <Play size={16} className={cn("transition-all fill-current", isLaunching ? "animate-pulse" : "group-hover:scale-110")} />
+                            <span className="text-sm md:text-base">
+                                {isLaunching ? t('launching') : (selectedAccountStatus?.bnet_active ? t('ready') : t('launch_bnet_only'))}
+                            </span>
+                            <span className="text-[10px] opacity-60 font-normal hidden md:inline-block">({t('identity_only')})</span>
                         </div>
                         {!isLaunchDisabled && <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />}
                     </Button>
@@ -77,14 +77,20 @@ export const LaunchActions: React.FC<LaunchActionsProps> = ({
                     onClick={() => onLaunch(false)}
                     disabled={isLaunchDisabled}
                     className={cn(
-                        "w-full h-12 md:h-14 text-base md:text-lg rounded-lg shadow-lg tracking-widest font-bold transition-all",
-                        isLaunchDisabled ? "bg-zinc-800 text-zinc-500 opacity-50 cursor-not-allowed" : "bg-primary text-white hover:opacity-90 shadow-primary/20"
+                        "w-full h-12 md:h-14 rounded-xl shadow-xl font-bold transition-all relative overflow-hidden group border border-white/5",
+                        isLaunchDisabled
+                            ? "bg-zinc-900 text-zinc-600 opacity-50 cursor-not-allowed"
+                            : "bg-gradient-to-r from-primary via-primary/90 to-primary text-white hover:opacity-90 shadow-primary/25"
                     )}
                 >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 relative z-10">
                         <Play size={18} className={cn("transition-transform fill-current", isLaunching ? "animate-pulse" : "group-hover:translate-x-1")} />
-                        <span>{selectedAccountStatus?.d2r_active ? t('ready') : (isLaunching ? t('launching') : t('launch_game'))}</span>
+                        <span className="text-base md:text-lg tracking-widest">
+                            {selectedAccountStatus?.d2r_active ? t('ready') : (isLaunching ? t('launching') : t('launch_game'))}
+                        </span>
+                        <span className="text-[10px] opacity-60 font-normal hidden md:inline-block">({t('full_preparation')})</span>
                     </div>
+                    {!isLaunchDisabled && <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />}
                 </Button>
             )}
         </div>

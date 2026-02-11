@@ -1,6 +1,6 @@
 export default {
     "app_title": "D2R Multiplay",
-    "version": "Rust Rewrite v0.3.7",
+    "version": "Rust Rewrite v0.3.8",
     "isolation_mode": "Isolation Engine",
     "kill_mutex": "Kill Mutexes",
     "add_account": "Add Account",

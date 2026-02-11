@@ -13,6 +13,15 @@ All notable changes to this project will be documented in this file.
 
 - **Log Management**: Implemented a 5MB size limit for the log file with automatic truncation to prevent excessive disk usage.
   **日志管理优化**: 为日志文件引入了 5MB 的容量限制及自动截断机制，有效防止长期运行导致的磁盘空间损耗。
+- **Update Dialog UI**: Redesigned the "Check Update" dialog buttons with a two-line layout for better clarity and premium look.
+  **更新弹窗 UI**: 为“检查更新”弹窗设计了垂直双行排版，主从分明，视觉效果更精致。
+- **Dashboard Visuals**: Reverted dashboard buttons to a single-line layout for better proportion, while maintaining premium gradients and shadows.
+  **仪表盘视觉优化**: 将启动按钮重构回紧凑的单行布局，并保留了极致的渐变与阴影特效，让界面重点更明确。
+
+### Fixed
+
+- **Launch Sequence Deadlock**: Resolved a bug where closing a blocking notification (like uninitialized user) would leave the launch button stuck in "Starting..." state.
+  **启动序列卡死修复**: 解决了在关闭阻断式通知（如用户未初始化提示）后，启动按钮进入无限期卡死在“正在启动...”状态的问题。
 
 ## [0.3.7] - 2026-02-11
 

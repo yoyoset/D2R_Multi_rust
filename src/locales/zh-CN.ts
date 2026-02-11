@@ -1,6 +1,6 @@
 export default {
     "app_title": "暗黑2重制版 多开助手",
-    "version": "Rust 重写版 v0.3.7",
+    "version": "Rust 重写版 v0.3.8",
     "isolation_mode": "安全隔离引擎",
     "kill_mutex": "清理多开限制 (Mutex)",
     "add_account": "添加账号",

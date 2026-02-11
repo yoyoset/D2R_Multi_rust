@@ -54,7 +54,12 @@ function App() {
                             onClick: () => { }
                         },
                         {
-                            label: t('update_manual'),
+                            label: (
+                                <div className="flex flex-col items-center py-1">
+                                    <span className="text-sm font-bold">{t('update_manual').split('(')[0]}</span>
+                                    <span className="text-[10px] opacity-60 font-normal">({t('update_manual').split('(')[1]}</span>
+                                </div>
+                            ) as any,
                             variant: 'outline',
                             onClick: () => {
                                 import("@tauri-apps/plugin-opener").then(({ openUrl }) => {
@@ -63,7 +68,12 @@ function App() {
                             }
                         },
                         {
-                            label: t('update_auto'),
+                            label: (
+                                <div className="flex flex-col items-center py-1">
+                                    <span className="text-sm font-bold">{t('update_auto').split('(')[0]}</span>
+                                    <span className="text-[10px] opacity-100 font-normal">{t('update_auto').split('(')[1]}</span>
+                                </div>
+                            ) as any,
                             variant: 'primary',
                             onClick: async () => {
                                 try {

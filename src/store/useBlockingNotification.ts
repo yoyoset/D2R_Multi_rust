@@ -12,7 +12,8 @@ interface NotificationState {
     message: string;
     type: 'info' | 'warning' | 'error' | 'success';
     actions: Action[];
-    show: (title: string, message: string, actions: Action[], type?: 'info' | 'warning' | 'error') => void;
+    onClose?: () => void;
+    show: (title: string, message: string, actions: Action[], type?: 'info' | 'warning' | 'error', onClose?: () => void) => void;
     close: () => void;
 }
 
@@ -22,12 +23,17 @@ export const useBlockingNotification = create<NotificationState>((set) => ({
     message: '',
     type: 'info',
     actions: [],
-    show: (title, message, actions, type = 'info') => set({
+    onClose: undefined,
+    show: (title, message, actions, type = 'info', onClose) => set({
         isOpen: true,
         title,
         message,
         actions,
-        type
+        type,
+        onClose
     }),
-    close: () => set({ isOpen: false })
+    close: () => set((state) => {
+        if (state.onClose) state.onClose();
+        return { isOpen: false, onClose: undefined };
+    })
 }));

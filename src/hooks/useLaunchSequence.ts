@@ -67,7 +67,8 @@ export function useLaunchSequence() {
                             }
                         }
                     ],
-                    'warning'
+                    'warning',
+                    () => setIsLaunching(false)
                 );
                 return;
             }
@@ -86,7 +87,8 @@ export function useLaunchSequence() {
                             }
                         }
                     ],
-                    'error'
+                    'error',
+                    () => setIsLaunching(false)
                 );
                 return;
             }
