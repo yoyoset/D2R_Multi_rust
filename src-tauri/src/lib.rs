@@ -50,6 +50,7 @@ pub fn run() {
             commands::maintenance::manual_restore_config,
             commands::maintenance::manual_launch_process,
             commands::maintenance::get_latest_changelog,
+            commands::maintenance::open_log_file,
             // Module Commands
             modules::account::get_accounts_process_status,
             modules::account::resolve_launch_conflict,

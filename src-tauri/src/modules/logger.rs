@@ -18,10 +18,13 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::PathBuf;
 
-fn get_log_path() -> Option<PathBuf> {
+const LOG_FILENAME: &str = "d2r-multiplay.log";
+const MAX_LOG_SIZE: u64 = 5 * 1024 * 1024; // 5MB
+
+pub fn get_log_path() -> Option<PathBuf> {
     if let Ok(mut exe_path) = std::env::current_exe() {
         exe_path.pop();
-        exe_path.push("d2r-multiplay.log");
+        exe_path.push(LOG_FILENAME);
         return Some(exe_path);
     }
     None
@@ -51,7 +54,15 @@ pub fn log(app: &tauri::AppHandle, level: &str, message: &str) {
 
     // Write to file (best effort)
     if let Some(log_path) = get_log_path() {
-        if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(log_path) {
+        // Size limit check
+        if let Ok(metadata) = std::fs::metadata(&log_path) {
+            if metadata.len() > MAX_LOG_SIZE {
+                // Truncate if too large
+                let _ = std::fs::write(&log_path, b"--- Log truncated due to size limit ---\n");
+            }
+        }
+
+        if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(&log_path) {
             let log_line = format!(
                 "[{}] [{}] {}\n",
                 date_time_str,

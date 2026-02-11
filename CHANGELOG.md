@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.8] - 2026-02-12
+
+### Added
+
+- **System Log Access**: Added a "View System Logs" button in the Settings modal for easier diagnostics.
+  **系统日志访问**: 在设置面板中新增“查看系统日志”按钮，方便用户快速获取诊断信息。
+
+### Optimized
+
+- **Log Management**: Implemented a 5MB size limit for the log file with automatic truncation to prevent excessive disk usage.
+  **日志管理优化**: 为日志文件引入了 5MB 的容量限制及自动截断机制，有效防止长期运行导致的磁盘空间损耗。
+
 ## [0.3.7] - 2026-02-11
 
 ### Added

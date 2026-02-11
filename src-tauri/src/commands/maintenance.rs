@@ -85,3 +85,20 @@ pub fn get_latest_changelog() -> Result<String, String> {
     let first_version_section = entries[1];
     Ok(format!("## [{}", first_version_section))
 }
+use tauri_plugin_opener::OpenerExt;
+
+#[tauri::command]
+pub fn open_log_file(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(log_path) = modules::logger::get_log_path() {
+        if log_path.exists() {
+            app.opener()
+                .open_path(log_path.to_string_lossy().to_string(), None::<String>)
+                .map_err(|e| e.to_string())?;
+        } else {
+            return Err("Log file does not exist yet.".to_string());
+        }
+    } else {
+        return Err("Could not determine log path.".to_string());
+    }
+    Ok(())
+}

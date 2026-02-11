@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.3.7-orange)
+![Version](https://img.shields.io/badge/version-0.3.8-orange)
 ![Backend](https://img.shields.io/badge/backend-Rust-red)
 ![Framework](https://img.shields.io/badge/framework-Tauri_v2-blue)
 
@@ -89,6 +89,12 @@ npm run tauri build
 - 应用配置存储于：`%APPDATA%/com.d2rmultiplay.ui/config.json`
 - 账号快照存储于：`%APPDATA%/com.d2rmultiplay.ui/snapshots/`
 
+## 📝 0.3.8 更新详情
+
+- **系统日志一键访问**: 在设置中新增“查看系统日志”功能，通过默认文本编辑器快速调取诊断日志，极大简化了故障排查流程。
+- **日志持久化优化**: 引入了 5MB 的日志文件上限管理，超出后自动滚动截断，解决长期多开运行可能带来的磁盘空间占用问题。
+- **配置路径动态解析**: 移除所有硬编码的日志与配置文件路径，改用系统环境变量与 Tauri API 动态定位，适配更多安装环境。
+
 ## 📝 0.3.7 更新详情
 
 - **多账户管理模式**: 为重度多开用户新增“多账户管理模式”开关。开启后提供“一键启动”（全流程）与“仅开战网”（仅环境切换）双按钮界面。
@@ -105,6 +111,10 @@ npm run tauri build
 
 - 使用风险自负。
 - 请务必遵守游戏发行商的服务条款 (ToS)。
+
+## 🛡️ 隐私政策
+
+您的隐私对我们至关重要。请查看我们的[隐私政策](./PRIVACY_POLICY_CN.md)以了解我们如何处理数据。
 
 ## 📝 开源协议
 

@@ -208,5 +208,7 @@ export default {
     "update_highlight_ui_title": "UI 细节打磨",
     "update_highlight_ui_desc": "整合了失效账户（小鬼图标）的视觉表现，优化了粘性区域的层级逻辑。",
     "detailed_changelog": "版本变动详情",
+    "view_logs": "查看系统日志",
+    "view_logs_desc": "打开日志文件查看详细诊断信息",
     "explore_now": "进入避难所"
 };

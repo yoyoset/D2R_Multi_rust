@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.3.7-orange)
+![Version](https://img.shields.io/badge/version-0.3.8-orange)
 ![Backend](https://img.shields.io/badge/backend-Rust-red)
 ![Framework](https://img.shields.io/badge/framework-Tauri_v2-blue)
 
@@ -95,6 +95,10 @@ This tool interacts with the operating system's process management and file syst
 
 - Use at your own risk.
 - Always comply with the terms of service of the game publisher.
+
+## 🛡️ Privacy Policy
+
+Your privacy is important to us. Please review our [Privacy Policy](./PRIVACY_POLICY.md) to understand how we handle data.
 
 ## 📝 License
 

@@ -248,6 +248,29 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                 </div>
 
                                 <button
+                                    onClick={async () => {
+                                        try {
+                                            const { invoke } = await import("@tauri-apps/api/core");
+                                            await invoke('open_log_file');
+                                        } catch (e) {
+                                            addNotification('error', `${t('error')}: ${e}`);
+                                        }
+                                    }}
+                                    className="w-full flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-white/10 transition-all cursor-pointer"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-lg bg-zinc-800/50 text-zinc-400 group-hover:text-primary transition-colors">
+                                            <FileText size={16} />
+                                        </div>
+                                        <div className="space-y-0.5 text-left">
+                                            <div className="text-sm font-bold text-zinc-200">{t('view_logs')}</div>
+                                            <div className="text-[11px] text-zinc-500 opacity-80">{t('view_logs_desc')}</div>
+                                        </div>
+                                    </div>
+                                    <ExternalLink size={12} className="text-zinc-500 group-hover:text-primary transition-colors" />
+                                </button>
+
+                                <button
                                     onClick={() => {
                                         clearLogs();
                                         addNotification('info', t('logs_cleared') || 'Logs cleared');

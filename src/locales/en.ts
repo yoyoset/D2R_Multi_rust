@@ -204,5 +204,7 @@ export default {
     "update_highlight_ui_title": "UI & UX Polish",
     "update_highlight_ui_desc": "Integrated the ghost icon for invalid accounts and optimized UI layering.",
     "detailed_changelog": "Detailed Changelog",
+    "view_logs": "View System Logs",
+    "view_logs_desc": "Open the log file for detailed diagnostic info",
     "explore_now": "Explore Now"
 };
