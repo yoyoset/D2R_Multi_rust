@@ -19,6 +19,7 @@ interface SettingsModalProps {
     config: AppConfig;
     onSave: (newConfig: AppConfig) => void;
     initialUpdate?: any; // Optional update object from App launch check
+    onOpenWhatsNew?: () => void;
 }
 
 const THEMES = [
@@ -29,11 +30,12 @@ const THEMES = [
     { name: 'Rose', color: '#f43f5e' },
 ];
 
-export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, onOpenWhatsNew }: SettingsModalProps) {
     const { t } = useTranslation();
     const [themeColor, setThemeColor] = useState(config.theme_color || '#3b82f6');
     const [closeToTray, setCloseToTray] = useState(config.close_to_tray ?? true);
     const [enableLogging, setEnableLogging] = useState(config.enable_logging ?? false);
+    const [multiAccountMode, setMultiAccountMode] = useState(config.multi_account_mode ?? false);
     const [isSaving, setIsSaving] = useState(false);
     const clearLogs = useLogs(state => state.clearLogs);
     const { addNotification } = useNotification();
@@ -94,6 +96,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
         setThemeColor(config.theme_color || '#3b82f6');
         setCloseToTray(config.close_to_tray ?? true);
         setEnableLogging(config.enable_logging ?? false);
+        setMultiAccountMode(config.multi_account_mode ?? false);
     }, [config]);
 
     // Apply Live Theme Preview
@@ -119,6 +122,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
                 theme_color: themeColor,
                 close_to_tray: closeToTray,
                 enable_logging: enableLogging,
+                multi_account_mode: multiAccountMode,
             };
             await saveConfig(newConfig);
             onSave(newConfig);
@@ -197,6 +201,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
                             </div>
 
                             <div className="space-y-3">
+                                {/* Enable Logging */}
                                 <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-white/10 transition-all cursor-pointer"
                                     onClick={() => setEnableLogging(!enableLogging)}>
                                     <div className="flex items-center gap-3">
@@ -215,6 +220,29 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
                                         <div className={cn(
                                             "absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm",
                                             enableLogging ? "left-6" : "left-1"
+                                        )} />
+                                    </div>
+                                </div>
+
+                                {/* Multi-Account Mode */}
+                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-white/10 transition-all cursor-pointer"
+                                    onClick={() => setMultiAccountMode(!multiAccountMode)}>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-lg bg-zinc-800/50 text-zinc-400 group-hover:text-primary transition-colors">
+                                            <ShieldAlert size={16} />
+                                        </div>
+                                        <div className="space-y-0.5">
+                                            <div className="text-sm font-bold text-zinc-200">{t('setting_multi_account_mode')}</div>
+                                            <div className="text-[11px] text-zinc-500 opacity-80">{t('setting_multi_account_mode_desc')}</div>
+                                        </div>
+                                    </div>
+                                    <div className={cn(
+                                        "w-10 h-5 rounded-full relative transition-colors duration-200 shrink-0",
+                                        multiAccountMode ? "bg-primary" : "bg-zinc-800"
+                                    )}>
+                                        <div className={cn(
+                                            "absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm",
+                                            multiAccountMode ? "left-6" : "left-1"
                                         )} />
                                     </div>
                                 </div>
@@ -264,16 +292,27 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
                                         </div>
                                     </div>
 
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={handleCheckUpdate}
-                                        isLoading={isCheckingUpdate}
-                                        className="h-8 text-xs bg-white/5 hover:bg-white/10 text-zinc-300"
-                                    >
-                                        <RefreshCw size={12} className={cn("mr-1.5", isCheckingUpdate && "animate-spin")} />
-                                        {t('check_update')}
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={onOpenWhatsNew}
+                                            className="h-8 text-[11px] bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white"
+                                        >
+                                            <FileText size={12} className="mr-1.5 opacity-60" />
+                                            {t('detailed_changelog')}
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={handleCheckUpdate}
+                                            isLoading={isCheckingUpdate}
+                                            className="h-8 text-xs bg-white/5 hover:bg-white/10 text-zinc-300"
+                                        >
+                                            <RefreshCw size={12} className={cn("mr-1.5", isCheckingUpdate && "animate-spin")} />
+                                            {t('check_update')}
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 {pendingUpdate && (
@@ -327,6 +366,6 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate }
                     </Button>
                 </ModalFooter>
             </ModalContent>
-        </Modal>
+        </Modal >
     );
 };

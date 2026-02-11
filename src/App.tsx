@@ -21,6 +21,9 @@ import { NotificationManager } from "./components/ui/NotificationManager";
 import { useLaunchSequence } from "./hooks/useLaunchSequence";
 import { useBlockingNotification } from "./store/useBlockingNotification";
 
+import { WhatsNewModal } from "./components/modals/WhatsNewModal";
+import { getVersion } from "@tauri-apps/api/app";
+
 type View = 'dashboard' | 'accounts' | 'manual';
 
 function App() {
@@ -135,6 +138,20 @@ function App() {
         }
     };
 
+    const checkVersionUpdate = async (currentConfig: AppConfig) => {
+        try {
+            const currentVersion = await getVersion();
+            if (currentConfig.last_notified_version !== currentVersion) {
+                setIsWhatsNewOpen(true);
+                // We update and save version inside init to avoid multiple saves
+                return currentVersion;
+            }
+        } catch (e) {
+            console.error("Failed to check version update:", e);
+        }
+        return null;
+    };
+
     useEffect(() => {
         const init = async () => {
             const cfg = await getConfig();
@@ -143,6 +160,14 @@ function App() {
             checkUpdateOnLaunch();
             // Validate accounts after loading config
             validateAccounts(cfg.accounts);
+
+            // Version update check
+            const newVer = await checkVersionUpdate(cfg);
+            if (newVer) {
+                const updatedCfg = { ...cfg, last_notified_version: newVer };
+                setConfig(updatedCfg);
+                await saveConfig(updatedCfg);
+            }
 
             // Show guide on first launch
             if (!cfg.has_shown_guide) {
@@ -186,6 +211,7 @@ function App() {
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
     const [isGuideOpen, setIsGuideOpen] = useState(false);
     const [isDonateOpen, setIsDonateOpen] = useState(false);
+    const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined);
 
     // Apply Theme Color
@@ -225,12 +251,12 @@ function App() {
 
     const { isLaunching, performLaunch } = useLaunchSequence();
 
-    const handleLaunch = async () => {
+    const handleLaunch = async (bnetOnly: boolean = false) => {
         if (!selectedAccountId) return;
         const account = config.accounts.find(a => a.id === selectedAccountId);
         if (!account) return;
 
-        await performLaunch(account);
+        await performLaunch(account, bnetOnly);
     };
 
     const handleAddAccount = () => {
@@ -290,12 +316,17 @@ function App() {
                 onClose={() => setIsSettingsOpen(false)}
                 config={config}
                 onSave={setConfig}
+                onOpenWhatsNew={() => setIsWhatsNewOpen(true)}
             />
             <GuideModal
                 isOpen={isGuideOpen}
                 onClose={handleCloseGuide}
             />
             <NotificationManager />
+            <WhatsNewModal
+                isOpen={isWhatsNewOpen}
+                onClose={() => setIsWhatsNewOpen(false)}
+            />
 
             <AccountModal
                 isOpen={isAccountModalOpen}
@@ -385,6 +416,7 @@ function App() {
                         onSelectAccount={setSelectedAccountId}
                         onLaunch={handleLaunch}
                         isLaunching={isLaunching}
+                        multiAccountMode={config.multi_account_mode}
                         onReorder={handleReorder}
                         onEdit={handleEditAccount}
                         launchLogs={launchLogs}

@@ -1,4 +1,4 @@
-use crate::modules::os::{windows_impl::WindowsProvider, OSProvider};
+use crate::modules::os::{windows::WindowsProvider, OSProvider};
 use std::sync::{Arc, Mutex};
 use sysinfo::{ProcessRefreshKind, RefreshKind, System, Users};
 

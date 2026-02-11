@@ -1,42 +1,58 @@
-# Walkthrough - D2R Multiplay v2.6.0 (Bento & Personal Update)
+# User Guide - D2R Multiplay v0.3.7
 
-This release focuses on **visual density**, **personalization**, and **interaction fluidity**. We have moved away from the wide-bar lists of the past to a more modern, structured interface.
-
-## 🚀 Key Features in v2.6.0
-
-### 1. Bento-Style Dashboard (3-Column Grid)
-- **Compact Cards**: Accounts are now displayed in a 3-column grid (on standard windows), giving it a tidy "Bento box" aesthetic.
-- **Visual Status**: Each card features live process monitoring dots (Blue for Battle.net, Emerald for D2R).
-- **High-Contrast Info**: Account names and notes are significantly bolder and larger for immediate readability.
-
-### 2. High-Density Horizontal List
-- **Single-Line Row**: For users with many accounts, the "List" mode provides a streamlined horizontal row where Avatar, User, Bnet ID, and Notes are all visible at a glance without vertical bloat.
-
-### 3. Personal Avatars & Identity
-- **Built-in Library**: Choose from high-quality class placeholders (Ama, Sor, Nec, etc.).
-- **Custom Uploads**: Supports local image uploads. The app automatically converts the image to **Base64** and stores it within your `config.json`.
-- **Portability**: Since avatars are stored as strings in your config, they move with your app folder—no broken image links.
-
-### 4. Drag-and-Drop Reordering
-- **Dnd-Kit Powered**: You can now reorder your accounts by simply grabbing the handle (or dragging the card) and moving it to your preferred position.
-- **Persistent Order**: Sorting is saved automatically to the backend.
-
-### 5. Schema Cleanup
-- **Removed Region**: The dedicated "Region" field has been removed to reduce clutter, as users typically manage regions via the Battle.net launcher or specific account notes.
+D2R Multiplay is a high-performance, secure multi-instance manager for *Diablo II: Resurrected*, rebuilt from the ground up in Rust for maximum efficiency.
 
 ---
 
-## 🛠 Build & Installation (Portable)
+## 🚀 Key Features
 
-This application is distributed as a **Portable ZIP**. 
-- **Main Binary**: `D2R_Multiplay.exe`
-- **Config Store**: All settings are saved in `%APPDATA%/d2r-multiplay/config.json`.
+### 1. Advanced Multi-Account Mode (New)
 
-**Latest Package**: `D2R_Multiplay_Portable_v2_6_0.zip`
+For power users managing multiple regions or account types, this mode provides a dual-button interface:
+
+- **One-click Start**: Performs the full identity swap and launches the game immediately.
+- **Bnet Client Only**: Switches the environment (credentials/snapshots) but only opens the Battle.net launcher. This is perfect for manual region selection or updating.
+
+### 2. High-Density Dashboard
+
+The dashboard adapts to your workflow with two distinct view modes:
+
+- **Card Mode (Bento Style)**: Visual, touch-friendly grid with live status indicators (Blue = Bnet Active, Emerald = D2R Active).
+- **List Mode**: Ultra-high density view for management of 10+ accounts on a single screen.
+
+### 3. Drag-and-Drop Organization
+
+Reorder your accounts easily using the integrated drag handles. Your custom order is automatically saved and synced with the backend.
+
+### 4. Smart Identity Swapping
+
+The app manages your `product.db` files behind the scenes. Every time you launch an account, the app ensures your specific login token is restored, preventing "last-signed-in-user" confusion.
 
 ---
 
-## 💡 Quick Tips
-- **Host Account**: The account marked **(Host)** typically represents your current Windows session and does not require a password to launch.
-- **PIN vs Password**: Always use your **real Windows login password**. PIN codes and Windows Hello bio-metrics are not supported by the underlying Windows `CreateProcessWithLogonW` API.
-- **Reset Avatar**: Use the "Reset" button in the Account Modal to return to the default user icon.
+## 🛠 Usage & Tips
+
+### Getting Started
+
+1. **Administrator Required**: Right-click `d2r-rust.exe` and select **Run as Administrator**. This is strictly required for process isolation and mutual exclusion (Mutex) manipulation.
+2. **Add Windows Users**: Each account must correspond to a Windows User. Use the **Tools** view to quickly create new Windows users if needed.
+3. **Configure Path**: Set your `D2R.exe` path in the Settings modal.
+
+### Troubleshooting
+
+- **Game Update Permissions**: Since isolation accounts are standard users, they may lack permission to update game files in `C:\Program Files`. **Tip**: Right-click your game folder -> Properties -> Security -> Edit -> Grant "Full Control" to the **Users** group.
+- **Ghost Icons (👻)**: If an account shows a ghost icon, it means the Windows user specified in your config no longer exists on this system.
+- **Launch Conflicts**: If the app detects an existing session for the target account, it will offer to resolve it automatically.
+- **Atomic Logs**: Use the logs at the bottom of the dashboard to trace exactly what's happening during the setup sequence.
+
+---
+
+## ⚙️ Build from Source
+
+Ensure you have Rust and Node.js (v18+) installed.
+
+```bash
+npm install
+npm run tauri dev   # Development
+npm run tauri build # Production (Builds portable EXE)
+```

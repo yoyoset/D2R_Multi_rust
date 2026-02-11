@@ -26,7 +26,9 @@ export interface AppConfig {
     language?: string;
     enable_logging?: boolean;
     dashboard_view_mode?: 'card' | 'list';
+    multi_account_mode?: boolean;
     has_shown_guide?: boolean;
+    last_notified_version?: string;
 }
 
 export async function getWindowsUsers(deepScan: boolean = false): Promise<string[]> {
@@ -53,10 +55,11 @@ export async function killMutexes(): Promise<string> {
     }
 }
 
-export async function launchGame(account: Account, gamePath: string): Promise<string> {
+export async function launchGame(account: Account, gamePath: string, bnetOnly: boolean = false): Promise<string> {
     return await invoke("launch_game", {
         account,
-        gamePath
+        gamePath,
+        bnetOnly
     });
 }
 
@@ -106,5 +109,17 @@ export async function nukeReset(): Promise<string> {
 
 export async function resolveLaunchConflict(accountId: string, action: 'delete' | 'reset'): Promise<void> {
     await invoke('resolve_launch_conflict', { accountId, action });
+}
+
+export async function fixGamePermissions(path: string): Promise<string> {
+    return await invoke('fix_game_permissions', { path });
+}
+
+export async function checkUserInitialization(username: string): Promise<boolean> {
+    return await invoke('check_user_initialization', { username });
+}
+
+export async function getLatestChangelog(): Promise<string> {
+    return await invoke('get_latest_changelog');
 }
 

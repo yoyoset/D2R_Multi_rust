@@ -1,0 +1,151 @@
+﻿cargo :     Checking 
+d2r-rust v0.3.7 (F:\m
+y_ai\d2r-rust\src-tau
+ri)
+所在位置 行:1 字符: 1
++ cargo check 2>&1 | 
+Out-File -FilePath ch
+eck_results.txt -Enco
+ding utf ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (    Che   
+ cking d2...rust\    
+src-tauri):Strin    g
+) [], RemoteExc    ep
+tion
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+warning: unused impor
+t: `tauri::Manager`
+ --> src\commands\gam
+e.rs:5:5
+  |
+5 | use tauri::Manage
+r;
+  |     ^^^^^^^^^^^^^
+^
+  |
+  = note: `#[warn(unu
+sed_imports)]` (part 
+of `#[warn(unused)]`)
+ on by default
+
+warning: unused impor
+t: `std::os::windows:
+:process::CommandExt`
+ --> src\commands\mai
+ntenance.rs:4:5
+  |
+4 | use std::os::wind
+ows::process::Command
+Ext;
+  |     ^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^
+
+error[E0782]: expecte
+d a type, found a tra
+it
+  --> src\commands\co
+nfig.rs:53:25
+   |
+53 |     if let Some(
+tray) = tauri::Manage
+r::tray_by_id(&app, "
+main") {
+   |                 
+        ^^^^^^^^^^^^^
+^
+   |
+help: you can add the
+ `dyn` keyword if you
+ want a trait object
+   |
+53 |     if let Some(
+tray) = <dyn tauri::M
+anager>::tray_by_id(&
+app, "main") {
+   |                 
+        ++++         
+      +
+
+error[E0282]: type an
+notations needed
+  --> src\commands\co
+nfig.rs:54:17
+   |
+54 |         let _ = 
+tray.set_tooltip(Some
+(show_text));
+   |                 
+^^^^ cannot infer typ
+e
+
+error[E0282]: type an
+notations needed
+  --> src\commands\co
+nfig.rs:62:44
+   |
+62 |         tray.set
+_menu(Some(menu)).map
+_err(|e| e.to_string(
+))?;
+   |                 
+                     
+      ^  - type must 
+be known at this poin
+t
+   |
+help: consider giving
+ this closure paramet
+er an explicit type
+   |
+62 |         tray.set
+_menu(Some(menu)).map
+_err(|e: /* Type */| 
+e.to_string())?;
+   |                 
+                     
+       ++++++++++++
+
+warning: unused impor
+t: `crate::modules::o
+s::OSProvider`
+ --> src\commands\gam
+e.rs:2:5
+  |
+2 | use crate::module
+s::os::OSProvider;
+  |     ^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
+
+warning: unused impor
+t: `crate::modules::o
+s::OSProvider`
+ --> src\commands\mai
+ntenance.rs:2:5
+  |
+2 | use crate::module
+s::os::OSProvider;
+  |     ^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
+
+Some errors have deta
+iled explanations: E0
+282, E0782.
+For more information 
+about an error, try `
+rustc --explain E0282
+`.
+warning: `d2r-rust` (
+lib) generated 4 warn
+ings
+error: could not comp
+ile `d2r-rust` (lib) 
+due to 3 previous err
+ors; 4 warnings emitt
+ed

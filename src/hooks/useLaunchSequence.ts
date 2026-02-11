@@ -10,10 +10,10 @@ export function useLaunchSequence() {
     const { show: showBlocking, close: closeBlocking } = useBlockingNotification();
     const addLog = useLogs(state => state.addLog);
 
-    const performLaunch = async (account: Account) => {
+    const performLaunch = async (account: Account, bnetOnly: boolean = false) => {
         try {
             setIsLaunching(true);
-            await launchGame(account, "");
+            await launchGame(account, "", bnetOnly);
             setIsLaunching(false);
         } catch (e) {
             const errorMsg = String(e);
@@ -38,7 +38,7 @@ export function useLaunchSequence() {
                                 try {
                                     await resolveLaunchConflict(account.id, 'delete');
                                     // Retry the exact same launch after one step resolution
-                                    await performLaunch(account);
+                                    await performLaunch(account, bnetOnly);
                                 } catch (err) {
                                     addLog({
                                         message: t('conflict_resolve_failed', { error: String(err) }),
@@ -55,7 +55,7 @@ export function useLaunchSequence() {
                             onClick: async () => {
                                 try {
                                     await resolveLaunchConflict(account.id, 'reset');
-                                    await performLaunch(account);
+                                    await performLaunch(account, bnetOnly);
                                 } catch (err) {
                                     addLog({
                                         message: t('double_cleanup_failed', { error: String(err) }),
@@ -68,6 +68,25 @@ export function useLaunchSequence() {
                         }
                     ],
                     'warning'
+                );
+                return;
+            }
+
+            if (errorMsg.includes('USER_UNINITIALIZED')) {
+                showBlocking(
+                    t('user_uninitialized_title'),
+                    t('user_uninitialized_desc', { user: account.win_user }),
+                    [
+                        {
+                            label: t('understand'),
+                            variant: 'primary',
+                            onClick: () => {
+                                setIsLaunching(false);
+                                closeBlocking();
+                            }
+                        }
+                    ],
+                    'error'
                 );
                 return;
             }

@@ -42,6 +42,8 @@ pub enum AccountError {
     FileSwap(#[from] file_swap::FileSwapError),
     #[error("CONFLICT")]
     Conflict,
+    #[error("USER_UNINITIALIZED")]
+    UserUninitialized,
 }
 
 #[tauri::command]
@@ -68,9 +70,23 @@ pub fn launch_game(
     app: &AppHandle,
     account: &Account,
     _game_path: &str,
+    bnet_only: bool,
 ) -> Result<u32, AccountError> {
-    // 1. Cleanup Environment (Kill Bnet and Mutexes)
-    logger::log(app, "info", "清理运行环境 (Battle.net & Mutexes)...");
+    // 0. Check User Initialization
+    if !os.is_user_initialized(&account.win_user) {
+        logger::log(
+            app,
+            "error",
+            &format!(
+                "Windows 账户 {} 尚未初始化。请先登录该账户一次以创建配置文件。",
+                account.win_user
+            ),
+        );
+        return Err(AccountError::UserUninitialized);
+    }
+
+    // 1. Cleanup Environment (Kill Bnet)
+    logger::log(app, "info", "清理运行环境 (Battle.net)...");
     let killed = process_killer::kill_battle_net_processes();
     if killed > 0 {
         logger::log(
@@ -80,25 +96,28 @@ pub fn launch_game(
         );
     }
 
-    // Try to enable SeDebugPrivilege to access other users' processes
-    if !crate::modules::win_admin::enable_debug_privilege() {
-        logger::log(
-            app,
-            "warn",
-            "无法启用调试权限 (SeDebugPrivilege)，句柄清理可能失败",
-        );
-    }
-
-    match mutex::close_d2r_mutexes(app) {
-        Ok(count) => {
-            if count > 0 {
-                logger::log(app, "success", &format!("已关闭 {} 个 D2R 互斥锁", count));
-            } else {
-                logger::log(app, "info", "未检测到活动的 D2R 互斥锁");
-            }
+    if !bnet_only {
+        logger::log(app, "info", "正在清理 D2R 互斥锁...");
+        // Try to enable SeDebugPrivilege to access other users' processes
+        if !crate::modules::win_admin::enable_debug_privilege() {
+            logger::log(
+                app,
+                "warn",
+                "无法启用调试权限 (SeDebugPrivilege)，句柄清理可能失败",
+            );
         }
-        Err(e) => {
-            logger::log(app, "warn", &format!("互斥锁清理失败: {}", e));
+
+        match mutex::close_d2r_mutexes(app) {
+            Ok(count) => {
+                if count > 0 {
+                    logger::log(app, "success", &format!("已关闭 {} 个 D2R 互斥锁", count));
+                } else {
+                    logger::log(app, "info", "未检测到活动的 D2R 互斥锁");
+                }
+            }
+            Err(e) => {
+                logger::log(app, "warn", &format!("互斥锁清理失败: {}", e));
+            }
         }
     }
 

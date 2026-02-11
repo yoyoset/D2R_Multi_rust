@@ -1,141 +1,125 @@
-# D2R Multiplay - 技术架构规格书
+# D2R Multiplay - Technical Specification v4.0
 
-> 版本: v3.0 (2026-02-07) | 基于 windows-rs 0.62.2 全面解耦重构
+> Version: v4.0 (2026-02-11) | AI-Optimized Documentation
+> Focus: Modular Decomposition, Multi-Account Mode, Battle.net Only Launch
 
 ---
 
-## 1. 模块地图
+## 1. System Map
 
-### 1.1 后端架构 (Rust/Tauri)
+### 1.1 Backend Architecture (Rust/Tauri)
 
 ```
 src-tauri/src/
-├── lib.rs              # 入口点 + Tauri 命令注册 + State 管理 + 单实例插件
-├── state.rs            # AppState (System/Users 缓存 + OSProvider)
-├── build.rs            # 构建脚本 (Manifest 注入 + 管理员权限)
+├── lib.rs              # Entry point + Tauri Command Registration + State Management
+├── state.rs            # AppState (Caching System/Users + OSProvider)
+├── build.rs            # Build script (UAC Manifest Injection)
 └── modules/
-    ├── mod.rs          # 模块导出
-    ├── account.rs      # 账户管理 + 游戏启动核心逻辑
-    ├── config.rs       # 应用配置读写 (JSON)
-    ├── file_swap.rs    # Battle.net 存档切换
-    ├── mirror.rs       # Windows Junction 创建
-    ├── process_killer.rs  # 进程清理
-    ├── win_admin.rs    # 管理员权限检测 [新增]
-    ├── os/             # 操作系统抽象层 [新增]
-    │   ├── mod.rs      # OSProvider trait 定义
-    │   └── windows_impl.rs  # Windows 实现 (用户管理 + 进程创建)
-    └── win32_safe/     # Win32 API 安全封装层
-        ├── mod.rs      # 模块导出
-        ├── handle.rs   # HANDLE RAII 封装
-        └── mutex.rs    # Mutex 操作
+    ├── account.rs      # Account Management + Launch Orchestration
+    ├── config.rs       # AppConfig Serialization (JSON)
+    ├── file_swap.rs    # Battle.net Config Rotation (product.db)
+    ├── mutex.rs        # Win32 Mutex manipulation (close_d2r_mutexes)
+    ├── os/             # OS Abstraction Layer (Trait-based)
+    │   ├── mod.rs      # OSProvider trait definition
+    │   └── windows_impl.rs # Windows implementation using windows-rs
+    └── win32_safe/     # Low-level Win32 RAII wrappers
 ```
 
-### 1.2 模块职责边界
+### 1.2 Frontend Architecture (React 19)
 
-| 模块 | 职责 | 不应包含 |
-|:---|:---|:---|
-| `os/*` | 跨平台抽象、用户管理、进程创建 | 业务逻辑 |
-| `win32_safe/*` | 底层 Win32 API 封装（Mutex、Handle） | 业务逻辑、用户管理 |
-| `account.rs` | 账户启动编排、进程状态查询 | Win32 直接调用 |
-| `file_swap.rs` | 存档备份/恢复的文件操作 | 进程管理 |
-| `win_admin.rs` | 管理员权限检测 | 业务逻辑 |
-| `state.rs` | 全局缓存 + OSProvider 实例 | 业务逻辑 |
+```
+src/
+├── hooks/
+│   ├── useAccountStatus.ts   # REAL-TIME Polling Logic (2s interval)
+│   └── useLaunchSequence.ts  # COMPLEX Launch Business Logic (State Machine)
+├── components/
+│   ├── dashboard/
+│   │   ├── DashboardHeader.tsx   # Title, Stats, View Mode Toggle
+│   │   ├── LaunchActions.tsx     # Single/Multi Launch Buttons
+│   │   ├── SortableAccountItem.tsx # Account Cards/List Items (DnD)
+│   │   └── LogConsole.tsx        # Atomic Log Display
+│   └── views/
+│       └── Dashboard.tsx         # Lean Orchestrator (<150 lines)
+└── lib/
+    └── api.ts                    # Backend Command Facade
+```
 
 ---
 
-## 2. 核心工作流
+## 2. Core Workflows
 
-### 2.1 游戏启动流程 (launch_game)
+### 2.1 Game Launch Sequence (launch_game)
+
+The sequence is state-sensitive and requires strict ordering for data integrity.
 
 ```mermaid
 sequenceDiagram
-    participant UI as Frontend
+    participant UI as Frontend (useLaunchSequence)
     participant Rust as account.rs
     participant Swap as file_swap
     participant OS as os/windows_impl
 
-    UI->>Rust: launch_game(account)
+    UI->>Rust: launch_game(account, bnet_only)
 
     Rust->>Rust: kill_battle_net_processes()
-    Note over Rust: 清理残留进程
+    Note over Rust: Cleanup existing instances
 
-    Rust->>OS: close_d2r_mutexes()
-    Note over OS: 解除单例互斥体
-
-    Rust->>Swap: rotate_save(last_account_id)
-    Note over Swap: 备份当前存档
-
-    Rust->>Swap: delete_config()
-    Note over Swap: 删除 product.db
-
-    Rust->>Swap: restore_snapshot(target_account_id)
-    Note over Swap: 恢复目标账户存档
-
-    alt 同用户启动
-        Rust->>Rust: Command::new().spawn()
-    else 跨用户启动
-        Rust->>OS: create_process_with_logon()
-        Note over OS: 双轨策略:<br/>1. CreateProcessWithLogonW<br/>2. Fallback: LogonUser + CreateProcessAsUser
+    alt !bnet_only (Full Launch)
+        Rust->>OS: close_d2r_mutexes()
+        Note over OS: Unlock multi-instance restriction
     end
 
-    OS-->>Rust: PID
-    Rust-->>UI: "Game launched (PID: xxx)"
+    Rust->>Swap: rotate_save(last_account_id)
+    Note over Swap: Backup current product.db
+
+    Rust->>Swap: delete_config()
+    Note over Swap: Force clean Battle.net state
+
+    Rust->>Swap: restore_snapshot(target_account_id)
+    Note over Swap: Loading target credentials
+
+    alt Same User Launch
+        Rust->>Rust: Command::new().spawn()
+    else Cross User Launch
+        Rust->>OS: create_process_with_logon()
+        Note over OS: Dual-path: CreateProcessWithLogonW<br/>OR LogonUser + CreateProcessAsUser
+    end
+
+    Rust-->>UI: PID returned
 ```
 
-### 2.2 关键步骤顺序（不可调换）
+### 2.2 Critical Data Protocols
 
-1. **清理环境** → `kill_processes()` + `close_mutexes()`
-2. **存档备份** → `rotate_save()` (保存当前状态)
-3. **清空配置** → `delete_config()` (确保干净启动)
-4. **恢复目标** → `restore_snapshot()` (加载目标账户)
-5. **启动进程** → 同用户直接 spawn / 跨用户走 OSProvider
+1. **Mutex Protocol**: Must close `Diablo II Check For Other Instances` mutex *only* if full game launch is requested.
+2. **Snapshot Protocol**: `product.db` rotation must happen *while* Battle.net is closed to prevent write-locks or token corruption.
 
 ---
 
-## 3. 新增功能 (v3.0)
+## 3. Account Interaction Matrix
 
-### 3.1 管理员权限请求
-
-- **实现**: `build.rs` 使用 `tauri-build::WindowsAttributes::app_manifest()` 注入 UAC Manifest
-- **效果**: 程序启动时弹出 UAC 权限请求
-- **检测**: `win_admin.rs` 提供 `is_admin()` 供前端显示状态
-
-### 3.2 单实例机制
-
-- **插件**: `tauri-plugin-single-instance`
-- **行为**: 再次启动时自动激活现有窗口
-
-### 3.3 跨用户启动双轨策略
-
-- **问题**: 管理员模式下 `CreateProcessWithLogonW` 受 Windows 安全策略限制
-- **方案**: 失败时自动切换到 `LogonUser` + `CreateProcessAsUser`
+| Mode | Feature | Logic |
+|:---|:---|:---|
+| **Standard** | Single Start | Full preparation + Close Mutexes + Start Game |
+| **Multi-Account** | One-click Start | Full preparation + Close Mutexes + Start Game |
+| **Multi-Account** | Bnet Only | Full preparation + **KEEP** Mutexes (Identity Swap Only) |
 
 ---
 
-## 4. 依赖版本
+## 4. Key Interfaces (API)
 
-```toml
-[dependencies]
-tauri = "2"
-windows = "0.62.2"
-sysinfo = "0.37.2"
-tauri-plugin-single-instance = "2"
-tauri-plugin-dialog = "2"
-```
+### AppConfig Schema additions
+
+- `multi_account_mode: boolean`: Toggles dual-button UI.
+- `close_to_tray: boolean`: Native tray behavior control.
+
+### Tauri Command Update
+
+- `launch_game(account: Account, gamePath: String, bnetOnly: bool)`: Added `bnet_only` flag to control mutex closing.
 
 ---
 
-## 5. 前端接口
+## 5. Component Philosophy
 
-### Tauri 命令列表
-
-| 命令 | 参数 | 返回 | 说明 |
-|:---|:---|:---|:---|
-| `launch_game` | account, game_path | PID | 启动游戏 |
-| `check_admin` | - | bool | 检测管理员状态 |
-| `get_windows_users` | deep_scan? | string[] | 获取用户列表 |
-| `create_windows_user` | username, password | - | 创建用户 |
-| `kill_mutexes` | - | count | 清理互斥体 |
-| `kill_processes` | - | count | 清理进程 |
-| `get_config` | - | AppConfig | 获取配置 |
-| `save_config` | config | - | 保存配置 |
+- **Container Pattern**: `Dashboard.tsx` is a pure container. No business logic allowed.
+- **Hook Pattern**: Polling (`useAccountStatus`) and Async Flows (`useLaunchSequence`) MUST stay in hooks.
+- **Atomic Rendering**: Components like `LogConsole` manage internal expansion state to minimize parent re-renders.

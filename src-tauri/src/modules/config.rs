@@ -14,6 +14,8 @@ pub struct AppConfig {
     pub enable_logging: Option<bool>,
     pub has_shown_guide: Option<bool>,
     pub dashboard_view_mode: Option<String>,
+    pub multi_account_mode: Option<bool>,
+    pub last_notified_version: Option<String>,
 }
 
 #[derive(thiserror::Error, Debug)]

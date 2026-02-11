@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { ShieldAlert, Play, FolderPlus, MonitorSmartphone, Settings2, User, ChevronDown, ChevronUp, RefreshCw, Trash2, StopCircle } from 'lucide-react';
 import MirrorModal from '../modals/MirrorModal';
 import { cn } from '../../lib/utils';
+import PermissionsModal from '../modals/PermissionsModal';
 
 interface ManualToolsProps {
     accounts: Account[];
@@ -15,6 +16,7 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
     const { t } = useTranslation();
     const [log, setLog] = useState<any[]>([]);
     const [isMirrorOpen, setIsMirrorOpen] = useState(false);
+    const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
     const [isLogsExpanded, setIsLogsExpanded] = useState(true);
     const [isUserActive, setIsUserActive] = useState(false);
     const [isCheckingActive, setIsCheckingActive] = useState(false);
@@ -238,6 +240,19 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                         >
                             <MonitorSmartphone size={16} className="mr-3 opacity-60" /> {t('open_user_switch')}
                         </Button>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full justify-start h-11 border-blue-500/20 text-blue-100/70 hover:text-blue-400 hover:bg-blue-500/5 text-xs font-bold"
+                            onClick={() => setIsPermissionsOpen(true)}
+                        >
+                            <ShieldAlert size={16} className="mr-3 opacity-60" />
+                            <div className="flex flex-col items-start leading-tight text-left">
+                                <span>{t('fix_permissions')}</span>
+                                <span className="text-[9px] opacity-40 font-normal">{t('fix_permissions_desc')}</span>
+                            </div>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -291,6 +306,12 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                 isOpen={isMirrorOpen}
                 onClose={() => setIsMirrorOpen(false)}
                 onLog={(msg) => addLog(msg, 'info')}
+            />
+
+            <PermissionsModal
+                isOpen={isPermissionsOpen}
+                onClose={() => setIsPermissionsOpen(false)}
+                onLog={addLog}
             />
 
             {/* Custom Nuke Confirmation Modal */}

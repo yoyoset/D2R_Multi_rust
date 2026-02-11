@@ -23,6 +23,7 @@ pub trait OSProvider: Send + Sync {
         current_directory: Option<&str>,
     ) -> Result<ProcessLaunchResult>;
     fn is_process_running_for_user(&self, username: &str, process_names: &[&str]) -> Result<bool>;
+    fn is_user_initialized(&self, username: &str) -> bool;
 }
 
-pub mod windows_impl;
+pub mod windows;

@@ -1,31 +1,35 @@
-# D2R Multiplay 开发手记（AI 伴侣专用）
+# D2R Multiplay - AI Development Handover (v4.0)
 
-> 简明纲要：我们是在打磨一件手工艺品，不是在修摩天大楼。保持克制，保持真实。
+> This document is the primary source of truth for an AI agent taking over the project.
 
 ---
 
-## 🏗️ 建筑哲学
+## 🏗️ Core Design Philosophy
 
-1.  **性能克制**：不要高频率骚扰系统。
-    - **核心**：必须在 Tauri State 缓存 `System` 实例。
-    - **铁律**：进程刷新只用 `ProcessRefreshKind::nothing()`，按需精细化。
-2.  **边界感**：
-    - `win32_safe/`：只放最原始、最纯净的 Windows API。
+1. **Extreme Component Decoupling**:
+    - **Principle**: Components should be "Dumb" and "Atomic".
     - `account.rs`：这里是业务的剧场，别去碰底层的螺丝钉。
-3.  **仪式感（启动流）**：清理 -> 备份 -> 清空 -> 恢复 -> 启动。顺序不可错位，这是对数据的敬畏。
+    - **Constraint**: If a UI component exceeds 150 lines, it MUST be decomposed.
+    - **Logic**: All business logic (polling, async sequences) must live in **Hooks**.
+2. **Performance & Resource Strategy**:
+    - **Caching**: The `AppState` (Rust) caches `System` and user info. Do not re-instantiate high-cost OS objects frequently.
+    - **Refresh Protocol**: `sysinfo` refreshes must be surgical. Use the `refresh_nothing()` kind and specify only needed fields (PID, status).
+3. **The "Golden" Launch Protocol**:
+    - Workflow order: `Cleanup` -> `Backup` -> `Clear` -> `Restore` -> `Spawn`.
+    - **Identity Swapping**: The "Bnet Only" mode is a subset of this protocol that skips the Mutex killing stage.
 
-## ✍️ 代码美学
+## ✍️ Development Aesthetics
 
-- **Rust**：多用 `tracing` 记录心跳。错误处理要优雅，直接给前端抛字符串。
-- **React**：保持组件的小而美。
+- **Rust**: Error messages are user-facing. Return descriptive `anyhow::Result` strings. Log extensively with `tracing::info/warn`.
+- **React**: Use `tailwind-merge` and `clsx` (via `cn` utility) for all conditional styling. Use CSS variables for colors (success, info, primary) to support theming.
+- **I18n**: ZERO hardcoded strings in the UI. Everything must go through `i18next`.
 
-## ⚠️ 避坑锦囊
+## ⚠️ Critical Avoidance (Anti-Patterns)
 
-- **别装**：不要过度封装不到 20 行的薄层，那只是在浪费生命。
-- **别漏**：遗漏 State 注入会让性能瞬间掉入深渊。
-- **别猜**：逻辑不明时，先问老板，别替老板做决定。
+- **Avoid Prop Drilling**: If you're passing a prop through 3+ layers, use a custom hook or reconsider component boundaries.
+- **Avoid Registry Bloat**: Do not add unnecessary keys to the Windows Registry. Stick to the filesystem for configuration.
+- **Avoid State Rot**: Ensure all intervals/listeners are cleared in hook cleanup functions.
 
 ---
 
-**存档证明**：vii & Mimi 联合打磨。
-
+**Certified by**: Antigravity AI (2026-02-11)

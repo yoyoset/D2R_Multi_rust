@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.7] - 2026-02-11
+
+### Added
+
+- **What's New Notification System**: Automatically highlights new features and version notes on the first launch after an update.
+  **新特性发布系统**: 自动检测版本更新，并在首次启动时呈现精致的版本变动预览弹窗。
+- **Startup Account Validation**: Proactive system-level check for configured accounts on launch.
+  **合法性自检**: 启动时自动校验配置账户，识别并预警已被系统删除或未完全完成初始化的 Windows 用户。
+- **Multi-Account Dual-Mode**: Introduced a specialized mode for power users, providing separate "Full Launch" vs "Bnet Only" start options.
+  **多账户双启动模式**: 为进阶用户新增专用模式，支持“全量直启”与“仅开战网”的独立控制。
+- **Interactive Permission Delegation**: Added a user-friendly tool to grant directory permissions for game updates with manual path selection.
+  **交互式权限下放**: 新增图形化工具，支持手动选择目录并下放读写权限，解决更新授权难题。
+- **Changelog Retrieval Command**: Added a backend command to bridge the `CHANGELOG.md` content directly to the UI.
+  **后端日志透传**: 新增 Rust 后端指令，将项目变更日志实时对齐到前端交互界面。
+- **Manual Changelog View**: Added a "Detailed Changelog" button in the Settings -> About section for manual review.
+  **手动查看变更**: 在“设置-关于”区域新增入口，支持随时手动唤起版本更新说明。
+
+### Fixed & Optimized
+
+- **Responsive Permission Fixer**: Refactored the directory permission tool to be fully asynchronous and non-blocking, eliminating UI freezes ("Not Responding").
+  **响应式权限修复**: 将目录权限修复指令彻底异步化，执行耗时任务时界面始终保持丝滑流畅，告别“程序未响应”。
+- **Log Stream Purification**: Implemented byte-level parsing to extract clean file paths from `icacls`, hiding OS-level encoding corruption.
+  **日志流净化**: 引入字节级解析逻辑，自动提取纯净路径，完美解决了特定 Windows 语言环境下路径乱码的问题。
+- **Tactile Drag Experience**: Optimized the drag-and-drop logic for smoother performance; cards now follow the cursor with zero input lag.
+  **极致拖动反馈**: 深度优化了 DND 拖拽引擎，移除了冗余的实时变换计算，卡片跟随指尖反馈瞬间直达。
+- **Ghost Icon Refinement**: Integrated the "Invalid Account" ghost icon inside the avatar with a premium backdrop blur and corrected layering.
+  **失效状态重构**: 将“失效账号”的小鬼标识重构集成至头像内部，配合背景模糊特效，修复了 UI 层级重叠问题。
+- **Avatar Precision**: Improved avatar centering and sizing constraints across all view modes for a consistent look.
+  **头像对齐优化**: 统一了全模式下的头像尺寸与对齐算法，确保在卡片与列表模式下皆表现完美。
+
+### Internal
+
+- **Core Modularization**: Decoupled `lib.rs` and Windows OS providers into domain-driven modules for better maintainability.
+  **底层模块化重构**: 深度解耦了 Rust 后端核心与 Windows OS 适配器，按领域划分子模块，显著提升系统稳定性。
+- **Custom Installer Icons**: Configured NSIS installer to utilize project-specific branding instead of default placeholders.
+  **自定义安装器图标**: 配置 NSIS 安装程序使用项目专属图标，替代默认的通用占位符。
+
+### Fixed
+
+- **Cross-Language key Missing**: Fully synchronized all 5 localization files (CN, TW, EN, KO, JA) to ensure no translation keys are missing in any supported locale.
+  **多语言 Key 缺失**: 全面同步了五国语言包，解决了部分语言环境下新功能 translation key 缺失的问题。
+
 ## [0.3.6] - 2026-02-11
 
 ### Added

@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.3.6-orange)
+![Version](https://img.shields.io/badge/version-0.3.7-orange)
 ![Backend](https://img.shields.io/badge/backend-Rust-red)
 ![Framework](https://img.shields.io/badge/framework-Tauri_v2-blue)
 
@@ -67,13 +67,15 @@ npm run tauri build
 - 应用配置存储于：`%APPDATA%/com.d2rmultiplay.ui/config.json`
 - 账号快照存储于：`%APPDATA%/com.d2rmultiplay.ui/snapshots/`
 
-## 📝 0.3.6 更新详情
+## 📝 0.3.7 更新详情
 
-- **存档冲突解决**: 新增交互式对话框，支持通过“删除”、“重置”和“取消”选项处理 `product.db` 冲突。
-- **模块化启动钩子**: 引入 `useLaunchSequence` 以集中并解耦启动业务逻辑与 UI 组件。
-- **UI 简化**: 优化了工具视图中的“独立启动”布局，防止游戏运行时出现文本溢出。
-- **国际化现代化**: 完成所有 5 个语言文件的同步，全面移除了前端日志和错误中的硬编码字符串。
-- **战网状态修复**: 解决了战网关闭后“启动”按钮可能仍处于禁用状态的同步问题。
+- **多账户管理模式**: 为重度多开用户新增“多账户管理模式”开关。开启后提供“一键启动”（全流程）与“仅开战网”（仅环境切换）双按钮界面。
+- **Dashboard 架构重构**: 对 `Dashboard.tsx` 进行了 75% 的代码瘦身与组件化重构，提升了 UI 性能与维护性。
+- **状态感知优化**: 即使在双按钮模式下，按钮也能实时感知游戏各级运行状态（就绪/启动中/运行中）。
+- **主题化色彩**: 引入 CSS 变量控制核心交互颜色，确保在不同 UI 主题下的一致性，消除了硬编码样式。
+- **全量语言同步**: 完成中（简/繁）、英、韩、日五国语言包的深度同步，消除翻译 Key 遗漏。
+
+## 📝 0.3.6 更新详情
 
 ## ⚠️ 免责声明
 

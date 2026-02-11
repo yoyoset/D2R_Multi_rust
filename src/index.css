@@ -5,8 +5,9 @@
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   color-scheme: dark;
-  /* Linear Blue: 59 130 246 (#3b82f6) */
   --color-primary: 59 130 246;
+  --color-success: 16 185 129;
+  --color-info: 37 99 235;
 }
 
 body {
