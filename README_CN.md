@@ -62,6 +62,28 @@ npm run tauri build
 
 编译产物位于 `src-tauri/target/release/` 目录下。
 
+## 📸 界面预览
+
+<div align="center">
+
+### 主控制面板
+
+![主控制面板](./assets/D2r_rust_dashboard.png)
+
+### 账号配置
+
+![账号配置](./assets/D2r_rust_new_user.png)
+
+### 全局设置
+
+![全局设置](./assets/D2r_rust_setting.png)
+
+### 系统用户校验
+
+![系统用户校验](./assets/D2r_rust_windows_user.png)
+
+</div>
+
 ## ⚙️ 配置文件
 
 - 应用配置存储于：`%APPDATA%/com.d2rmultiplay.ui/config.json`

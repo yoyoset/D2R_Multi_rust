@@ -62,6 +62,28 @@ npm run tauri build
 
 The output executables will be in `src-tauri/target/release/`.
 
+## 📸 Screenshots
+
+<div align="center">
+
+### Main Dashboard
+
+![Main Dashboard](./assets/D2r_rust_dashboard.png)
+
+### Account Settings
+
+![Account Settings](./assets/D2r_rust_new_user.png)
+
+### Global Settings
+
+![Global Settings](./assets/D2r_rust_setting.png)
+
+### Windows User Validation
+
+![Windows User Validation](./assets/D2r_rust_windows_user.png)
+
+</div>
+
 ## ⚙️ Configuration
 
 - Application Config: `%APPDATA%/com.d2rmultiplay.ui/config.json`
