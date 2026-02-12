@@ -2,14 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.8] - 2026-02-12 [STABLE]
+
+### Added
+
+- **Global Mutant Scan (BAT-Mode)**: The scanning engine now covers all Windows sessions to ensure cross-user multi-instance capability, matching the logic of advanced community scripts.
+  **全球逻辑锁全扫 (BAT 模式)**: 扫描引擎现在覆盖所有 Windows 会话，确保跨用户多开能力，逻辑深度与社区进阶脚本对齐。
+
+### Fixed & Improved
+
+- **Single Engine-Lock Strategy (Safety First)**: After technical verification, we decided to exclusively clean the global engine mutex (`DiabloII Check For Other Instances`) and related variants.
+  - **Why not Path-Locks?**: Closing the CASC path lock (`data/data`) can cause state-desync in the game engine, leading to "Not Responding" hangs during game exit.
+  - **Mirror Compatibility**: For users using mirrored/separated directories, the engine-level lock is the only blocker. By keeping the path lock intact, we ensure 100% stability and cleaner exits.
+  **单引擎锁策略 (安全至上)**: 经过技术验证，我们决定仅清理全局引擎互斥锁 (`DiabloII Check For Other Instances`)。
+  - **为何不清理路径锁？**: 强制关闭 CASC 路径锁 (`data/data`) 会导致游戏状态机脱节，引起退款时“程序未响应”或卡死。
+  - **镜像兼容性**: 对于使用镜像目录的用户，引擎锁是唯一的阻碍。保留路径锁能确保 100% 的运行稳定性和正常的进程退出流程。
+- **Surgical Lock Closing**: Refined the cleanup logic to use surgical name matching, ensuring absolutely zero interference with physical file handles.
+  **外科手术式关闭逻辑**: 精炼了清理逻辑，采用精准名称匹配，确保对物理文件句柄零干扰。
+
 ## [0.4.7] - 2026-02-12
-
-### Changed
-
-- **Single Global Mutex Focus**: Reverted path-based (`data/data`) lock cleanup for maximum safety. The tool now exclusively focuses on cleaning the global engine mutex `DiabloII Check For Other Instances` (and its variants) across all system sessions.
-  **聚焦单引擎锁**: 移除了路径级 (`data/data`) 锁的清理逻辑以确保绝对安全。目前仅专注于全系统跨 Session 清理引擎互斥锁 `DiabloII Check For Other Instances` 及其变体，完全对齐成熟 BAT 脚本行为。
-
-## [0.4.6] - 2026-02-12
 
 ### Fixed
 

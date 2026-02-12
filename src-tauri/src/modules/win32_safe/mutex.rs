@@ -343,19 +343,12 @@ fn check_and_close_if_match(
     let name_lc = name.to_lowercase();
 
     // 1. Engine Lock (Global-safe, highest priority)
+    // We strictly match only the legal engine mutexes to allow multiple instances.
     let is_engine_lock = name.contains(D2R_MUTEX_NAME)
         || name.contains(D2R_MUTEX_NAME_ALT)
         || name_lc.contains("d2r store mutex");
 
-    // 2. Path-based Directory Lock (Limited to BaseNamedObjects logic space)
-    // We ONLY close this if it's in the logical object namespace to avoid hanging file IO.
-    let is_path_lock = name_lc.contains("basenamedobjects")
-        && (name_lc.ends_with("data/data")
-            || name_lc.ends_with("data\\data")
-            || name_lc.ends_with("data/data/")
-            || name_lc.ends_with("data\\data\\"));
-
-    if is_engine_lock || is_path_lock {
+    if is_engine_lock {
         crate::modules::logger::log(
             app,
             "success",
