@@ -167,7 +167,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
 
 /// Query handle name with 100ms timeout and type pre-filtering to prevent HANGS
 unsafe fn get_handle_name_safe(
-    app: &tauri::AppHandle,
+    _app: &tauri::AppHandle,
     pid: u32,
     handle_val: usize,
 ) -> Option<String> {

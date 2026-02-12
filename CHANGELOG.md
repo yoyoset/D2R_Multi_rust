@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.2] - 2026-02-12
+
+### Fixed
+
+- **Clean Build**: Fixed unused variable warning in `mutex.rs`.
+  **构建清理**: 修复了 `mutex.rs` 中未引用变量导致的编译警告。
+
+## [0.4.1] - 2026-02-12
+
+### Fixed
+
+- **Handle Access Rights**: Corrected `DuplicateHandle` access flags to preserve query rights, fixing the "Close Handle Failed" issue.
+  **句柄访问权限**: 修正了 `DuplicateHandle` 的访问标志以保留查询权，解决了“关闭句柄失败”的问题。
+- **Real-time Diagnostics**: Added detailed kernel-level trace logs in the atomic logs panel.
+  **实时诊断提示**: 在原子操作日志面板中增加了详尽的内核级追踪日志。
+
 ## [0.4.0] - 2026-02-12
 
 ### Added
