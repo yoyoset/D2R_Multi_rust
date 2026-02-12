@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-02-12
+
+### Added
+
+- **Industrial-Grade Mutex Engine**: Completely refactored the handle cleanup engine using `SystemExtendedHandleInformation` (64-bit class) to handle PIDs greater than 65535, preventing truncation bugs.
+  **工业级互斥体引擎**: 彻底重构了句柄清理核心，采用 `SystemExtendedHandleInformation` (64位类) 解决 PID 超过 65535 时的截断问题。
+- **Anti-Hang Probing (Async/Timeout)**: Implemented an asynchronous handle probing mechanism with a 100ms hard timeout per identification. The application will never hang, even when encountering blocked Named Pipes or network files.
+  **异步探测引擎 (防卡死)**: 引入了子线程异步探测与 100ms 硬超时机制，即便遇到顽固的阻塞管道或网络文件，程序也绝不会无响应。
+- **Type-Level Fast Filtering**: Optimized scanning performance by pre-filtering kernel objects by type before querying names, reducing kernel-mode transitions.
+  **类型级快速过滤**: 在查询名称前先对内核对象类型进行预检，非关键对象直接跳过，显著提升扫描速度。
+- **Self-Elevated Cleaning**: Integrated kernel-level `SeDebugPrivilege` activation within the cleaning function to ensure 100% success rate in cross-user (Sandbox) scenarios.
+  **指令级提权闭环**: 句柄清理内置 `SeDebugPrivilege` 激活逻辑，确保在跨 Windows 用户启动场景下拥有 100% 的清理权限。
+
+### Fixed
+
+- **Memory Layout Alignment**: Corrected FFI structure alignments for modern Windows kernel versions to ensure absolute stability during high-load handle enumeration.
+  **内存布局对齐**: 针对现代 Windows 内核修正了 FFI 结构对齐细节，确保在高负荷句柄枚举时的绝对稳定性。
+
 ## [0.3.9] - 2026-02-12
 
 ### Added
