@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Account, launchGame, resolveLaunchConflict } from '../lib/api';
+import { Account, launchGame, resolveLaunchConflict, openUserSwitch } from '../lib/api';
 import { useBlockingNotification } from '../store/useBlockingNotification';
 import { useLogs } from '../store/useLogs';
 
@@ -10,10 +10,10 @@ export function useLaunchSequence() {
     const { show: showBlocking, close: closeBlocking } = useBlockingNotification();
     const addLog = useLogs(state => state.addLog);
 
-    const performLaunch = async (account: Account, bnetOnly: boolean = false) => {
+    const performLaunch = async (account: Account, bnetOnly: boolean = false, force: boolean = false) => {
         try {
             setIsLaunching(true);
-            await launchGame(account, "", bnetOnly);
+            await launchGame(account, "", bnetOnly, force);
             setIsLaunching(false);
         } catch (e) {
             const errorMsg = String(e);
@@ -38,7 +38,7 @@ export function useLaunchSequence() {
                                 try {
                                     await resolveLaunchConflict(account.id, 'delete');
                                     // Retry the exact same launch after one step resolution
-                                    await performLaunch(account, bnetOnly);
+                                    await performLaunch(account, bnetOnly, force);
                                 } catch (err) {
                                     addLog({
                                         message: t('conflict_resolve_failed', { error: String(err) }),
@@ -55,7 +55,7 @@ export function useLaunchSequence() {
                             onClick: async () => {
                                 try {
                                     await resolveLaunchConflict(account.id, 'reset');
-                                    await performLaunch(account, bnetOnly);
+                                    await performLaunch(account, bnetOnly, force);
                                 } catch (err) {
                                     addLog({
                                         message: t('double_cleanup_failed', { error: String(err) }),
@@ -79,11 +79,26 @@ export function useLaunchSequence() {
                     t('user_uninitialized_desc', { user: account.win_user }),
                     [
                         {
+                            label: t('jump_to_login_btn'),
+                            variant: 'success',
+                            onClick: async () => {
+                                await openUserSwitch();
+                            }
+                        },
+                        {
                             label: t('understand'),
-                            variant: 'primary',
+                            variant: 'info',
                             onClick: () => {
                                 setIsLaunching(false);
                                 closeBlocking();
+                            }
+                        },
+                        {
+                            label: t('ignore_and_launch'),
+                            variant: 'danger',
+                            onClick: () => {
+                                closeBlocking();
+                                performLaunch(account, bnetOnly, true);
                             }
                         }
                     ],

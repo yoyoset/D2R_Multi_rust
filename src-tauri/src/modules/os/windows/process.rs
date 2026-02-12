@@ -1,11 +1,15 @@
 use super::super::ProcessLaunchResult;
-use super::utils::to_pcwstr;
+use crate::modules::os::windows::utils::{get_sid_from_name, to_pcwstr};
 use anyhow::{anyhow, Result};
-use std::os::windows::process::CommandExt;
-use std::process::Command;
 use windows::core::{PCWSTR, PWSTR};
 use windows::Win32::Foundation::{CloseHandle, HANDLE};
-use windows::Win32::Security::{LogonUserW, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT};
+use windows::Win32::Security::{
+    EqualSid, LogonUserW, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, PSID,
+};
+use windows::Win32::System::RemoteDesktop::{
+    WTSEnumerateProcessesExW, WTSFreeMemoryExW, WTSTypeProcessInfoLevel1,
+    WTS_CURRENT_SERVER_HANDLE, WTS_PROCESS_INFO_EXW,
+};
 use windows::Win32::System::Threading::{
     CreateProcessAsUserW, CreateProcessWithLogonW, CREATE_NEW_CONSOLE, CREATE_UNICODE_ENVIRONMENT,
     LOGON_WITH_PROFILE, PROCESS_INFORMATION, STARTUPINFOW,
@@ -130,29 +134,47 @@ pub fn create_process_with_logon(
 }
 
 pub fn is_process_running_for_user(username: &str, process_names: &[&str]) -> Result<bool> {
-    let normalized_user = username.to_lowercase();
+    let target_sid_bytes = get_sid_from_name(username)?;
+    let target_sid = PSID(target_sid_bytes.as_ptr() as *mut _);
 
-    for &p_name in process_names {
-        let base_name = p_name.replace(".exe", "");
+    unsafe {
+        let mut buffer: *mut WTS_PROCESS_INFO_EXW = std::ptr::null_mut();
+        let mut count = 0u32;
+        let mut level = 1u32; // WTS_PROCESS_INFO_EXW
 
-        let ps_cmd = format!(
-            "Get-Process -Name {} -IncludeUserName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty UserName",
-            base_name
-        );
+        if WTSEnumerateProcessesExW(
+            Some(WTS_CURRENT_SERVER_HANDLE),
+            &mut level,
+            0,
+            &mut buffer as *mut *mut _ as *mut _,
+            &mut count,
+        )
+        .is_ok()
+        {
+            let info_slice = std::slice::from_raw_parts(buffer, count as usize);
+            let mut found = false;
 
-        let output = Command::new("powershell")
-            .args(["-NoProfile", "-Command", &ps_cmd])
-            .creation_flags(0x08000000) // CREATE_NO_WINDOW
-            .output()
-            .map_err(|e| anyhow!("Failed to execute powershell: {}", e))?;
+            for info in info_slice {
+                let process_name = info
+                    .pProcessName
+                    .to_string()
+                    .unwrap_or_default()
+                    .to_lowercase();
+                let matches_name = process_names.iter().any(|&n| {
+                    process_name.eq_ignore_ascii_case(n)
+                        || process_name.eq_ignore_ascii_case(&n.replace(".exe", ""))
+                });
 
-        if output.status.success() {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            for line in stdout.lines() {
-                if line.to_lowercase().contains(&normalized_user) {
-                    return Ok(true);
+                if matches_name && !info.pUserSid.0.is_null() {
+                    if EqualSid(target_sid, info.pUserSid).is_ok() {
+                        found = true;
+                        break;
+                    }
                 }
             }
+
+            let _ = WTSFreeMemoryExW(WTSTypeProcessInfoLevel1, buffer as *const _, count);
+            return Ok(found);
         }
     }
 

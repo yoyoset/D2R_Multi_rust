@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.9] - 2026-02-12
+
+### Added
+
+- **Native Win32 Engine**: Completely refactored core logic to use native Win32 APIs (Process, User, Registry) instead of legacy Shell commands for 100% path and language compatibility.
+  **原生 Win32 引擎**: 彻底重构了核心逻辑，使用原生 Win32 API（进程、用户、注册表）替代旧版 Shell 指令，实现了 100% 的路径与语言兼容性。
+- **Unicode Path Support**: Implemented full UTF-16 routing in the backend to ensure non-ASCII usernames (Korean, Chinese, etc.) are handled without corruption.
+  **Unicode 路径支持**: 后端全面应用 UTF-16 路由，确保韩文、中文等非 ASCII 用户名和目录在全流程中零乱码。
+- **Force Launch Fallback**: Added a specialized bypass option to ignore blocking notifications for edge-case environments.
+  **强制启动回退**: 增加了专门的跳过选项，支持在特殊环境下强制绕过阻断式通知。
+
+### Fixed
+
+- **UI State Persistence**: Resolved a persistent bug where `PermissionsModal` and `MirrorModal` would retain "Finished" status when reopened.
+  **UI 状态残留修复**: 修复了权限修复与镜像克隆窗口在关闭后重新打开时，仍残留上次“任务完成”状态的 Bug。
+- **SID-Based Detection**: Enhanced process owner identification using robust SID equality comparison.
+  **基于 SID 的检测**: 增强了进程所有者识别逻辑，采用更稳健的 SID 等值比对技术。
+
 ## [0.3.8] - 2026-02-12
 
 ### Added

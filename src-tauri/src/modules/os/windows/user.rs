@@ -1,12 +1,18 @@
-use super::utils::{get_localized_users_group_name, get_name_from_sid_string, to_pcwstr};
+use crate::modules::os::windows::utils::{
+    get_localized_users_group_name, get_name_from_sid_string, get_sid_from_name, to_pcwstr,
+};
 use anyhow::{anyhow, Result};
-use std::os::windows::process::CommandExt;
-use std::process::Command;
 use std::ptr;
 use windows::core::{PCWSTR, PWSTR};
+use windows::Win32::Foundation::HLOCAL;
 use windows::Win32::NetworkManagement::NetManagement::{
-    NetApiBufferFree, NetLocalGroupAddMembers, NetUserAdd, NetUserEnum, FILTER_NORMAL_ACCOUNT,
-    LOCALGROUP_MEMBERS_INFO_3, USER_ACCOUNT_FLAGS, USER_INFO_0, USER_INFO_1, USER_PRIV,
+    NetApiBufferFree, NetLocalGroupAddMembers, NetUserAdd, NetUserEnum, NetUserSetInfo,
+    FILTER_NORMAL_ACCOUNT, LOCALGROUP_MEMBERS_INFO_3, USER_ACCOUNT_FLAGS, USER_INFO_0, USER_INFO_1,
+    USER_INFO_1003, USER_INFO_1008, USER_PRIV,
+};
+use windows::Win32::Security::PSID;
+use windows::Win32::System::Registry::{
+    RegCloseKey, RegEnumKeyExW, RegOpenKeyExW, HKEY_LOCAL_MACHINE, KEY_READ,
 };
 
 pub fn list_local_users(include_registry: bool) -> Result<Vec<String>> {
@@ -58,27 +64,51 @@ pub fn list_local_users(include_registry: bool) -> Result<Vec<String>> {
     }
 
     if include_registry {
-        if let Ok(output) = Command::new("reg")
-            .args([
-                "query",
-                "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList",
-            ])
-            .output()
-        {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            for line in stdout.lines() {
-                if let Some(sid_str) = line.trim().split('\\').last() {
-                    if sid_str.starts_with("S-1-5-21") {
-                        if let Ok(user_with_domain) = get_name_from_sid_string(sid_str) {
-                            let exists = users
-                                .iter()
-                                .any(|u| u.to_lowercase() == user_with_domain.to_lowercase());
-                            if !exists {
-                                users.push(user_with_domain);
+        unsafe {
+            let hklm_u16 = to_pcwstr(r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList");
+            let mut hkey = windows::Win32::System::Registry::HKEY::default();
+            if RegOpenKeyExW(
+                HKEY_LOCAL_MACHINE,
+                PCWSTR(hklm_u16.as_ptr()),
+                Some(0),
+                KEY_READ,
+                &mut hkey,
+            )
+            .is_ok()
+            {
+                let mut index = 0;
+                loop {
+                    let mut name = [0u16; 256];
+                    let mut name_len = name.len() as u32;
+                    let res = RegEnumKeyExW(
+                        hkey,
+                        index,
+                        Some(PWSTR(name.as_mut_ptr())),
+                        &mut name_len,
+                        None,
+                        None,
+                        None,
+                        None,
+                    );
+
+                    if res.is_ok() {
+                        let sid_str = String::from_utf16_lossy(&name[..name_len as usize]);
+                        if sid_str.starts_with("S-1-5-21") {
+                            if let Ok(user_with_domain) = get_name_from_sid_string(&sid_str) {
+                                let exists = users
+                                    .iter()
+                                    .any(|u| u.to_lowercase() == user_with_domain.to_lowercase());
+                                if !exists {
+                                    users.push(user_with_domain);
+                                }
                             }
                         }
+                        index += 1;
+                    } else {
+                        break;
                     }
                 }
+                let _ = RegCloseKey(hkey);
             }
         }
     }
@@ -142,101 +172,164 @@ pub fn create_user(username: &str, password: &str, never_expires: bool) -> Resul
 }
 
 pub fn set_password_never_expires(username: &str, never_expires: bool) -> Result<()> {
-    let flag = if never_expires { "$true" } else { "$false" };
+    let username_u16 = to_pcwstr(username);
+    let mut info = USER_INFO_1008::default();
 
-    let output = Command::new("powershell")
-        .args([
-            "-NoProfile",
-            "-Command",
-            &format!(
-                "Set-LocalUser -Name '{}' -PasswordNeverExpires {}",
-                username, flag
-            ),
-        ])
-        .creation_flags(0x08000000) // CREATE_NO_WINDOW
-        .output()
-        .map_err(|e| anyhow!("Failed to execute PowerShell: {}", e))?;
+    // UF_DONT_EXPIRE_PASSWD = 0x10000
+    // UF_SCRIPT = 0x01
+    info.usri1008_flags = if never_expires {
+        USER_ACCOUNT_FLAGS(0x10000 | 0x01)
+    } else {
+        USER_ACCOUNT_FLAGS(0x01)
+    };
 
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow!("PowerShell failed: {}", stderr.trim()));
+    unsafe {
+        let status = NetUserSetInfo(
+            PCWSTR::null(),
+            PCWSTR(username_u16.as_ptr()),
+            1008,
+            &info as *const _ as *const _,
+            None,
+        );
+
+        if status != 0 {
+            return Err(anyhow!("NetUserSetInfo (1008) failed: {}", status));
+        }
     }
 
     Ok(())
 }
 
 pub fn reset_password(username: &str, password: &str) -> Result<()> {
-    let output = Command::new("net")
-        .args(["user", username, password])
-        .creation_flags(0x08000000) // CREATE_NO_WINDOW
-        .output()
-        .map_err(|e| anyhow!("Failed to reset password: {}", e))?;
+    let username_u16 = to_pcwstr(username);
+    let password_u16 = to_pcwstr(password);
+    let mut info = USER_INFO_1003::default();
+    info.usri1003_password = PWSTR(password_u16.as_ptr() as *mut _);
 
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow!("net user password reset failed: {}", stderr.trim()));
+    unsafe {
+        let status = NetUserSetInfo(
+            PCWSTR::null(),
+            PCWSTR(username_u16.as_ptr()),
+            1003,
+            &info as *const _ as *const _,
+            None,
+        );
+
+        if status != 0 {
+            return Err(anyhow!("NetUserSetInfo (1003) failed: {}", status));
+        }
     }
 
     Ok(())
 }
 
 pub fn is_user_initialized(username: &str) -> bool {
-    let sid_output = Command::new("powershell")
-        .args([
-            "-NoProfile",
-            "-Command",
-            &format!(
-                "(New-Object System.Security.Principal.NTAccount('{}')).Translate([System.Security.Principal.SecurityIdentifier]).Value",
-                username
-            ),
-        ])
-        .creation_flags(0x08000000)
-        .output();
-
-    let sid = if let Ok(out) = sid_output {
-        String::from_utf8_lossy(&out.stdout).trim().to_string()
-    } else {
-        return false;
+    use windows::Win32::Foundation::LocalFree;
+    use windows::Win32::Security::Authorization::ConvertSidToStringSidW;
+    use windows::Win32::System::Environment::ExpandEnvironmentStringsW;
+    use windows::Win32::System::Registry::{
+        RegCloseKey, RegOpenKeyExW, RegQueryValueExW, HKEY_LOCAL_MACHINE, KEY_READ,
     };
 
-    if sid.is_empty() {
+    // 1. 获取 SID 并转为字符串
+    let sid_bytes: Vec<u8> = match get_sid_from_name(username) {
+        Ok(s) => s,
+        Err(_) => return false,
+    };
+
+    let mut sid_string_ptr = PWSTR::null();
+    let sid_string = unsafe {
+        if ConvertSidToStringSidW(PSID(sid_bytes.as_ptr() as *mut _), &mut sid_string_ptr).is_ok() {
+            let s = sid_string_ptr.to_string().unwrap_or_default();
+            let _ = LocalFree(Some(HLOCAL(sid_string_ptr.0 as _)));
+            s
+        } else {
+            return false;
+        }
+    };
+
+    if sid_string.is_empty() || !sid_string.starts_with("S-1-5-21") {
         return false;
     }
 
-    let reg_output = Command::new("reg")
-        .args([
-            "query",
-            &format!(
-                "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\{}",
-                sid
-            ),
-            "/v",
-            "ProfileImagePath",
-        ])
-        .creation_flags(0x08000000)
-        .output();
+    // 2. 从注册表读取 ProfileImagePath
+    let sub_key = format!(
+        "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\{}",
+        sid_string
+    );
+    let sub_key_u16 = to_pcwstr(&sub_key);
+    let value_name_u16 = to_pcwstr("ProfileImagePath");
 
-    if let Ok(out) = reg_output {
-        let stdout = String::from_utf8_lossy(&out.stdout);
-        for line in stdout.lines() {
-            if line.contains("ProfileImagePath") {
-                let parts: Vec<&str> = line.split("REG_EXPAND_SZ").collect();
-                if parts.len() > 1 {
-                    let raw_path = parts[1].trim();
-                    let resolved_path_output = Command::new("cmd")
-                        .args(["/c", &format!("echo {}", raw_path)])
-                        .creation_flags(0x08000000)
-                        .output();
-
-                    if let Ok(p_out) = resolved_path_output {
-                        let path_str = String::from_utf8_lossy(&p_out.stdout).trim().to_string();
-                        let path = std::path::Path::new(&path_str);
-                        return path.join("AppData").join("Local").exists();
-                    }
-                }
-            }
+    let mut hkey = windows::Win32::System::Registry::HKEY::default();
+    unsafe {
+        if RegOpenKeyExW(
+            HKEY_LOCAL_MACHINE,
+            PCWSTR(sub_key_u16.as_ptr()),
+            Some(0),
+            KEY_READ,
+            &mut hkey,
+        )
+        .is_err()
+        {
+            return false;
         }
-    }
 
-    false
+        let mut data_type = windows::Win32::System::Registry::REG_VALUE_TYPE::default();
+        let mut data_len = 0u32;
+        // 第一次调用获取长度
+        let _ = RegQueryValueExW(
+            hkey,
+            PCWSTR(value_name_u16.as_ptr()),
+            None,
+            Some(&mut data_type),
+            None,
+            Some(&mut data_len),
+        );
+
+        if data_len == 0 {
+            let _ = RegCloseKey(hkey);
+            return false;
+        }
+
+        let mut data = vec![0u8; data_len as usize];
+        if RegQueryValueExW(
+            hkey,
+            PCWSTR(value_name_u16.as_ptr()),
+            None,
+            Some(&mut data_type),
+            Some(data.as_mut_ptr()),
+            Some(&mut data_len),
+        )
+        .is_err()
+        {
+            let _ = RegCloseKey(hkey);
+            return false;
+        }
+        let _ = RegCloseKey(hkey);
+
+        // 3. 解析环境变量 (ExpandEnvironmentStringsW)
+        // 将字节数组转为 u16 数组 (UTF-16)
+        let data_u16: Vec<u16> = data
+            .chunks_exact(2)
+            .map(|chunk| u16::from_ne_bytes([chunk[0], chunk[1]]))
+            .collect();
+
+        let mut expanded = vec![0u16; 1024];
+        let res_len = ExpandEnvironmentStringsW(PCWSTR(data_u16.as_ptr()), Some(&mut expanded));
+
+        if res_len == 0 {
+            return false;
+        }
+
+        if res_len > expanded.len() as u32 {
+            expanded = vec![0u16; res_len as usize];
+            ExpandEnvironmentStringsW(PCWSTR(data_u16.as_ptr()), Some(&mut expanded));
+        }
+
+        let path_str = String::from_utf16_lossy(&expanded[..(res_len as usize).saturating_sub(1)]);
+        let path = std::path::Path::new(&path_str);
+
+        // 检查 AppData\Local 是否存在是判断 Profile 是否完成初始化的通用方法
+        path.join("AppData").join("Local").exists()
+    }
 }

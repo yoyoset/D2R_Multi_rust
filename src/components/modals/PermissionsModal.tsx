@@ -21,6 +21,14 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
     const [isDone, setIsDone] = useState(false);
     const logEndRef = useRef<HTMLDivElement>(null);
 
+    // Reset state when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setIsDone(false);
+            setLogs([]);
+        }
+    }, [isOpen]);
+
     useEffect(() => {
         let unlisten: () => void;
         const setup = async () => {

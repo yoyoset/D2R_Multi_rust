@@ -5,7 +5,6 @@ use crate::modules::process_killer;
 use crate::modules::win32_safe::mutex;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::process::Command;
 use tauri::{AppHandle, Emitter};
 
 #[derive(serde::Serialize, Clone, Debug)]
@@ -71,9 +70,10 @@ pub fn launch_game(
     account: &Account,
     _game_path: &str,
     bnet_only: bool,
+    force: bool,
 ) -> Result<u32, AccountError> {
     // 0. Check User Initialization
-    if !os.is_user_initialized(&account.win_user) {
+    if !force && !os.is_user_initialized(&account.win_user) {
         logger::log(
             app,
             "error",
@@ -256,42 +256,82 @@ fn get_bnet_path() -> Option<PathBuf> {
 
     // 2. Try Registry Lookup (Auto-detect)
     // HKLM\SOFTWARE\WOW6432Node\Blizzard Entertainment\Battle.net\Capabilities -> ApplicationIcon
-    // Value format: "C:\Path\To\Battle.net.exe",0
-    if let Ok(output) = Command::new("reg")
-        .args([
-            "query",
-            r"HKLM\SOFTWARE\WOW6432Node\Blizzard Entertainment\Battle.net\Capabilities",
-            "/v",
-            "ApplicationIcon",
-        ])
-        .output()
-    {
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        // Parse: ... REG_SZ    "C:\Program Files (x86)\Battle.net\Battle.net.exe",0
-        if let Some(line) = stdout.lines().find(|l| l.contains("ApplicationIcon")) {
-            // Simple parsing strategy: find " and "
-            if let Some(start) = line.find('"') {
-                if let Some(end) = line[start + 1..].find('"') {
-                    // Path is between quotes
-                    let path_str = &line[start + 1..start + 1 + end];
-                    let p = PathBuf::from(path_str);
-                    if p.exists() {
-                        return Some(p);
+    use crate::modules::os::windows::utils::to_pcwstr;
+    use windows::core::PCWSTR;
+    use windows::Win32::System::Registry::{
+        RegCloseKey, RegOpenKeyExW, RegQueryValueExW, HKEY_LOCAL_MACHINE, KEY_READ,
+        KEY_WOW64_32KEY, REG_VALUE_TYPE,
+    };
+
+    unsafe {
+        let key_path = to_pcwstr(r"SOFTWARE\Blizzard Entertainment\Battle.net\Capabilities");
+        let mut hkey = windows::Win32::System::Registry::HKEY::default();
+
+        // We use KEY_WOW64_32KEY to explicitly look for the 32-bit registry view where Bnet installs its keys
+        if RegOpenKeyExW(
+            HKEY_LOCAL_MACHINE,
+            PCWSTR(key_path.as_ptr()),
+            Some(0),
+            KEY_READ | KEY_WOW64_32KEY,
+            &mut hkey,
+        )
+        .is_ok()
+        {
+            let value_name = to_pcwstr("ApplicationIcon");
+            let mut val_type = REG_VALUE_TYPE::default();
+            let mut data_size = 0u32;
+
+            // Get buffer size
+            let _ = RegQueryValueExW(
+                hkey,
+                PCWSTR(value_name.as_ptr()),
+                None,
+                Some(&mut val_type),
+                None,
+                Some(&mut data_size),
+            );
+
+            if data_size > 0 {
+                let mut data = vec![0u8; data_size as usize];
+                if RegQueryValueExW(
+                    hkey,
+                    PCWSTR(value_name.as_ptr()),
+                    None,
+                    Some(&mut val_type),
+                    Some(data.as_mut_ptr()),
+                    Some(&mut data_size),
+                )
+                .is_ok()
+                {
+                    // ApplicationIcon usually looks like: "C:\Path\To\Battle.net.exe",0
+                    let data_u16 =
+                        std::slice::from_raw_parts(data.as_ptr() as *const u16, data.len() / 2);
+                    let mut path_str = String::from_utf16_lossy(data_u16);
+
+                    // Remove null terminator if present
+                    if let Some(pos) = path_str.find('\0') {
+                        path_str.truncate(pos);
                     }
-                }
-            } else {
-                // Fallback: maybe no quotes? Split by REG_SZ
-                let parts: Vec<&str> = line.split("REG_SZ").collect();
-                if parts.len() > 1 {
-                    let val = parts[1].trim();
-                    // Remove trailing ",0"
-                    let clean_val = val.split(',').next().unwrap_or(val).replace("\"", "");
-                    let p = PathBuf::from(clean_val);
+
+                    // Extract path between quotes or before comma
+                    let clean_path = if let Some(start) = path_str.find('"') {
+                        if let Some(end) = path_str[start + 1..].find('"') {
+                            &path_str[start + 1..start + 1 + end]
+                        } else {
+                            &path_str[start + 1..]
+                        }
+                    } else {
+                        path_str.split(',').next().unwrap_or(&path_str).trim()
+                    };
+
+                    let p = PathBuf::from(clean_path);
                     if p.exists() {
+                        let _ = RegCloseKey(hkey);
                         return Some(p);
                     }
                 }
             }
+            let _ = RegCloseKey(hkey);
         }
     }
 

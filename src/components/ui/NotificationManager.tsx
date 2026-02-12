@@ -27,28 +27,52 @@ export function NotificationManager() {
                 </ModalHeader>
                 <ModalBody>
                     <div className="text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                        {message}
+                        {message.split(/(!!.*?!!)/g).map((part, i) => {
+                            if (part.startsWith('!!') && part.endsWith('!!')) {
+                                return (
+                                    <span key={i} className="text-rose-500 font-bold">
+                                        {part.slice(2, -2)}
+                                    </span>
+                                );
+                            }
+                            return part;
+                        })}
                     </div>
                 </ModalBody>
                 <ModalFooter>
                     <div className="flex gap-3 w-full justify-end">
-                        {actions.map((action, index) => (
-                            <Button
-                                key={index}
-                                variant={action.variant === 'danger' ? 'solid' : (action.variant === 'outline' ? 'ghost' : 'solid')}
-                                className={action.variant === 'danger' ? 'bg-rose-600 hover:bg-rose-500' : ''}
-                                onClick={async () => {
-                                    try {
-                                        await action.onClick();
-                                    } catch (e) {
-                                        console.error(e);
-                                    }
-                                    close();
-                                }}
-                            >
-                                {action.label}
-                            </Button>
-                        ))}
+                        {actions.map((action, index) => {
+                            let btnVariant: any = 'solid';
+                            let customClass = '';
+
+                            if (action.variant === 'danger') {
+                                btnVariant = 'danger';
+                            } else if (action.variant === 'success') {
+                                btnVariant = 'success';
+                            } else if (action.variant === 'info') {
+                                btnVariant = 'info';
+                            } else if (action.variant === 'outline') {
+                                btnVariant = 'outline';
+                            }
+
+                            return (
+                                <Button
+                                    key={index}
+                                    variant={btnVariant}
+                                    className={customClass}
+                                    onClick={async () => {
+                                        try {
+                                            await action.onClick();
+                                        } catch (e) {
+                                            console.error(e);
+                                        }
+                                        close();
+                                    }}
+                                >
+                                    {action.label}
+                                </Button>
+                            );
+                        })}
                     </div>
                 </ModalFooter>
             </ModalContent>

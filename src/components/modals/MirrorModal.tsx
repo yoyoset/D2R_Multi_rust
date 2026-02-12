@@ -19,6 +19,13 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ isOpen, onClose, onLog }) => 
     const [mirrorName, setMirrorName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
 
+    // Reset state when modal opens
+    React.useEffect(() => {
+        if (isOpen) {
+            setMirrorName('');
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const selectFolder = async (setter: (path: string) => void) => {

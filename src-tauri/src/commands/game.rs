@@ -23,8 +23,16 @@ pub fn launch_game(
     account: modules::account::Account,
     game_path: String,
     bnet_only: bool,
+    force: bool,
 ) -> Result<String, String> {
-    match modules::account::launch_game(state.os.as_ref(), &app, &account, &game_path, bnet_only) {
+    match modules::account::launch_game(
+        state.os.as_ref(),
+        &app,
+        &account,
+        &game_path,
+        bnet_only,
+        force,
+    ) {
         Ok(pid) => Ok(format!("Game launched (PID: {})", pid)),
         Err(e) => Err(e.to_string()),
     }

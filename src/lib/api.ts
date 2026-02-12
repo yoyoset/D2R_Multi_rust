@@ -55,11 +55,12 @@ export async function killMutexes(): Promise<string> {
     }
 }
 
-export async function launchGame(account: Account, gamePath: string, bnetOnly: boolean = false): Promise<string> {
+export async function launchGame(account: Account, gamePath: string, bnetOnly: boolean = false, force: boolean = false): Promise<string> {
     return await invoke("launch_game", {
         account,
         gamePath,
-        bnetOnly
+        bnetOnly,
+        force
     });
 }
 

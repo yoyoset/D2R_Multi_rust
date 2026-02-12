@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.3.8-orange)
+![Version](https://img.shields.io/badge/version-0.3.9-orange)
 ![Backend](https://img.shields.io/badge/backend-Rust-red)
 ![Framework](https://img.shields.io/badge/framework-Tauri_v2-blue)
 
@@ -88,6 +88,13 @@ The output executables will be in `src-tauri/target/release/`.
 
 - Application Config: `%APPDATA%/com.d2rmultiplay.ui/config.json`
 - Account Snapshots: `%APPDATA%/com.d2rmultiplay.ui/snapshots/`
+
+## 📝 0.3.9 Update Details
+
+- **Native Win32 Engine**: Completely removed PowerShell/CMD dependencies from core logic, replacing them with high-performance Win32 APIs for 100% path and language compatibility.
+- **Unicode Support**: Full UTF-16 path routing implemented in the backend to support non-ASCII usernames and directories (Korean, Chinese, etc.).
+- **UI Experience**: Fixed modal state issues where internal states (like "Finished") wouldn't reset correctly on reopen.
+- **Force Launch**: Added "Force Launch" fallback option for specialized system environments.
 
 ## ⚠️ Disclaimer
 

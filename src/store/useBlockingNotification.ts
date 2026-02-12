@@ -3,7 +3,7 @@ import { create } from 'zustand';
 export interface Action {
     label: string;
     onClick: () => Promise<void> | void;
-    variant?: 'primary' | 'secondary' | 'danger' | 'outline';
+    variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'success' | 'info';
 }
 
 interface NotificationState {

@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.3.8-orange)
+![Version](https://img.shields.io/badge/version-0.3.9-orange)
 ![Backend](https://img.shields.io/badge/backend-Rust-red)
 ![Framework](https://img.shields.io/badge/framework-Tauri_v2-blue)
 
@@ -88,6 +88,13 @@ npm run tauri build
 
 - 应用配置存储于：`%APPDATA%/com.d2rmultiplay.ui/config.json`
 - 账号快照存储于：`%APPDATA%/com.d2rmultiplay.ui/snapshots/`
+
+## 📝 0.3.9 更新详情
+
+- **原生 Win32 引擎重构**: 彻底弃用了旧版中依赖的 PowerShell 与 CMD 指令，改为调用 Windows 内核级 API（进程、用户、注册表管理），实现了 100% 的路径与语言兼容性。
+- **全链路 Unicode 支持**: 后端逻辑全面适配 UTF-16 编码，支持韩文、中文等非 ASCII 路径与用户名，彻底杜绝乱码导致的启动失败。
+- **UI 状态感知修复**: 修复了权限修复等工具窗口在关闭后重新打开时，由于状态未重置导致的“明白了”按钮残留问题。
+- **强制启动 fallback**: 为各种极端系统环境增加了“强制启动”备选方案，提升跨平台容错度。
 
 ## 📝 0.3.8 更新详情
 
