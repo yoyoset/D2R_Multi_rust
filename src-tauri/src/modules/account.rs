@@ -16,12 +16,13 @@ pub struct LaunchLogPayload {
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone)]
 pub struct Account {
-    pub id: String,                   // UUID
-    pub win_user: String,             // The bound Windows Username
-    pub win_pass: Option<String>,     // Optional (for auto-launch)
-    pub bnet_account: String,         // Display only
-    pub note: Option<String>,         // Role remarks
-    pub avatar: Option<String>,       // Base64 encoded image or library icon ID
+    pub id: String,               // UUID
+    pub win_user: String,         // The bound Windows Username
+    pub win_pass: Option<String>, // Optional (for auto-launch)
+    pub bnet_account: String,     // Display only
+    pub note: Option<String>,     // Role remarks
+    pub avatar: Option<String>,   // Base64 encoded image or library icon ID
+    #[serde(default)]
     pub password_never_expires: bool, // Support for 0x80070532 fix
 }
 

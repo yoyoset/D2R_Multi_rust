@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.6] - 2026-02-12
+
+### Added
+
+- **Global Mutant Scan (BAT-Mode)**: Implemented a system-wide scanning engine that identifies and cleans D2R mutexes across all sessions and PIDs, matching the power of community BAT scripts.
+  **全球逻辑锁全扫 (BAT 模式)**: 引入了系统级扫描引擎，支持跨 Session、跨 PID 识别并清理所有 D2R 互斥锁，清理能力与社区强力 BAT 脚本对齐。
+
+### Fixed
+
+- **Surgical Space Safety**: Restricted directory lock cleaning to the `BaseNamedObjects` logical namespace, ensuring physical file handles are never touched. This prevents game hangs and "Cannot Close" issues.
+  **外科手术级隔离安全**: 将目录锁清理严格限制在 `BaseNamedObjects` 逻辑空间，确保绝不触碰物理文件句柄，彻底杜绝游戏卡死、无法关闭和无法再次拉起的问题。
+- **Account Compatibility**: Added legacy support for `accounts.json` missing the `password_never_expires` field, preventing serialization errors on launch.
+  **账号配置全兼容**: 增加了对旧版 `accounts.json` 的向下兼容支持，自动补全缺失字段，解决了启动时的序列化报错。
+
 ## [0.4.5] - 2026-02-12
 
 ### Fixed

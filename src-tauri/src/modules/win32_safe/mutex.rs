@@ -134,6 +134,12 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
         let mut closed_count = 0;
         let mut target_handle_count = 0;
 
+        // 3. System-Wide Sweep (BAT-style)
+        // We look for any "Mutant" object matching our D2R patterns, regardless of PID.
+        let mut mutant_type_index = 0u16;
+        let mut found_mutant_type = false;
+
+        // Pass 1: Targeted Scan (PID based - Fast)
         for i in 0..info.number_of_handles {
             let entry = *handles_ptr.add(i);
             let pid = entry.unique_process_id as u32;
@@ -141,26 +147,48 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
             if target_pids.contains(&pid) {
                 target_handle_count += 1;
                 if let Some(name) = get_handle_name_safe(app, pid, entry.handle_value, true) {
-                    let name_lc = name.to_lowercase();
-                    let is_confirmed = name.contains(D2R_MUTEX_NAME)
-                        || name.contains(D2R_MUTEX_NAME_ALT)
-                        || (name_lc.contains("diablo") && name_lc.contains("data/data"))
-                        || name_lc.contains("d2r store mutex");
+                    if !found_mutant_type {
+                        mutant_type_index = entry.object_type_index;
+                        found_mutant_type = true;
+                    }
 
-                    if is_confirmed {
-                        crate::modules::logger::log(
+                    if check_and_close_if_match(
+                        app,
+                        &name,
+                        pid,
+                        entry.handle_value,
+                        &mut closed_count,
+                    ) {
+                        continue;
+                    }
+                }
+            }
+        }
+
+        // Pass 2: Global Scan (Type based - BAT style)
+        // If we found the mutant type index, scan the WHOLE system for our specific heavy-duty names.
+        if found_mutant_type {
+            crate::modules::logger::log(
+                app,
+                "debug",
+                "正在执行全系统逻辑锁扫描 (Cross-Session)...",
+            );
+            for i in 0..info.number_of_handles {
+                let entry = *handles_ptr.add(i);
+                if entry.object_type_index == mutant_type_index {
+                    let pid = entry.unique_process_id as u32;
+                    // Skip if we just checked this in Pass 1 to avoid double-logging
+                    if target_pids.contains(&pid) {
+                        continue;
+                    }
+
+                    if let Some(name) = get_handle_name_safe(app, pid, entry.handle_value, false) {
+                        check_and_close_if_match(
                             app,
-                            "success",
-                            &format!("🎯 发现并清理 D2R 互斥锁: {}", name),
-                        );
-                        if close_remote_handle(pid, entry.handle_value) {
-                            closed_count += 1;
-                        }
-                    } else if name_lc.contains("diablo") || name_lc.contains("d2r") {
-                        crate::modules::logger::log(
-                            app,
-                            "debug",
-                            &format!("🔍 发现 D2R 相关 Mutant (未清理): {}", name),
+                            &name,
+                            pid,
+                            entry.handle_value,
+                            &mut closed_count,
                         );
                     }
                 }
@@ -172,7 +200,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                 app,
                 "info",
                 &format!(
-                    "全量扫描完成，共检查了 {} 个目标进程句柄，未命中互斥锁名称",
+                    "全量扫描完成，未命中任何 D2R 互斥锁 (Checked {} handles)",
                     target_handle_count
                 ),
             );
@@ -301,6 +329,44 @@ unsafe fn close_remote_handle(pid: u32, handle_val: usize) -> bool {
             return true;
         }
         let _ = CloseHandle(h_process);
+    }
+    false
+}
+
+fn check_and_close_if_match(
+    app: &tauri::AppHandle,
+    name: &str,
+    pid: u32,
+    handle_val: usize,
+    closed_count: &mut usize,
+) -> bool {
+    let name_lc = name.to_lowercase();
+
+    // 1. Engine Lock (Global-safe, highest priority)
+    let is_engine_lock = name.contains(D2R_MUTEX_NAME)
+        || name.contains(D2R_MUTEX_NAME_ALT)
+        || name_lc.contains("d2r store mutex");
+
+    // 2. Path-based Directory Lock (Limited to BaseNamedObjects logic space)
+    // We ONLY close this if it's in the logical object namespace to avoid hanging file IO.
+    let is_path_lock = name_lc.contains("basenamedobjects")
+        && (name_lc.ends_with("data/data")
+            || name_lc.ends_with("data\\data")
+            || name_lc.ends_with("data/data/")
+            || name_lc.ends_with("data\\data\\"));
+
+    if is_engine_lock || is_path_lock {
+        crate::modules::logger::log(
+            app,
+            "success",
+            &format!("🎯 发现并清理 D2R 互斥锁: {}", name),
+        );
+        unsafe {
+            if close_remote_handle(pid, handle_val) {
+                *closed_count += 1;
+            }
+        }
+        return true;
     }
     false
 }

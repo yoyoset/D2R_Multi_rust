@@ -10,7 +10,7 @@ fn main() {
     let windows = tauri_build::WindowsAttributes::new()
         .app_manifest(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity version="0.2.0.0" processorArchitecture="*" name="com.d2rmultiplay.ui" type="win32"/>
+  <assemblyIdentity version="0.4.5.0" processorArchitecture="*" name="com.d2rmultiplay.ui" type="win32"/>
   <description>D2R Multi</description>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>
