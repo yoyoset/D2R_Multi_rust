@@ -6,8 +6,8 @@ use std::time::Duration;
 
 use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind};
 use windows::Win32::Foundation::{
-    CloseHandle, DuplicateHandle, DUPLICATE_CLOSE_SOURCE, DUPLICATE_HANDLE_OPTIONS, HANDLE,
-    NTSTATUS, STATUS_BUFFER_OVERFLOW, STATUS_INFO_LENGTH_MISMATCH, STATUS_SUCCESS,
+    CloseHandle, DuplicateHandle, DUPLICATE_CLOSE_SOURCE, DUPLICATE_SAME_ACCESS, HANDLE, NTSTATUS,
+    STATUS_BUFFER_OVERFLOW, STATUS_INFO_LENGTH_MISMATCH, STATUS_SUCCESS,
 };
 use windows::Win32::System::Threading::{GetCurrentProcess, OpenProcess, PROCESS_DUP_HANDLE};
 
@@ -63,11 +63,7 @@ struct UNICODE_STRING {
 pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error> {
     // 0. Enable SeDebugPrivilege (CRITICAL for cross-user/elevated access)
     if !crate::modules::win_admin::enable_debug_privilege() {
-        crate::modules::logger::log(
-            app,
-            "warn",
-            "无法启用 SeDebugPrivilege，跨用户句柄清理可能失败",
-        );
+        crate::modules::logger::log(app, "warn", "无法启用 SeDebugPrivilege，跨用户清理可能受限");
     }
 
     // 1. Identify target PIDs (D2R.exe)
@@ -75,7 +71,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
     sys.refresh_processes_specifics(
         ProcessesToUpdate::All,
         true,
-        ProcessRefreshKind::nothing().with_exe(UpdateKind::OnlyIfNotSet),
+        ProcessRefreshKind::nothing().with_exe(UpdateKind::Always),
     );
 
     let mut target_pids = std::collections::HashSet::new();
@@ -84,20 +80,26 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
             if let Some(exe_name) = exe_path.file_name() {
                 let name = exe_name.to_string_lossy().to_lowercase();
                 if name == "d2r.exe" || name == "diabloii.exe" {
-                    target_pids.insert(pid.as_u32());
+                    let pid_u32 = pid.as_u32();
+                    target_pids.insert(pid_u32);
+                    crate::modules::logger::log(
+                        app,
+                        "debug",
+                        &format!("发现目标 D2R 进程 PID: {}", pid_u32),
+                    );
                 }
             }
         }
     }
 
     if target_pids.is_empty() {
+        crate::modules::logger::log(app, "debug", "未发现运行中的 D2R 进程，无需清理");
         return Ok(0);
     }
 
     unsafe {
         // 2. Get Extended System Handles (Class 64)
-        // This solves the 16-bit PID truncation issue (u16 -> usize)
-        let mut size: u32 = 0x100000; // Start with 1MB
+        let mut size: u32 = 0x100000;
         let mut buffer: Vec<u8> = vec![0; size as usize];
         let mut return_length: u32 = 0;
 
@@ -116,7 +118,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                 break;
             } else {
                 return Err(anyhow::anyhow!(
-                    "NtQuerySystemInformation(64) failed: 0x{:X}",
+                    "NtQuerySystemInformation(64) 接口调用失败: 0x{:X}",
                     status.0
                 ));
             }
@@ -127,6 +129,12 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
             .as_ptr()
             .add(size_of::<SYSTEM_HANDLE_INFORMATION_EX>())
             as *const SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX;
+
+        crate::modules::logger::log(
+            app,
+            "debug",
+            &format!("正在枚举系统总计 {} 个句柄...", info.number_of_handles),
+        );
 
         let mut closed_count = 0;
 
@@ -143,7 +151,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                                 app,
                                 "success",
                                 &format!(
-                                    "已成功清理 PID {} 的互斥体 (Handle: 0x{:X})",
+                                    "已成功清理 PID {} 下的互斥体句柄 (0x{:X})",
                                     pid, entry.handle_value
                                 ),
                             );
@@ -159,7 +167,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
 
 /// Query handle name with 100ms timeout and type pre-filtering to prevent HANGS
 unsafe fn get_handle_name_safe(
-    _app: &tauri::AppHandle,
+    app: &tauri::AppHandle,
     pid: u32,
     handle_val: usize,
 ) -> Option<String> {
@@ -176,7 +184,7 @@ unsafe fn get_handle_name_safe(
         &mut h_dup,
         0,
         false,
-        DUPLICATE_HANDLE_OPTIONS(0),
+        DUPLICATE_SAME_ACCESS, // 关键修复：必须使用 SAME_ACCESS 才能拥有查询权限
     );
 
     let _ = CloseHandle(h_process);
@@ -211,8 +219,6 @@ unsafe fn get_handle_name_safe(
         (type_info.length / 2) as usize,
     ));
 
-    // Only query names for Mutant (Mutex) objects.
-    // Querying File/Pipe/... names can hang if the resource is busy/blocked.
     if type_name != "Mutant" {
         let _ = CloseHandle(h_dup);
         return None;
@@ -247,13 +253,7 @@ unsafe fn get_handle_name_safe(
         let _ = tx.send(None);
     });
 
-    let result = rx
-        .recv_timeout(Duration::from_millis(100))
-        .unwrap_or_else(|_| {
-            // If we timeout, it's likely a blocked handle (hanging NtQueryObject)
-            None
-        });
-
+    let result = rx.recv_timeout(Duration::from_millis(100)).unwrap_or(None);
     let _ = CloseHandle(h_dup);
     result
 }
@@ -268,7 +268,7 @@ unsafe fn close_remote_handle(pid: u32, handle_val: usize) -> bool {
             &mut h_dup_dummy,
             0,
             false,
-            DUPLICATE_CLOSE_SOURCE,
+            DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS, // 这里的权限也应保持一致，确保操作成功
         );
 
         if result.is_ok() {
