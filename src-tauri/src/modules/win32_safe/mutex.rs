@@ -61,12 +61,12 @@ struct UNICODE_STRING {
 }
 
 pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error> {
-    // 0. Enable SeDebugPrivilege (CRITICAL for cross-user/elevated access)
+    // 0. Enable SeDebugPrivilege
     if !crate::modules::win_admin::enable_debug_privilege() {
-        crate::modules::logger::log(app, "warn", "无法启用 SeDebugPrivilege，跨用户清理可能受限");
+        crate::modules::logger::log(app, "warn", "无法启用 SeDebugPrivilege，清理权限可能受限");
     }
 
-    // 1. Identify target PIDs (D2R.exe)
+    // 1. Identify target PIDs
     let mut sys = System::new_all();
     sys.refresh_processes_specifics(
         ProcessesToUpdate::All,
@@ -93,12 +93,12 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
     }
 
     if target_pids.is_empty() {
-        crate::modules::logger::log(app, "debug", "未发现运行中的 D2R 进程，无需清理");
+        crate::modules::logger::log(app, "debug", "系统未发现运行中的 D2R 进程");
         return Ok(0);
     }
 
     unsafe {
-        // 2. Get Extended System Handles (Class 64)
+        // 2. Get Extended System Handles
         let mut size: u32 = 0x100000;
         let mut buffer: Vec<u8> = vec![0; size as usize];
         let mut return_length: u32 = 0;
@@ -118,7 +118,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                 break;
             } else {
                 return Err(anyhow::anyhow!(
-                    "NtQuerySystemInformation(64) 接口调用失败: 0x{:X}",
+                    "NtQuerySystemInformation 失败: 0x{:X}",
                     status.0
                 ));
             }
@@ -133,27 +133,29 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
         crate::modules::logger::log(
             app,
             "debug",
-            &format!("正在枚举系统总计 {} 个句柄...", info.number_of_handles),
+            &format!("开始扫描系统 {} 个句柄...", info.number_of_handles),
         );
 
         let mut closed_count = 0;
+        let mut scanned_targets = 0;
 
         for i in 0..info.number_of_handles {
             let entry = *handles_ptr.add(i);
             let pid = entry.unique_process_id as u32;
 
             if target_pids.contains(&pid) {
+                scanned_targets += 1;
+                // 增加探测超时至 200ms，应对 22w+ 句柄扫描时的系统延迟
                 if let Some(name) = get_handle_name_safe(app, pid, entry.handle_value) {
+                    // 使用 contains 匹配，兼容 \Sessions\x\BaseNamedObjects\ 前缀
                     if name.contains(D2R_MUTEX_NAME) {
+                        crate::modules::logger::log(app, "info", &format!("命中互斥锁: {}", name));
                         if close_remote_handle(pid, entry.handle_value) {
                             closed_count += 1;
                             crate::modules::logger::log(
                                 app,
                                 "success",
-                                &format!(
-                                    "已成功清理 PID {} 下的互斥体句柄 (0x{:X})",
-                                    pid, entry.handle_value
-                                ),
+                                &format!("已成功清理 PID {} 互斥锁", pid),
                             );
                         }
                     }
@@ -161,11 +163,21 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
             }
         }
 
+        if closed_count == 0 {
+            crate::modules::logger::log(
+                app,
+                "info",
+                &format!(
+                    "扫描完毕，处理了 {} 个目标进程句柄，未发现活动互斥锁",
+                    scanned_targets
+                ),
+            );
+        }
+
         Ok(closed_count)
     }
 }
 
-/// Query handle name with 100ms timeout and type pre-filtering to prevent HANGS
 unsafe fn get_handle_name_safe(
     _app: &tauri::AppHandle,
     pid: u32,
@@ -184,7 +196,7 @@ unsafe fn get_handle_name_safe(
         &mut h_dup,
         0,
         false,
-        DUPLICATE_SAME_ACCESS, // 关键修复：必须使用 SAME_ACCESS 才能拥有查询权限
+        DUPLICATE_SAME_ACCESS,
     );
 
     let _ = CloseHandle(h_process);
@@ -192,8 +204,8 @@ unsafe fn get_handle_name_safe(
         return None;
     }
 
-    // 1. Type Pre-filter (Safe & Fast)
-    let mut type_buf = vec![0u8; 1024];
+    // 1. Type Pre-filter (Mutant only)
+    let mut type_buf = vec![0u8; 512];
     let mut ret_len = 0;
     let status = NtQueryObject(
         h_dup,
@@ -218,18 +230,17 @@ unsafe fn get_handle_name_safe(
         type_info.buffer,
         (type_info.length / 2) as usize,
     ));
-
     if type_name != "Mutant" {
         let _ = CloseHandle(h_dup);
         return None;
     }
 
-    // 2. Name Query with Timeout (Final Safety)
+    // 2. Name Query with extended timeout (200ms)
     let (tx, rx) = mpsc::channel();
     let handle_to_query = h_dup.0 as usize;
 
     thread::spawn(move || {
-        let mut name_buf = vec![0u8; 2048];
+        let mut name_buf = vec![0u8; 1024]; // 常用句柄名称足够了
         let mut r_len = 0;
         let status = NtQueryObject(
             HANDLE(handle_to_query as *mut c_void),
@@ -253,7 +264,7 @@ unsafe fn get_handle_name_safe(
         let _ = tx.send(None);
     });
 
-    let result = rx.recv_timeout(Duration::from_millis(100)).unwrap_or(None);
+    let result = rx.recv_timeout(Duration::from_millis(200)).unwrap_or(None);
     let _ = CloseHandle(h_dup);
     result
 }
@@ -268,7 +279,7 @@ unsafe fn close_remote_handle(pid: u32, handle_val: usize) -> bool {
             &mut h_dup_dummy,
             0,
             false,
-            DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS, // 这里的权限也应保持一致，确保操作成功
+            DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS,
         );
 
         if result.is_ok() {

@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.3] - 2026-02-12
+
+### Fixed
+
+- **Mutex Matching Robustness**: Switched to substring matching for mutex names to support session-specific prefixes (e.g., `\Sessions\1\...`).
+  **互斥锁匹配加固**: 改用子字符串匹配模式，完美支持不同会话下的互斥锁前缀（如沙盒或多用户环境）。
+- **Detection Reliability**: Increased asynchronous probing timeout to 200ms to handle high system loads.
+  **探测可靠性**: 将异步探测超时增加至 200ms，确保在系统高负载（20w+ 句柄枚举）时仍能准确捕捉目标。
+- **Diagnostic Trace**: Improved backend logging to show matched object names.
+  **诊断追踪**: 增强了后端日志，可实时显示命中的对象名称。
+
 ## [0.4.2] - 2026-02-12
 
 ### Fixed
