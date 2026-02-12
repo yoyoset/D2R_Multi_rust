@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/Button";
-import { AppConfig, saveConfig } from "../../lib/api";
+import { AppConfig, saveConfig, invoke } from "../../lib/api";
 import { useLogs } from "../../store/useLogs";
 import { useNotification } from "../../store/useNotification";
 import { useTranslation } from "react-i18next";
@@ -250,7 +250,6 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                 <button
                                     onClick={async () => {
                                         try {
-                                            const { invoke } = await import("@tauri-apps/api/core");
                                             await invoke('open_log_file');
                                         } catch (e) {
                                             addNotification('error', `${t('error')}: ${e}`);

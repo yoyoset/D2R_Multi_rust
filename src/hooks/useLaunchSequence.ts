@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Account, launchGame, resolveLaunchConflict, openUserSwitch } from '../lib/api';
+import { Account, launchGame, resolveLaunchConflict, openUserSwitch, invoke } from '../lib/api';
 import { useBlockingNotification } from '../store/useBlockingNotification';
 import { useLogs } from '../store/useLogs';
 
@@ -13,6 +13,22 @@ export function useLaunchSequence() {
     const performLaunch = async (account: Account, bnetOnly: boolean = false, force: boolean = false) => {
         try {
             setIsLaunching(true);
+
+            // 1. Infrastructure Pre-flight
+            try {
+                const health = await invoke('get_infra_health', { accounts: [account] }) as any;
+                if (!health.agent_config_writable || !health.bnet_path_valid) {
+                    addLog({
+                        message: t('infra_health_warn'),
+                        level: 'warn',
+                        category: 'system'
+                    });
+                }
+            } catch (err) {
+                console.error("Health check failed", err);
+            }
+
+            // 2. Main Launch
             await launchGame(account, "", bnetOnly, force);
             setIsLaunching(false);
         } catch (e) {

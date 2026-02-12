@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2026-02-12
+
+### Added
+
+- **Infrastructure Health Check**: Real-time pre-flight verification for Battle.net installation, config writability, and sandbox profile readiness.
+  **基础设施健康检查**: 实时预检战网安装路径、配置目录写入权限以及沙箱账户配置文件就绪状态。
+- **Manual Process Explorer**: Embedded tool for manually terminating stubborn game handles when automation fails.
+  **手动进程查看器**: 内置工具，支持在自动化清理失效时，手动定位并强制关除残留的游戏句柄。
+
+### Optimized & Refined
+
+- **Progressive Launch UI**: Introduced 3-tier color states for launch buttons (Emerald for Ready, Yellow for Bnet-Active, Orange for D2R-Active) for granular status awareness.
+  **渐进式启动 UI**: 引入三阶颜色逻辑（翡翠绿：就绪；明黄：战网运行；琥珀橙：游戏运行），实现更深度的启动状态感知。
+- **Quiet Status Polling**: Refactored polling logic to eliminate UI flickering. Manual refresh icon now only animates on demand while background sync remains silent.
+  **静默状态同步**: 重构轮询逻辑，消除了 UI 动画抖动。刷新图标仅在手动触发时旋转，后台同步转为静默模式。
+- **Enhanced Refresh Feedback**: Redesigned refresh button with explicit status text ("Refreshing...") and improved hit area.
+  **增强型刷新反馈**: 重新设计了刷新按钮，增加了显式的状态文字（“正在刷新...”）并优化了交互热区。
+
+### Fixed
+
+- **Rust Backend Robustness**: Resolved PathBuf scope issues and corrected Result handling in system-level Windows user providers.
+  **Rust 后端加固**: 修复了 PathBuf 作用域错误，并修正了系统级 Windows 用户适配器中的 Result 处理逻辑。
+- **TypeScript Build Errors**: Fixed unused effect imports in ManualTools component.
+  **TS 构建修复**: 修复了工具组件中未使用的 Effect 引用导致的构建中断。
+
 ## [0.4.8] - 2026-02-12 [STABLE]
 
 ### Added

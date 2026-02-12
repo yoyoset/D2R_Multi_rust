@@ -57,7 +57,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     onViewModeChange
 }) => {
     const { t } = useTranslation();
-    const { accountStatuses } = useAccountStatus(accounts);
+    const { accountStatuses, refresh, isRefreshing } = useAccountStatus(accounts);
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -75,7 +75,8 @@ const Dashboard: React.FC<DashboardProps> = ({
 
     const selectedAccount = accounts.find(a => a.id === selectedAccountId);
     const selectedAccountStatus = selectedAccount ? accountStatuses[selectedAccount.win_user] : undefined;
-    const isLaunchDisabled = accounts.length === 0 || !selectedAccountId || isLaunching || !!selectedAccountStatus?.d2r_active || !!selectedAccountStatus?.bnet_active;
+    // 只有在没有账号、未登录、或正在启动中时才禁用。不再因为“检测到运行中”而彻底锁定按钮，允许用户再次点击尝试清理或强制启动。
+    const isLaunchDisabled = accounts.length === 0 || !selectedAccountId || isLaunching;
 
     return (
         <div className="flex flex-col items-center w-full p-4 md:p-6 gap-4 md:gap-6">
@@ -88,6 +89,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                 multiAccountMode={multiAccountMode}
                 selectedAccountStatus={selectedAccountStatus}
                 isLaunchDisabled={isLaunchDisabled}
+                onRefresh={refresh}
+                isRefreshing={isRefreshing}
             />
 
             <div className="w-full shrink-0 pb-10">

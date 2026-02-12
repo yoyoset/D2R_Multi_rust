@@ -17,6 +17,18 @@ export interface AccountStatus {
     d2r_active: boolean;
 }
 
+export interface ProcessInfo {
+    pid: number;
+    name: string;
+    user: string;
+}
+
+export interface HandleInfo {
+    handle_value: number;
+    name: string;
+    type_name: string;
+}
+
 export interface AppConfig {
     accounts: Account[];
     game_path: string;
@@ -122,5 +134,17 @@ export async function checkUserInitialization(username: string): Promise<boolean
 
 export async function getLatestChangelog(): Promise<string> {
     return await invoke('get_latest_changelog');
+}
+
+export async function getProcessList(): Promise<ProcessInfo[]> {
+    return await invoke('get_process_list');
+}
+
+export async function getProcessHandles(pid: number): Promise<HandleInfo[]> {
+    return await invoke('get_process_handles', { pid });
+}
+
+export async function closeSpecificHandle(pid: number, handle: number): Promise<void> {
+    await invoke('close_specific_handle', { pid, handle });
 }
 

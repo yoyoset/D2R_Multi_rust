@@ -249,7 +249,7 @@ pub fn launch_game(
     }
 }
 
-fn get_bnet_path() -> Option<PathBuf> {
+pub fn get_bnet_path() -> Option<PathBuf> {
     // 1. Try standard hardcoded path
     let standard = PathBuf::from(r"C:\Program Files (x86)\Battle.net\Battle.net.exe");
     if standard.exists() {

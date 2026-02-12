@@ -2,6 +2,7 @@ use crate::modules::os::windows::utils::{
     get_localized_users_group_name, get_name_from_sid_string, get_sid_from_name, to_pcwstr,
 };
 use anyhow::{anyhow, Result};
+use std::path::PathBuf;
 use std::ptr;
 use windows::core::{PCWSTR, PWSTR};
 use windows::Win32::Foundation::HLOCAL;
@@ -223,7 +224,7 @@ pub fn reset_password(username: &str, password: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn is_user_initialized(username: &str) -> bool {
+pub fn get_user_profile_path(username: &str) -> Result<PathBuf> {
     use windows::Win32::Foundation::LocalFree;
     use windows::Win32::Security::Authorization::ConvertSidToStringSidW;
     use windows::Win32::System::Environment::ExpandEnvironmentStringsW;
@@ -232,10 +233,8 @@ pub fn is_user_initialized(username: &str) -> bool {
     };
 
     // 1. 获取 SID 并转为字符串
-    let sid_bytes: Vec<u8> = match get_sid_from_name(username) {
-        Ok(s) => s,
-        Err(_) => return false,
-    };
+    let sid_bytes: Vec<u8> =
+        get_sid_from_name(username).map_err(|e| anyhow!("Failed to get SID: {}", e))?;
 
     let mut sid_string_ptr = PWSTR::null();
     let sid_string = unsafe {
@@ -244,12 +243,12 @@ pub fn is_user_initialized(username: &str) -> bool {
             let _ = LocalFree(Some(HLOCAL(sid_string_ptr.0 as _)));
             s
         } else {
-            return false;
+            return Err(anyhow!("ConvertSidToStringSidW failed"));
         }
     };
 
-    if sid_string.is_empty() || !sid_string.starts_with("S-1-5-21") {
-        return false;
+    if sid_string.is_empty() {
+        return Err(anyhow!("Empty SID string"));
     }
 
     // 2. 从注册表读取 ProfileImagePath
@@ -271,12 +270,14 @@ pub fn is_user_initialized(username: &str) -> bool {
         )
         .is_err()
         {
-            return false;
+            return Err(anyhow!(
+                "Profile registry key not found for SID: {}",
+                sid_string
+            ));
         }
 
         let mut data_type = windows::Win32::System::Registry::REG_VALUE_TYPE::default();
         let mut data_len = 0u32;
-        // 第一次调用获取长度
         let _ = RegQueryValueExW(
             hkey,
             PCWSTR(value_name_u16.as_ptr()),
@@ -288,7 +289,7 @@ pub fn is_user_initialized(username: &str) -> bool {
 
         if data_len == 0 {
             let _ = RegCloseKey(hkey);
-            return false;
+            return Err(anyhow!("ProfileImagePath length is 0"));
         }
 
         let mut data = vec![0u8; data_len as usize];
@@ -303,12 +304,11 @@ pub fn is_user_initialized(username: &str) -> bool {
         .is_err()
         {
             let _ = RegCloseKey(hkey);
-            return false;
+            return Err(anyhow!("RegQueryValueExW failed"));
         }
         let _ = RegCloseKey(hkey);
 
         // 3. 解析环境变量 (ExpandEnvironmentStringsW)
-        // 将字节数组转为 u16 数组 (UTF-16)
         let data_u16: Vec<u16> = data
             .chunks_exact(2)
             .map(|chunk| u16::from_ne_bytes([chunk[0], chunk[1]]))
@@ -318,7 +318,7 @@ pub fn is_user_initialized(username: &str) -> bool {
         let res_len = ExpandEnvironmentStringsW(PCWSTR(data_u16.as_ptr()), Some(&mut expanded));
 
         if res_len == 0 {
-            return false;
+            return Err(anyhow!("ExpandEnvironmentStringsW failed"));
         }
 
         if res_len > expanded.len() as u32 {
@@ -327,9 +327,14 @@ pub fn is_user_initialized(username: &str) -> bool {
         }
 
         let path_str = String::from_utf16_lossy(&expanded[..(res_len as usize).saturating_sub(1)]);
-        let path = std::path::Path::new(&path_str);
+        Ok(PathBuf::from(path_str))
+    }
+}
 
-        // 检查 AppData\Local 是否存在是判断 Profile 是否完成初始化的通用方法
+pub fn is_user_initialized(username: &str) -> bool {
+    if let Ok(path) = get_user_profile_path(username) {
         path.join("AppData").join("Local").exists()
+    } else {
+        false
     }
 }

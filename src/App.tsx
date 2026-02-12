@@ -23,6 +23,8 @@ import { useBlockingNotification } from "./store/useBlockingNotification";
 
 import { WhatsNewModal } from "./components/modals/WhatsNewModal";
 import { getVersion } from "@tauri-apps/api/app";
+import { check } from "@tauri-apps/plugin-updater";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 type View = 'dashboard' | 'accounts' | 'manual';
 
@@ -41,7 +43,6 @@ function App() {
     // Auto Update Check
     const checkUpdateOnLaunch = async () => {
         try {
-            const { check } = await import("@tauri-apps/plugin-updater");
             const update = await check();
             if (update) {
                 showBlocking(
@@ -62,9 +63,7 @@ function App() {
                             ) as any,
                             variant: 'outline',
                             onClick: () => {
-                                import("@tauri-apps/plugin-opener").then(({ openUrl }) => {
-                                    openUrl("https://github.com/SquareUncle/d2r-rust/releases/latest");
-                                });
+                                openUrl("https://github.com/SquareUncle/d2r-rust/releases/latest");
                             }
                         },
                         {

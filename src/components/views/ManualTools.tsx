@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Account, invoke } from '../../lib/api';
 import { Button } from '../ui/Button';
@@ -6,6 +6,8 @@ import { ShieldAlert, Play, FolderPlus, MonitorSmartphone, Settings2, User, Chev
 import MirrorModal from '../modals/MirrorModal';
 import { cn } from '../../lib/utils';
 import PermissionsModal from '../modals/PermissionsModal';
+import ProcessExplorer from '../modals/ProcessExplorer';
+import { useAccountStatus } from '../../hooks/useAccountStatus';
 
 interface ManualToolsProps {
     accounts: Account[];
@@ -18,10 +20,10 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
     const [isMirrorOpen, setIsMirrorOpen] = useState(false);
     const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
     const [isLogsExpanded, setIsLogsExpanded] = useState(true);
-    const [isUserActive, setIsUserActive] = useState(false);
-    const [isCheckingActive, setIsCheckingActive] = useState(false);
     const [isNukeModalOpen, setIsNukeModalOpen] = useState(false);
     const [nukeConfirmText, setNukeConfirmText] = useState('');
+    const [isExplorerOpen, setIsExplorerOpen] = useState(false);
+    const [isRepairPromptOpen, setIsRepairPromptOpen] = useState(false);
 
     const addLog = (message: string, level: 'info' | 'success' | 'error' = 'info') => {
         setLog(prev => [{
@@ -43,6 +45,10 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
         }
     };
 
+    const selectedAccount = accounts.find(a => a.id === selectedAccountId);
+    const { accountStatuses, isRefreshing: isCheckingActive } = useAccountStatus(accounts);
+    const isUserActive = selectedAccount ? accountStatuses[selectedAccount.win_user]?.d2r_active || accountStatuses[selectedAccount.win_user]?.bnet_active : false;
+
     const handleNukeReset = () => {
         setIsNukeModalOpen(true);
         setNukeConfirmText('');
@@ -56,30 +62,6 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
             addLog('Confirmation failed. Typed: ' + nukeConfirmText, 'error');
         }
     };
-
-    const selectedAccount = accounts.find(a => a.id === selectedAccountId);
-
-    useEffect(() => {
-        const checkActive = async () => {
-            if (selectedAccount) {
-                setIsCheckingActive(true);
-                try {
-                    const active = await invoke('is_user_process_active', { username: selectedAccount.win_user }) as boolean;
-                    setIsUserActive(active);
-                } catch (e) {
-                    console.error("Failed to check process status", e);
-                } finally {
-                    setIsCheckingActive(false);
-                }
-            } else {
-                setIsUserActive(false);
-            }
-        };
-
-        checkActive();
-        const timer = setInterval(checkActive, 5000);
-        return () => clearInterval(timer);
-    }, [selectedAccount]);
 
     return (
         <div className="flex flex-col p-4 md:p-6 gap-6 w-full items-center">
@@ -123,16 +105,16 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                             <div className="space-y-3 relative z-10 flex-1">
                                 <Button
                                     variant="outline"
-                                    disabled={isUserActive || isCheckingActive}
+                                    disabled={isCheckingActive}
                                     className={cn(
-                                        "w-full h-11 border-emerald-500/30 bg-emerald-500/5 text-emerald-400 font-bold tracking-widest transition-all",
-                                        isUserActive ? "opacity-40 grayscale cursor-not-allowed border-rose-500/20 text-rose-300/50" : "hover:bg-emerald-500/10 shadow-lg"
+                                        "w-full h-11 border-emerald-500/30 bg-emerald-500/5 text-emerald-400 font-bold tracking-widest transition-all hover:bg-emerald-500/10 shadow-lg",
+                                        isUserActive && "border-orange-500/30 text-orange-400 bg-orange-500/5"
                                     )}
                                     onClick={() => runCommand('manual_launch_process', { username: selectedAccount.win_user, password: selectedAccount.win_pass })}
                                 >
-                                    <Play size={16} className={cn("mr-3", isUserActive ? "text-rose-400/40" : "text-emerald-400")} />
+                                    <Play size={16} className={cn("mr-3", isUserActive ? "text-orange-400" : "text-emerald-400")} />
                                     <span className="text-xs font-bold truncate">
-                                        {t('launch_as_identity', { user: selectedAccount.win_user })}
+                                        {isUserActive ? t('force_launch') : t('launch_as_identity', { user: selectedAccount.win_user })}
                                     </span>
                                 </Button>
                                 {isUserActive && (
@@ -167,12 +149,39 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                             variant="outline"
                             size="sm"
                             className="w-full justify-start h-11 border-rose-500/20 text-rose-100/70 hover:text-rose-400 hover:bg-rose-500/5 text-xs"
-                            onClick={() => runCommand('kill_mutexes')}
+                            onClick={async () => {
+                                const res = await runCommand('kill_mutexes');
+                                if (res.includes('Killed 0 mutexes')) {
+                                    // Check if any D2R is actually running to show fallback
+                                    try {
+                                        const procList = await invoke('get_process_list') as any[];
+                                        const hasD2R = procList.some(p => p.name.toLowerCase().includes('d2r'));
+                                        if (hasD2R) {
+                                            setIsRepairPromptOpen(true);
+                                        }
+                                    } catch (e) {
+                                        console.error("Fallback check failed", e);
+                                    }
+                                }
+                            }}
                         >
                             <ShieldAlert size={16} className="mr-3 opacity-60" />
                             <div className="flex flex-col items-start leading-tight text-left">
                                 <span>{t('close_game_handle')}</span>
                                 <span className="text-[9px] opacity-40 font-normal">{t('close_game_handle_desc')}</span>
+                            </div>
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full justify-start h-11 border-blue-500/10 bg-blue-500/5 text-blue-100/60 hover:text-blue-400 hover:bg-blue-500/10 text-xs"
+                            onClick={() => setIsExplorerOpen(true)}
+                        >
+                            <MonitorSmartphone size={16} className="mr-3 opacity-60 text-blue-400" />
+                            <div className="flex flex-col items-start leading-tight text-left">
+                                <span>{t('manual_repair_btn')}</span>
+                                <span className="text-[9px] opacity-40 font-normal">{t('manual_repair_desc')}</span>
                             </div>
                         </Button>
 
@@ -313,6 +322,56 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts, selectedAccountId }
                 onClose={() => setIsPermissionsOpen(false)}
                 onLog={addLog}
             />
+
+            <ProcessExplorer
+                isOpen={isExplorerOpen}
+                onClose={() => setIsExplorerOpen(false)}
+                onLog={addLog}
+            />
+
+            {/* Manual Repair Prompt Dialog */}
+            <div className={cn(
+                "fixed inset-0 z-[200] flex items-center justify-center p-4 transition-all duration-300",
+                isRepairPromptOpen ? "opacity-100 visible pointer-events-auto backdrop-blur-md bg-black/40" : "opacity-0 invisible pointer-events-none"
+            )}>
+                <div className={cn(
+                    "w-full max-w-sm bg-zinc-950 border border-orange-500/30 rounded-2xl shadow-2xl overflow-hidden transition-all transform duration-300",
+                    isRepairPromptOpen ? "scale-100" : "scale-95"
+                )}>
+                    <div className="bg-orange-500/10 px-6 py-4 border-b border-orange-500/20 flex items-center gap-3">
+                        <ShieldAlert size={20} className="text-orange-500" />
+                        <h3 className="text-orange-500 font-bold tracking-widest uppercase text-sm">{t('manual_repair_prompt_title')}</h3>
+                    </div>
+
+                    <div className="p-6">
+                        <p className="text-xs text-zinc-400 leading-relaxed">
+                            {t('manual_repair_prompt_desc')}
+                        </p>
+                    </div>
+
+                    <div className="px-6 py-4 bg-zinc-900/40 flex flex-col gap-2 border-t border-white/5">
+                        <Button
+                            variant="solid"
+                            size="sm"
+                            onClick={() => {
+                                setIsRepairPromptOpen(false);
+                                setIsExplorerOpen(true);
+                            }}
+                            className="bg-orange-600 hover:bg-orange-500 text-white font-bold w-full"
+                        >
+                            {t('use_manual_repair')}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsRepairPromptOpen(false)}
+                            className="text-zinc-500 hover:text-zinc-300 w-full"
+                        >
+                            {t('ignore_cleanup')}
+                        </Button>
+                    </div>
+                </div>
+            </div>
 
             {/* Custom Nuke Confirmation Modal */}
             <div className={cn(

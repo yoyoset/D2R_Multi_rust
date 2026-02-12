@@ -51,6 +51,11 @@ pub fn run() {
             commands::maintenance::manual_launch_process,
             commands::maintenance::get_latest_changelog,
             commands::maintenance::open_log_file,
+            // Inspector Commands
+            commands::inspector::get_process_list,
+            commands::inspector::get_process_handles,
+            commands::inspector::close_specific_handle,
+            commands::inspector::get_infra_health,
             // Module Commands
             modules::account::get_accounts_process_status,
             modules::account::resolve_launch_conflict,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List, RefreshCw } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { LaunchActions } from './LaunchActions';
 import { AccountStatus } from '../../lib/api';
@@ -14,6 +14,8 @@ interface DashboardHeaderProps {
     multiAccountMode?: boolean;
     selectedAccountStatus?: AccountStatus;
     isLaunchDisabled: boolean;
+    onRefresh: () => void;
+    isRefreshing: boolean;
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
@@ -24,7 +26,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     isLaunching,
     multiAccountMode,
     selectedAccountStatus,
-    isLaunchDisabled
+    isLaunchDisabled,
+    onRefresh,
+    isRefreshing
 }) => {
     const { t } = useTranslation();
 
@@ -33,10 +37,27 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {/* View Mode Toggle */}
             <div className="w-full flex justify-between items-center sm:items-end flex-shrink-0 px-2">
                 <div className="flex flex-col gap-0.5">
-                    <h2 className="text-lg md:text-xl font-bold text-white tracking-tight flex items-center gap-3">
-                        <div className="w-1 h-5 bg-primary rounded-full shadow-[0_0_10px_rgb(var(--color-primary)/0.5)]"></div>
-                        {t('account_sanctum')}
-                    </h2>
+                    <div className="flex items-center gap-4">
+                        <h2 className="text-lg md:text-xl font-bold text-white tracking-tight flex items-center gap-3">
+                            <div className="w-1 h-5 bg-primary rounded-full shadow-[0_0_10px_rgb(var(--color-primary)/0.5)]"></div>
+                            {t('account_sanctum')}
+                        </h2>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onRefresh();
+                            }}
+                            className={cn(
+                                "flex items-center gap-2 px-3 py-1 rounded-lg border border-white/5 bg-white/5 text-[11px] font-medium transition-all active:scale-95 shadow-sm",
+                                "hover:bg-primary/10 hover:border-primary/20 hover:text-primary",
+                                isRefreshing ? "text-primary bg-primary/10 border-primary/20 cursor-default" : "text-zinc-500"
+                            )}
+                            disabled={isRefreshing}
+                        >
+                            <RefreshCw size={13} className={cn(isRefreshing && "animate-spin")} />
+                            <span>{isRefreshing ? t('refreshing') : t('refresh_status')}</span>
+                        </button>
+                    </div>
                     <p className="text-[9px] text-zinc-500 uppercase tracking-widest pl-4">{t('entities_registered', { count: accountsCount })}</p>
                 </div>
                 <div className="flex bg-zinc-900/40 border border-white/10 p-1 rounded-lg">
