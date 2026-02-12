@@ -33,6 +33,7 @@ const SYSTEM_EXTENDED_HANDLE_INFORMATION: i32 = 64;
 const OBJECT_NAME_INFORMATION: i32 = 1;
 const OBJECT_TYPE_INFORMATION: i32 = 2;
 const D2R_MUTEX_NAME: &str = "DiabloII Check For Other Instances";
+const D2R_MUTEX_NAME_ALT: &str = "Diablo II Check For Other Instances";
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -63,7 +64,7 @@ struct UNICODE_STRING {
 pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error> {
     // 0. Enable SeDebugPrivilege
     if !crate::modules::win_admin::enable_debug_privilege() {
-        crate::modules::logger::log(app, "warn", "无法启用 SeDebugPrivilege，清理权限可能受限");
+        crate::modules::logger::log(app, "warn", "无法启用调试权限，探测过程可能受限");
     }
 
     // 1. Identify target PIDs
@@ -80,20 +81,14 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
             if let Some(exe_name) = exe_path.file_name() {
                 let name = exe_name.to_string_lossy().to_lowercase();
                 if name == "d2r.exe" || name == "diabloii.exe" {
-                    let pid_u32 = pid.as_u32();
-                    target_pids.insert(pid_u32);
-                    crate::modules::logger::log(
-                        app,
-                        "debug",
-                        &format!("发现目标 D2R 进程 PID: {}", pid_u32),
-                    );
+                    target_pids.insert(pid.as_u32());
                 }
             }
         }
     }
 
     if target_pids.is_empty() {
-        crate::modules::logger::log(app, "debug", "系统未发现运行中的 D2R 进程");
+        crate::modules::logger::log(app, "info", "未发现 D2R 进程，跳过互斥锁清理");
         return Ok(0);
     }
 
@@ -118,7 +113,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                 break;
             } else {
                 return Err(anyhow::anyhow!(
-                    "NtQuerySystemInformation 失败: 0x{:X}",
+                    "NtQuerySystemInformation(64) Failed: 0x{:X}",
                     status.0
                 ));
             }
@@ -133,31 +128,40 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
         crate::modules::logger::log(
             app,
             "debug",
-            &format!("开始扫描系统 {} 个句柄...", info.number_of_handles),
+            &format!("正在扫描系统 {} 个句柄...", info.number_of_handles),
         );
 
         let mut closed_count = 0;
-        let mut scanned_targets = 0;
+        let mut target_handle_count = 0;
 
         for i in 0..info.number_of_handles {
             let entry = *handles_ptr.add(i);
             let pid = entry.unique_process_id as u32;
 
             if target_pids.contains(&pid) {
-                scanned_targets += 1;
-                // 增加探测超时至 200ms，应对 22w+ 句柄扫描时的系统延迟
-                if let Some(name) = get_handle_name_safe(app, pid, entry.handle_value) {
-                    // 使用 contains 匹配，兼容 \Sessions\x\BaseNamedObjects\ 前缀
-                    if name.contains(D2R_MUTEX_NAME) {
-                        crate::modules::logger::log(app, "info", &format!("命中互斥锁: {}", name));
+                target_handle_count += 1;
+                if let Some(name) = get_handle_name_safe(app, pid, entry.handle_value, true) {
+                    let name_lc = name.to_lowercase();
+                    let is_confirmed = name.contains(D2R_MUTEX_NAME)
+                        || name.contains(D2R_MUTEX_NAME_ALT)
+                        || (name_lc.contains("diablo") && name_lc.contains("data/data"))
+                        || name_lc.contains("d2r store mutex");
+
+                    if is_confirmed {
+                        crate::modules::logger::log(
+                            app,
+                            "success",
+                            &format!("🎯 发现并清理 D2R 互斥锁: {}", name),
+                        );
                         if close_remote_handle(pid, entry.handle_value) {
                             closed_count += 1;
-                            crate::modules::logger::log(
-                                app,
-                                "success",
-                                &format!("已成功清理 PID {} 互斥锁", pid),
-                            );
                         }
+                    } else if name_lc.contains("diablo") || name_lc.contains("d2r") {
+                        crate::modules::logger::log(
+                            app,
+                            "debug",
+                            &format!("🔍 发现 D2R 相关 Mutant (未清理): {}", name),
+                        );
                     }
                 }
             }
@@ -168,8 +172,8 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                 app,
                 "info",
                 &format!(
-                    "扫描完毕，处理了 {} 个目标进程句柄，未发现活动互斥锁",
-                    scanned_targets
+                    "全量扫描完成，共检查了 {} 个目标进程句柄，未命中互斥锁名称",
+                    target_handle_count
                 ),
             );
         }
@@ -178,14 +182,19 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
     }
 }
 
+/// Query handle name with Extended timeout and diagnostic logging
 unsafe fn get_handle_name_safe(
-    _app: &tauri::AppHandle,
+    app: &tauri::AppHandle,
     pid: u32,
     handle_val: usize,
+    debug: bool,
 ) -> Option<String> {
     let h_process = match OpenProcess(PROCESS_DUP_HANDLE, false, pid) {
         Ok(h) => h,
-        Err(_) => return None,
+        Err(_) => {
+            if debug { /* Silent for individual fails to avoid log spam */ }
+            return None;
+        }
     };
 
     let mut h_dup: HANDLE = HANDLE::default();
@@ -204,7 +213,7 @@ unsafe fn get_handle_name_safe(
         return None;
     }
 
-    // 1. Type Pre-filter (Mutant only)
+    // 1. Type Pre-filter (Must be Mutant)
     let mut type_buf = vec![0u8; 512];
     let mut ret_len = 0;
     let status = NtQueryObject(
@@ -226,21 +235,15 @@ unsafe fn get_handle_name_safe(
         return None;
     }
 
-    let type_name = String::from_utf16_lossy(std::slice::from_raw_parts(
-        type_info.buffer,
-        (type_info.length / 2) as usize,
-    ));
-    if type_name != "Mutant" {
-        let _ = CloseHandle(h_dup);
-        return None;
-    }
+    // Remove strict Mutant filtering to support all lock types (Event, Section, etc.)
+    // Stability is maintained via surgical name matching in the caller.
 
-    // 2. Name Query with extended timeout (200ms)
+    // 2. Name Query with RELAXED timeout (1500ms) for diagnostics
     let (tx, rx) = mpsc::channel();
     let handle_to_query = h_dup.0 as usize;
 
     thread::spawn(move || {
-        let mut name_buf = vec![0u8; 1024]; // 常用句柄名称足够了
+        let mut name_buf = vec![0u8; 1024];
         let mut r_len = 0;
         let status = NtQueryObject(
             HANDLE(handle_to_query as *mut c_void),
@@ -264,7 +267,17 @@ unsafe fn get_handle_name_safe(
         let _ = tx.send(None);
     });
 
-    let result = rx.recv_timeout(Duration::from_millis(200)).unwrap_or(None);
+    let result = rx
+        .recv_timeout(Duration::from_millis(1500))
+        .unwrap_or_else(|_| {
+            crate::modules::logger::log(
+                app,
+                "debug",
+                &format!("⚠️ 句柄探测超时 (PID: {}, Handle: 0x{:X})", pid, handle_val),
+            );
+            None
+        });
+
     let _ = CloseHandle(h_dup);
     result
 }

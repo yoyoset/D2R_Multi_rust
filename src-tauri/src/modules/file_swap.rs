@@ -103,8 +103,11 @@ pub fn restore_snapshot(app: &AppHandle, account_id: &str) -> Result<(), FileSwa
         }
         fs::copy(&snapshot_path, &target_db)?;
         tracing::debug!("Restored snapshot: {:?}", snapshot_path);
+        Ok(())
+    } else {
+        tracing::warn!("Snapshot not found: {:?}", snapshot_path);
+        Ok(())
     }
-    Ok(())
 }
 
 /// Delete a specific account's snapshot file

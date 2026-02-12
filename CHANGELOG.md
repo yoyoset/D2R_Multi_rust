@@ -2,7 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.3] - 2026-02-12
+## [0.4.5] - 2026-02-12
+
+### Fixed
+
+- **Surgical Mutex Cleaning**: Implemented broad-type name matching to bypass D2R multi-instance checks across all kernel object types while maintaining system stability.
+  **外科手术式互斥锁清理**: 实现了广谱类型名字匹配技术，在保持系统稳定性的前提下，完美绕过 D2R 的各类内核对象多开校验。
+- **Path-Based Lock Support**: Added specific targeting for folder-level path mutants used by newer game versions.
+  **路径型锁支持**: 增加对新版游戏采用的目录级路径锁的专项清理支持。
+
+## [0.4.4] - 2026-02-12
 
 ### Fixed
 

@@ -149,6 +149,7 @@ pub fn launch_game(
     // 5. Restore (Target): Load target account snapshot
     logger::log(app, "info", "正在切换目标账号配置...");
     if let Err(e) = file_swap::restore_snapshot(app, &account.id) {
+        logger::log(app, "error", &format!("账号切换失败: {}", e));
         match e {
             file_swap::FileSwapError::Conflict => {
                 logger::log(
