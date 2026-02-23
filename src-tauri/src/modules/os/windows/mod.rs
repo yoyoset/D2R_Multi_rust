@@ -34,6 +34,10 @@ impl OSProvider for WindowsProvider {
         user::reset_password(username, password)
     }
 
+    fn verify_password(&self, username: &str, password: &str) -> Result<bool> {
+        user::verify_password(username, password)
+    }
+
     fn create_process_with_logon(
         &self,
         username: &str,

@@ -59,6 +59,10 @@ export async function setPasswordNeverExpires(username: string, neverExpires: bo
     await invoke('set_password_never_expires', { username, neverExpires });
 }
 
+export async function verifyWindowsPassword(username: string, password: string): Promise<boolean> {
+    return await invoke('verify_windows_password', { username, password });
+}
+
 export async function killMutexes(): Promise<string> {
     try {
         return await invoke('kill_mutexes');

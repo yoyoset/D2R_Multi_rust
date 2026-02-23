@@ -4,7 +4,7 @@ import { Account, AppConfig, saveConfig, getWindowsUsers, createWindowsUser, get
 import { useNotification } from "../../store/useNotification";
 import { useLogs } from "../../store/useLogs";
 import { useTranslation } from "react-i18next";
-import { UserRound, Sparkles, AlertCircle, ChevronLeft, Check } from "lucide-react";
+import { UserRound, Sparkles, AlertCircle, ChevronLeft, Check, Eye, EyeOff, Loader2 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 import { useBlockingNotification } from "../../store/useBlockingNotification";
@@ -88,6 +88,9 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
     const [hasScannedDeep, setHasScannedDeep] = useState(false);
     const [currentUser, setCurrentUser] = useState("");
     const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
+    const [showPass, setShowPass] = useState(false);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [isValidatingPass, setIsValidatingPass] = useState(false);
 
     const handleDiscovery = async (deep: boolean = false) => {
         setIsScanning(true);
@@ -143,12 +146,66 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
                 setIsCreatingNew(false);
                 setIsManualInput(false);
             }
+            setPasswordError(null);
         }
     }, [editingAccount, isOpen]);
 
+    const verifyWindowsPassword = async (pass: string) => {
+        if (!pass || isCreatingNew || !winUser) return;
+        setIsValidatingPass(true);
+        try {
+            const isValid = await invoke('verify_windows_password', { username: winUser, password: pass });
+            if (!isValid) {
+                setPasswordError(t('win_password_mismatch'));
+            } else {
+                setPasswordError(null);
+            }
+        } catch (e) {
+            console.error("Verification failed", e);
+        } finally {
+            setIsValidatingPass(false);
+        }
+    };
 
-    const handleSave = async () => {
+
+    const handleSave = async (forceSystemSync: boolean = false) => {
         if (!winUser.trim()) return;
+
+        // Validation Step: Check if password changed and verify with system
+        const isPasswordChanged = editingAccount ? (winPass !== (editingAccount.win_pass || "")) : !!winPass;
+
+        if (!forceSystemSync && isPasswordChanged && winPass && !isCreatingNew) {
+            setIsSaving(true);
+            try {
+                const isValid = await invoke('verify_windows_password', { username: winUser, password: winPass });
+                if (!isValid) {
+                    showBlocking(
+                        t('confirm_password_sync_title') || "密码不一致",
+                        t('confirm_password_sync_desc') || "当前输入密码与系统密码不一致，请确认继续同步修改windows用户密码。",
+                        [
+                            {
+                                label: t('cancel') || "取消",
+                                variant: 'outline',
+                                onClick: () => { setIsSaving(false); }
+                            },
+                            {
+                                label: t('confirm_and_sync') || "确认",
+                                variant: 'primary',
+                                onClick: () => handleSave(true)
+                            }
+                        ],
+                        'warning'
+                    );
+                    return;
+                }
+            } catch (e) {
+                console.error("Password verification failed", e);
+                // If verification itself fails (e.g. permission issue), we might want to let it pass or show error
+            } finally {
+                setIsSaving(false);
+            }
+        }
+
         setIsSaving(true);
         try {
             // Setup a safety timeout for backend calls
@@ -306,14 +363,38 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
                                         <label className="text-sm font-medium text-zinc-400 min-w-[3rem] whitespace-nowrap">
                                             {t('label_password')}
                                         </label>
-                                        <input
-                                            type="password"
-                                            value={winPass}
-                                            onChange={(e) => setWinPass(e.target.value)}
-                                            className="flex-1 bg-black/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-gray-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
-                                            placeholder={t('win_password')}
-                                        />
+                                        <div className="relative flex-1 group/pass">
+                                            <input
+                                                type={showPass ? "text" : "password"}
+                                                value={winPass}
+                                                onChange={(e) => { setWinPass(e.target.value); setPasswordError(null); }}
+                                                onBlur={(e) => verifyWindowsPassword(e.target.value)}
+                                                className={cn(
+                                                    "w-full bg-black/50 border rounded-lg pl-3 pr-10 py-2 text-sm text-gray-200 focus:outline-none focus:ring-1 transition-all",
+                                                    passwordError ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20" : "border-zinc-700/50 focus:border-primary focus:ring-primary/20"
+                                                )}
+                                                placeholder={t('win_password')}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPass(!showPass)}
+                                                disabled={isValidatingPass}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors z-10"
+                                            >
+                                                {isValidatingPass ? (
+                                                    <Loader2 size={14} className="animate-spin" />
+                                                ) : (
+                                                    showPass ? <EyeOff size={14} /> : <Eye size={14} />
+                                                )}
+                                            </button>
+                                        </div>
                                     </div>
+                                    {passwordError && (
+                                        <div className="flex items-center gap-1.5 px-1 py-0.5 text-[10px] text-red-400 animate-in fade-in slide-in-from-top-1">
+                                            <AlertCircle size={10} />
+                                            {passwordError}
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -357,14 +438,38 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
                                                 <label className="text-sm font-medium text-zinc-400 min-w-[3rem] whitespace-nowrap">
                                                     {t('label_password')}
                                                 </label>
-                                                <input
-                                                    type="password"
-                                                    value={winPass}
-                                                    onChange={(e) => setWinPass(e.target.value)}
-                                                    className="flex-1 bg-black/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-gray-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all font-mono"
-                                                    placeholder={t('win_password')}
-                                                />
+                                                <div className="relative flex-1 group/pass">
+                                                    <input
+                                                        type={showPass ? "text" : "password"}
+                                                        value={winPass}
+                                                        onChange={(e) => { setWinPass(e.target.value); setPasswordError(null); }}
+                                                        onBlur={(e) => verifyWindowsPassword(e.target.value)}
+                                                        className={cn(
+                                                            "w-full bg-black/50 border rounded-lg pl-3 pr-10 py-2 text-sm text-gray-200 focus:outline-none focus:ring-1 transition-all font-mono",
+                                                            passwordError ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20" : "border-zinc-700/50 focus:border-primary focus:ring-primary/20"
+                                                        )}
+                                                        placeholder={t('win_password')}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPass(!showPass)}
+                                                        disabled={isValidatingPass}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors z-10"
+                                                    >
+                                                        {isValidatingPass ? (
+                                                            <Loader2 size={14} className="animate-spin" />
+                                                        ) : (
+                                                            showPass ? <EyeOff size={14} /> : <Eye size={14} />
+                                                        )}
+                                                    </button>
+                                                </div>
                                             </div>
+                                            {passwordError && (
+                                                <div className="flex items-center gap-1.5 px-1 py-0.5 text-[10px] text-red-400 animate-in fade-in slide-in-from-top-1">
+                                                    <AlertCircle size={10} />
+                                                    {passwordError}
+                                                </div>
+                                            )}
 
                                             <div className="flex items-center gap-3 p-2 group/check cursor-pointer" onClick={() => setPassNeverExpires(!passNeverExpires)}>
                                                 <div className={cn(
@@ -493,7 +598,7 @@ export function AccountModal({ isOpen, onClose, config, onSave, editingAccount }
                     <Button variant="ghost" size="sm" onClick={onClose} disabled={isSaving}>
                         {t('cancel')}
                     </Button>
-                    <Button onClick={handleSave} size="sm" isLoading={isSaving} variant="solid" className="px-6">
+                    <Button onClick={() => handleSave(false)} size="sm" isLoading={isSaving} variant="solid" className="px-6">
                         {t('save')}
                     </Button>
                 </ModalFooter>

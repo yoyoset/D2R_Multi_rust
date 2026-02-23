@@ -13,6 +13,7 @@ pub trait OSProvider: Send + Sync {
     fn create_user(&self, username: &str, password: &str, never_expires: bool) -> Result<()>;
     fn set_password_never_expires(&self, username: &str, never_expires: bool) -> Result<()>;
     fn reset_password(&self, username: &str, password: &str) -> Result<()>;
+    fn verify_password(&self, username: &str, password: &str) -> Result<bool>;
     fn create_process_with_logon(
         &self,
         username: &str,

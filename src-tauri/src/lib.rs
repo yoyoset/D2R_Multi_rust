@@ -26,6 +26,7 @@ pub fn run() {
             commands::os::get_windows_users,
             commands::os::create_windows_user,
             commands::os::set_password_never_expires,
+            commands::os::verify_windows_password,
             commands::os::open_lusrmgr,
             commands::os::open_netplwiz,
             commands::os::open_user_switch,

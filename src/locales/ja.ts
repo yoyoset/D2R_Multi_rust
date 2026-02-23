@@ -1,6 +1,6 @@
 export default {
     "app_title": "D2R マルチプレイ",
-    "version": "Rust Rewrite v0.3.7",
+    "version": "Rust Rewrite v0.5.1",
     "isolation_mode": "分離エンジン",
     "kill_mutex": "多重起動制限解除 (Mutex)",
     "add_account": "アカウント追加",
@@ -64,4 +64,8 @@ export default {
     "understand": "了解しました",
     "user_uninitialized_title": "Windows アカウントが初期化されていません",
     "user_uninitialized_desc": "Windows アカウント \"{{user}}\" はまだ初期化されていません（一度もログインしていません）。\n\nゲームを実行する前に、システムから一度「ユーザーの切り替え」で手動ログインしてください。そうしないと、アップデートや設定の保存が正しく行われません。",
+    "confirm_password_sync_title": "パスワードの不一致",
+    "confirm_password_sync_desc": "入力されたパスワードがシステムパスワードと一致しません。Windowsユーザーパスワードを同期して変更することを確認してください。",
+    "confirm_and_sync": "確認",
+    "win_password_mismatch": "パスワードがシステムと一致しません。Windowsユーザーパスワードを同期して変更します"
 };

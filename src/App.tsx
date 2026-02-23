@@ -331,7 +331,6 @@ function App() {
                 isOpen={isGuideOpen}
                 onClose={handleCloseGuide}
             />
-            <NotificationManager />
             <WhatsNewModal
                 isOpen={isWhatsNewOpen}
                 onClose={() => setIsWhatsNewOpen(false)}
@@ -348,6 +347,7 @@ function App() {
                 isOpen={isDonateOpen}
                 onClose={() => setIsDonateOpen(false)}
             />
+            <NotificationManager />
 
             <header className="h-16 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md z-50 flex items-center px-6 justify-between shadow-xl flex-shrink-0 relative">
                 <div className="flex items-center gap-8">

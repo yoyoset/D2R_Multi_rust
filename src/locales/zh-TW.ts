@@ -1,6 +1,6 @@
 export default {
     "app_title": "暗黑2重製版 多開助手",
-    "version": "Rust 重寫版 v0.3.7",
+    "version": "Rust 重寫版 v0.5.1",
     "isolation_mode": "安全隔離引擎",
     "kill_mutex": "清理多開限制 (Mutex)",
     "add_account": "新增帳號",
@@ -69,4 +69,8 @@ export default {
     "understand": "明白了",
     "user_uninitialized_title": "Windows 帳戶未初始化",
     "user_uninitialized_desc": "Windows 帳戶 \"{{user}}\" 尚未完成初始化（從未登入過）。\n\n請先通過系統「切換用戶」手動登入一次該帳戶，然後再嘗試運行遊戲，否則無法正常更新和保存配置。",
+    "confirm_password_sync_title": "密碼不一致",
+    "confirm_password_sync_desc": "當前輸入密碼與系統密碼不一致，請確認繼續同步修改windows用戶密碼。",
+    "confirm_and_sync": "確認",
+    "win_password_mismatch": "密碼與系統不符合，將會同步修改windows用戶密碼"
 };

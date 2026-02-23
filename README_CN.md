@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.4.0-orange)
+![Version](https://img.shields.io/badge/version-0.5.0-orange)
 ![Backend](https://img.shields.io/badge/backend-Rust-red)
 ![Framework](https://img.shields.io/badge/framework-Tauri_v2-blue)
 
@@ -13,115 +13,69 @@
 
 **D2R Multiplay** 是专为 *暗黑破坏神2：重制版 (Diablo II: Resurrected)* 设计的高性能多开管理工具。
 
-本项目是原版 C# 工具的 **Rust 轻量化重写版**。旨在解决原版体积庞大、依赖繁重的问题，通过底层语言重构实现了极致的轻量化与高性能。
+本项目是原版 C# 工具的 **Rust 轻量化重写版**。通过底层语言重构实现了极致的轻量化与工业级的运行稳定性。
 
 ## 🚀 核心特性
 
-- **🛡️ 隔离引擎 (Isolation Engine)**：使用 Windows 用户沙盒机制启动游戏客户端，实现真正的环境隔离。
-- **⚡ 零延迟捕获 (Zero-Latency)**：通过 Win32 Mutex (互斥体) 操作绕过战网的多开限制。
-- **轻量化重构**：完全移除庞大的 .NET 运行时依赖，使用 Rust + Tauri 构建，体积更小，启动更快。
-- **🔧 配置轮转 (Config Swapping)**：智能的 `product.db` 轮转机制，确保每个账号都能独立保存登录凭证 (Token)，互不干扰。
-- **🌍 国际化支持 (i18n)**：
-  - 完美支持 简体中文、繁体中文、英语、日语、韩语。
-  - 系统托盘菜单会自动跟随应用语言切换。
-- **🎨 极简 UI**：采用现代化、高效的极简界面，注重核心交互体验。
-- **📂 绿色便携 (Portable)**：提供单文件绿色版 (`.exe`)，无需安装，即点即用。
+- **🛡️ 隔离引擎 (Isolation)**：使用 Windows 用户沙盒机制启动游戏，实现真正的环境与配置隔离。
+- **⚡ 互斥体透明化 (Zero-Mutex)**：秒级清理全局互斥锁 (`DiabloII Check For Other Instances`)，实现无限多开。
+- **🏥 基础设施预检 (Health Check)**：启动前自动校验战网路径、目录权限及沙箱状态，消除 90% 的启动报错。
+- **🎨 渐进式交互 (Progressive UI)**：三阶颜色状态感知（绿色/黄色/橙色），实时反馈战网与游戏各阶段运行深度。
+- **🔧 配置自动轮转**：智能管理 `product.db`，确保每个账号独立保存登录凭证，无需反复输入密码。
+- **📂 绿色便携**：单文件 `.exe` 发布，无任何环境依赖，即点即用。
 
-## 🛠️ 技术栈
-
-- **后端**: Rust (Win32 API, Windows crate, Serde)
-- **前端**: React 19, TypeScript, TailwindCSS, ShadCN
-- **框架能力**: Tauri v2, 系统托盘, 进程管理, **统一通知系统**, **全量日志追踪**
-
-## 📦 安装与使用
-
-### 方法 1: 绿色便携版 (推荐)
-
-1. 在 [Releases](https://github.com/YOUR_USERNAME/d2r-rust/releases) 页面下载 `d2r-rust.exe`。
-2. 将其放置在任意位置（例如桌面）。
-3. **右键 -> 以管理员身份运行** (必须使用管理员权限以执行进程隔离)。
-
-### 方法 2: 源码编译
-
-请确保已安装 [Rust](https://rustup.rs/) 和 [Node.js](https://nodejs.org/) 环境。
-
-```bash
-# 1. 克隆仓库
-git clone https://github.com/YOUR_USERNAME/d2r-rust.git
-cd d2r-rust
-
-# 2. 安装依赖
-npm install
-
-# 3. 开发模式 (热重载)
-npm run tauri dev
-
-# 4. 构建发布版 (生成绿色版 EXE 和 MSI 安装包)
-npm run tauri build
-```
-
-编译产物位于 `src-tauri/target/release/` 目录下。
-
-## 📸 界面预览
+## 📸 界面展示
 
 <div align="center">
 
-### 主控制面板
+### 1. 账号营地 (主控制台)
 
-![主控制面板](./assets/D2r_rust_dashboard.png)
+![账号营地](./assets/d2r-desboard.jpg)
+*三阶颜色反馈：绿色(就绪)、黄色(战网运行)、橙色(游戏运行)*
 
-### 账号配置
+### 2. 交互式工具箱
 
-![账号配置](./assets/D2r_rust_new_user.png)
-
-### 全局设置
-
-![全局设置](./assets/D2r_rust_setting.png)
-
-### 系统用户校验
-
-![系统用户校验](./assets/D2r_rust_windows_user.png)
+![工具箱](./assets/tools.jpg)
+*内置基础设施健康检查与高级进程管理工具*
 
 </div>
 
-## ⚙️ 配置文件
+## 🛠️ 逻辑完整性与人工介入
 
-- 应用配置存储于：`%APPDATA%/com.d2rmultiplay.ui/config.json`
-- 账号快照存储于：`%APPDATA%/com.d2rmultiplay.ui/snapshots/`
+为了确保在复杂 Windows 环境下的 100% 可用性，MDM 加入了完善的“异常补偿”逻辑：
 
-## 📝 0.3.9 更新详情
+1. **自动流程闭环**：程序会自动尝试修复权限、清理残留进程和互斥体。
+2. **人工干预入口**：当自动化脚本触及系统边缘（如特定句柄被内核锁死）时，通过内置的 **“手动进程查看器 (Process Explorer)”** 和 **“快速修复工具”**，用户可以零门槛介入，确保系统逻辑的最终完整性。
+3. **静默背景同步**：改进的递归轮询机制在保证实时性的同时，实现了 UI 的静默刷新，不干扰正常操作。
 
-- **原生 Win32 引擎重构**: 彻底弃用了旧版中依赖的 PowerShell 与 CMD 指令，改为调用 Windows 内核级 API（进程、用户、注册表管理），实现了 100% 的路径与语言兼容性。
-- **全链路 Unicode 支持**: 后端逻辑全面适配 UTF-16 编码，支持韩文、中文等非 ASCII 路径与用户名，彻底杜绝乱码导致的启动失败。
-- **UI 状态感知修复**: 修复了权限修复等工具窗口在关闭后重新打开时，由于状态未重置导致的“明白了”按钮残留问题。
-- **强制启动 fallback**: 为各种极端系统环境增加了“强制启动”备选方案，提升跨平台容错度。
+## 📦 快速开始
 
-## 📝 0.3.8 更新详情
+### 运行环境
 
-- **系统日志一键访问**: 在设置中新增“查看系统日志”功能，通过默认文本编辑器快速调取诊断日志，极大简化了故障排查流程。
-- **日志持久化优化**: 引入了 5MB 的日志文件上限管理，超出后自动滚动截断，解决长期多开运行可能带来的磁盘空间占用问题。
-- **配置路径动态解析**: 移除所有硬编码的日志与配置文件路径，改用系统环境变量与 Tauri API 动态定位，适配更多安装环境。
+- Windows 10/11 (x64)
+- 需要 **管理员权限** 运行
 
-## 📝 0.3.7 更新详情
+### 获取程序
 
-- **多账户管理模式**: 为重度多开用户新增“多账户管理模式”开关。开启后提供“一键启动”（全流程）与“仅开战网”（仅环境切换）双按钮界面。
-- **Dashboard 架构重构**: 对 `Dashboard.tsx` 进行了 75% 的代码瘦身与组件化重构，提升了 UI 性能与维护性。
-- **状态感知优化**: 即使在双按钮模式下，按钮也能实时感知游戏各级运行状态（就绪/启动中/运行中）。
-- **主题化色彩**: 引入 CSS 变量控制核心交互颜色，确保在不同 UI 主题下的一致性，消除了硬编码样式。
-- **全量语言同步**: 完成中（简/繁）、英、韩、日五国语言包的深度同步，消除翻译 Key 遗漏。
+1. 在 [Releases](./CHANGELOG.md) 页面（或查看 [更新日志](./CHANGELOG.md)）下载最新版。
+2. 运行 `d2r-rust.exe` 即可开始配置。
 
-## 📝 0.3.6 更新详情
+## 🛠️ 技术栈
+
+- **后端**: Rust (native Win32 API, windows-rs)
+- **前端**: React 19, TypeScript, TailwindCSS (v4 logic), ShadCN/ui
+- **架构**: Tauri v2 异步桥接, 跨用户进程注入, 句柄泄露探测
 
 ## ⚠️ 免责声明
 
-本工具通过操作系统进程管理和文件系统操作来实现多开功能。
+本工具仅供技术研究与个人便利使用。
 
-- 使用风险自负。
 - 请务必遵守游戏发行商的服务条款 (ToS)。
+- 使用本工具产生的任何后果由使用者自负。
 
-## 🛡️ 隐私政策
+## 📝 历史更新
 
-您的隐私对我们至关重要。请查看我们的[隐私政策](./PRIVACY_POLICY_CN.md)以了解我们如何处理数据。
+详细的迭代细节请查看：[**CHANGELOG.md (更新日志)**](./CHANGELOG.md)
 
 ## 📝 开源协议
 

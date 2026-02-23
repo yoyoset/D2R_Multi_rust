@@ -11,7 +11,9 @@ use windows::Win32::NetworkManagement::NetManagement::{
     FILTER_NORMAL_ACCOUNT, LOCALGROUP_MEMBERS_INFO_3, USER_ACCOUNT_FLAGS, USER_INFO_0, USER_INFO_1,
     USER_INFO_1003, USER_INFO_1008, USER_PRIV,
 };
-use windows::Win32::Security::PSID;
+use windows::Win32::Security::{
+    LogonUserW, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, PSID,
+};
 use windows::Win32::System::Registry::{
     RegCloseKey, RegEnumKeyExW, RegOpenKeyExW, HKEY_LOCAL_MACHINE, KEY_READ,
 };
@@ -222,6 +224,48 @@ pub fn reset_password(username: &str, password: &str) -> Result<()> {
     }
 
     Ok(())
+}
+
+pub fn verify_password(username: &str, password: &str) -> Result<bool> {
+    let (domain, user) = if let Some(pos) = username.find('\\') {
+        (Some(&username[..pos]), &username[pos + 1..])
+    } else {
+        (None, username)
+    };
+
+    let user_u16 = to_pcwstr(user);
+    let domain_u16 = domain.map(to_pcwstr);
+    let password_u16 = to_pcwstr(password);
+
+    let mut token = windows::Win32::Foundation::HANDLE::default();
+
+    unsafe {
+        let success = LogonUserW(
+            PCWSTR(user_u16.as_ptr()),
+            domain_u16
+                .as_ref()
+                .map(|d| PCWSTR(d.as_ptr()))
+                .unwrap_or(PCWSTR::null()),
+            PCWSTR(password_u16.as_ptr()),
+            LOGON32_LOGON_INTERACTIVE,
+            LOGON32_PROVIDER_DEFAULT,
+            &mut token,
+        );
+
+        if success.is_ok() {
+            let _ = windows::Win32::Foundation::CloseHandle(token);
+            Ok(true)
+        } else {
+            // Check if it's actually an invalid password or some other error
+            let err = windows::Win32::Foundation::GetLastError();
+            if err.0 == 1326 {
+                // ERROR_LOGON_FAILURE
+                Ok(false)
+            } else {
+                Err(anyhow!("LogonUserW failed with error: {}", err.0))
+            }
+        }
+    }
 }
 
 pub fn get_user_profile_path(username: &str) -> Result<PathBuf> {

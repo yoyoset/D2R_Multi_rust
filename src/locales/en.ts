@@ -1,6 +1,6 @@
 export default {
     "app_title": "D2R Multiplay",
-    "version": "Rust Rewrite v0.5.0",
+    "version": "Rust Rewrite v0.5.1",
     "isolation_mode": "Isolation Engine",
     "kill_mutex": "Kill Mutexes",
     "add_account": "Add Account",
@@ -235,5 +235,9 @@ export default {
     "manual_repair_prompt_title": "No suspicious handles found",
     "manual_repair_prompt_desc": "Automated cleanup could not find any D2R handles, but the game process is still active. This might be due to security software blocking the scan.\n\nWould you like to try the 【Manual Repair】 mode to force cleanup?",
     "use_manual_repair": "Start Manual Repair",
-    "ignore_cleanup": "Ignore & Continue"
+    "ignore_cleanup": "Ignore & Continue",
+    "confirm_password_sync_title": "Password Mismatch",
+    "confirm_password_sync_desc": "The entered password does not match the system password. Confirm to sync changes to Windows user.",
+    "confirm_and_sync": "Confirm",
+    "win_password_mismatch": "Password mismatch, will sync to Windows user"
 };

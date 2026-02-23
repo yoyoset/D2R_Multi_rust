@@ -51,6 +51,18 @@ pub fn set_password_never_expires(
 }
 
 #[tauri::command]
+pub fn verify_windows_password(
+    state: tauri::State<'_, state::AppState>,
+    username: String,
+    password: String,
+) -> Result<bool, String> {
+    state
+        .os
+        .verify_password(&username, &password)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub fn open_lusrmgr() -> Result<(), String> {
     std::process::Command::new("cmd")
         .args(["/C", "start", "lusrmgr.msc"])

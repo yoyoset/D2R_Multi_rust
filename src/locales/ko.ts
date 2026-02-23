@@ -1,6 +1,6 @@
 export default {
     "app_title": "D2R 멀티플레이",
-    "version": "Rust Rewrite v0.3.7",
+    "version": "Rust Rewrite v0.5.1",
     "isolation_mode": "격리 엔진",
     "kill_mutex": "다중 실행 제한 해제 (Mutex)",
     "add_account": "계정 추가",
@@ -65,4 +65,8 @@ export default {
     "understand": "확인했습니다",
     "user_uninitialized_title": "Windows 계정이 초기화되지 않음",
     "user_uninitialized_desc": "Windows 계정 \"{{user}}\"이 아직 초기화되지 않았습니다(로그인한 적 없음).\n\n게임을 실행하기 전에 시스템에서 한 번 \"사용자 전환\"을 통해 수동으로 로그인하십시오. 그렇지 않으면 업데이트 및 설정 저장이 제대로 되지 않습니다.",
+    "confirm_password_sync_title": "비밀번호 불일치",
+    "confirm_password_sync_desc": "입력한 비밀번호가 시스템 비밀번호와 일치하지 않습니다. Windows 사용자 비밀번호를 동기화하여 변경하는 것을 확인하십시오.",
+    "confirm_and_sync": "확인",
+    "win_password_mismatch": "비밀번호가 시스템과 일치하지 않습니다. Windows 사용자 비밀번호를 동기화하여 변경합니다"
 };

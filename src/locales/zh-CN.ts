@@ -1,6 +1,6 @@
 export default {
     "app_title": "暗黑2重制版 多开助手",
-    "version": "Rust 重写版 v0.5.0",
+    "version": "Rust 重写版 v0.5.1",
     "isolation_mode": "安全隔离引擎",
     "kill_mutex": "清理多开限制 (Mutex)",
     "add_account": "添加账号",
@@ -239,5 +239,9 @@ export default {
     "manual_repair_prompt_title": "未发现可疑句柄",
     "manual_repair_prompt_desc": "自动化清理未命中任何 D2R 句柄，但检测到游戏进程正在运行。这可能是由于句柄扫描逻辑被防火墙或安全软件拦截。\n\n是否尝试通过【手动修复】模式进行强制清理？",
     "use_manual_repair": "开始手动修复",
-    "ignore_cleanup": "忽略并继续"
+    "ignore_cleanup": "忽略并继续",
+    "confirm_password_sync_title": "密码不一致",
+    "confirm_password_sync_desc": "当前输入密码与系统密码不一致，请确认继续同步修改windows用户密码。",
+    "confirm_and_sync": "确认",
+    "win_password_mismatch": "密码与系统不符合，将会同步修改windows用户密码"
 };

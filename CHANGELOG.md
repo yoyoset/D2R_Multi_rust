@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1] - 2026-02-23
+
+### Added
+
+- **Inline Password Validation**: Real-time feedback for Windows password matching with clear visual error cues.
+  **即时密码校验**: 实现 Windows 密码实时比对反馈，配合显式的红色状态异常提示。
+- **Verification Loading State**: Integrated async loading spinner within the password visibility toggle during verification.
+  **校验载入反馈**: 在密码显示切换按钮中集成异步载入动画，明确反馈后台校验进度。
+
+### Fixed & Optimized
+
+- **Modal Stacking Order**: Resolved z-index layering where blocking notifications could be partially hidden by other modals.
+  **Modal 层级修复**: 修复了阻断式通知可能被其他窗口遮挡的层级问题。
+- **Global Localization Sync**: Fully synchronized password validation and interaction keys across all 5 supported languages.
+  **全球语言对齐**: 全面同步了五国语言包中的密码校验与交互文案，确保体验一致。
+
 ## [0.5.0] - 2026-02-12
 
 ### Added
