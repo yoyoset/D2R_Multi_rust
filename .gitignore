@@ -52,4 +52,5 @@ debug_sign_v2.pdb
 dummy.txt
 dummy.zip
 .wrangler/
+.worktrees/
 
