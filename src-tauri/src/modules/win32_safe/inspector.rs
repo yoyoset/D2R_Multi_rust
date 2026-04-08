@@ -71,7 +71,7 @@ pub fn list_process_handles(
     pid: u32,
 ) -> Result<Vec<HandleInfo>, anyhow::Error> {
     if !crate::modules::win_admin::enable_debug_privilege() {
-        crate::modules::logger::log(app, "warn", "无法启用调试权限，句柄枚举可能不完整");
+        crate::modules::logger::log_localized(Some(app), "warn", "logs.inspector.debug_priv_failed", None, "无法启用调试权限，句柄枚举可能不完整");
     }
 
     unsafe {

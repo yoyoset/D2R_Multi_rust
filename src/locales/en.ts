@@ -18,6 +18,10 @@ export default {
     "save_only": "SAVE ONLY",
     "save_and_sync": "SAVE & SYNC",
     "cancel": "Cancel",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "close": "Close",
     "account_manager": "Account Manager",
     "manage_accounts_hint": "Configure and sync your Windows account entities",
     "no_accounts_hint": "No accounts configured. Please add a Windows account in Account Manager to start.",
@@ -370,6 +374,28 @@ export default {
             "sync_policy_note": "Policy sync remark: {{error}}",
             "security_patch_skipped": "Security patch skipped: {{error}}",
             "vault_error": "Launch failed: Could not retrieve credentials from vault. {{error}}"
+        },
+        "mutex": {
+            "debug_priv_failed": "Failed to enable debug privilege, sensing process may be limited",
+            "no_processes": "No D2R processes found, skipping mutex cleanup",
+            "scanning_system_handles": "Scanning system {{count}} handles...",
+            "global_scan": "Performing global system logic lock scan (Cross-Session)...",
+            "none_found": "System-wide scan complete, no D2R mutexes hit (Checked {{count}} handles)",
+            "probe_timeout": "⚠️ Handle probe timeout (PID: {{pid}}, Handle: {{handle}})",
+            "found_and_cleaned": "🎯 Found and cleaned D2R mutex: {{name}}"
+        },
+        "status": {
+            "no_user_info": "Detected D2R.exe (PID={{pid}}), but could not get user info (Insufficient permissions?)",
+            "no_path": "Detected D2R.exe (PID={{pid}}), but could not get execution path",
+            "refresh_success": "Paths refreshed/completed successfully"
+        },
+        "sequence": {
+            "interrupted": "Sequence automation manually interrupted by user",
+            "advancing": "Sequence Advancing: Starting account {{user}} ({{current}}/{{total}})",
+            "launch_failed": "Launch failed: {{error}}"
+        },
+        "inspector": {
+            "debug_priv_failed": "Failed to enable debug privilege, handle enumeration may be incomplete"
         }
     }
 };

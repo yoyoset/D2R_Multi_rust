@@ -64,11 +64,11 @@ struct UNICODE_STRING {
 pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error> {
     // 0. Enable SeDebugPrivilege
     if !crate::modules::win_admin::enable_debug_privilege() {
-        crate::modules::logger::log(app, "warn", "无法启用调试权限，探测过程可能受限");
+        crate::modules::logger::log_localized(Some(app), "warn", "logs.mutex.debug_priv_failed", None, "无法启用调试权限，探测过程可能受限");
     }
 
     // 1. Identify target PIDs
-    let mut sys = System::new_all();
+    let mut sys = System::new();
     sys.refresh_processes_specifics(
         ProcessesToUpdate::All,
         true,
@@ -88,7 +88,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
     }
 
     if target_pids.is_empty() {
-        crate::modules::logger::log(app, "info", "未发现 D2R 进程，跳过互斥锁清理");
+        crate::modules::logger::log_localized(Some(app), "info", "logs.mutex.no_processes", None, "未发现 D2R 进程，跳过互斥锁清理");
         return Ok(0);
     }
 
@@ -125,9 +125,11 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
             .add(size_of::<SYSTEM_HANDLE_INFORMATION_EX>())
             as *const SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX;
 
-        crate::modules::logger::log(
-            app,
+        crate::modules::logger::log_localized(
+            Some(app),
             "debug",
+            "logs.mutex.scanning_system_handles",
+            Some(serde_json::json!({ "count": info.number_of_handles })),
             &format!("正在扫描系统 {} 个句柄...", info.number_of_handles),
         );
 
@@ -168,9 +170,11 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
         // Pass 2: Global Scan (Type based - BAT style)
         // If we found the mutant type index, scan the WHOLE system for our specific heavy-duty names.
         if found_mutant_type {
-            crate::modules::logger::log(
-                app,
+            crate::modules::logger::log_localized(
+                Some(app),
                 "debug",
+                "logs.mutex.global_scan",
+                None,
                 "正在执行全系统逻辑锁扫描 (Cross-Session)...",
             );
             for i in 0..info.number_of_handles {
@@ -196,9 +200,11 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
         }
 
         if closed_count == 0 {
-            crate::modules::logger::log(
-                app,
+            crate::modules::logger::log_localized(
+                Some(app),
                 "info",
+                "logs.mutex.none_found",
+                Some(serde_json::json!({ "count": target_handle_count })),
                 &format!(
                     "全量扫描完成，未命中任何 D2R 互斥锁 (Checked {} handles)",
                     target_handle_count
@@ -298,9 +304,11 @@ unsafe fn get_handle_name_safe(
     let result = rx
         .recv_timeout(Duration::from_millis(1500))
         .unwrap_or_else(|_| {
-            crate::modules::logger::log(
-                app,
+            crate::modules::logger::log_localized(
+                Some(app),
                 "debug",
+                "logs.mutex.probe_timeout",
+                Some(serde_json::json!({ "pid": pid, "handle": format!("0x{:X}", handle_val) })),
                 &format!("⚠️ 句柄探测超时 (PID: {}, Handle: 0x{:X})", pid, handle_val),
             );
             None
@@ -349,9 +357,11 @@ fn check_and_close_if_match(
         || name_lc.contains("d2r store mutex");
 
     if is_engine_lock {
-        crate::modules::logger::log(
-            app,
+        crate::modules::logger::log_localized(
+            Some(app),
             "success",
+            "logs.mutex.found_and_cleaned",
+            Some(serde_json::json!({ "name": name })),
             &format!("🎯 发现并清理 D2R 互斥锁: {}", name),
         );
         unsafe {

@@ -18,6 +18,10 @@ export default {
     "save_only": "仅保存配置",
     "save_and_sync": "保存并同步系统",
     "cancel": "取消",
+    "minimize": "最小化",
+    "maximize": "最大化",
+    "restore": "还原",
+    "close": "关闭",
     "account_manager": "账号管理",
     "manage_accounts_hint": "配置并同步你的 Windows 账户实体",
     "no_accounts_hint": "暂无账号配置，请在账号管理中添加 Windows 账户以开始。",
@@ -388,6 +392,28 @@ export default {
             "sync_policy_note": "策略同步备注: {{error}}",
             "security_patch_skipped": "安全状态预修补跳过: {{error}}",
             "vault_error": "隔离启动失败: 无法从加密仓提取凭据。{{error}}"
+        },
+        "mutex": {
+            "debug_priv_failed": "无法启用调试权限，探测过程可能受限",
+            "no_processes": "未发现 D2R 进程，跳过互斥锁清理",
+            "scanning_system_handles": "正在扫描系统 {{count}} 个句柄...",
+            "global_scan": "正在执行全系统逻辑锁扫描 (Cross-Session)...",
+            "none_found": "全量扫描完成，未命中任何 D2R 互斥锁 (Checked {{count}} handles)",
+            "probe_timeout": "⚠️ 句柄探测超时 (PID: {{pid}}, Handle: {{handle}})",
+            "found_and_cleaned": "🎯 发现并清理 D2R 互斥锁: {{name}}"
+        },
+        "status": {
+            "no_user_info": "探测到 D2R.exe (PID={{pid}})，但无法获取用户信息 (权限不足？)",
+            "no_path": "探测到 D2R.exe (PID={{pid}})，但无法获取执行路径",
+            "refresh_success": "路径刷新/补全成功"
+        },
+        "sequence": {
+            "interrupted": "序列自动化已由用户手动中断",
+            "advancing": "序列推进: 正在启动账号 {{user}} ({{current}}/{{total}})",
+            "launch_failed": "启动失败: {{error}}"
+        },
+        "inspector": {
+            "debug_priv_failed": "无法启用调试权限，句柄枚举可能不完整"
         }
     }
 };

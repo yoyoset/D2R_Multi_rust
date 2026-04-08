@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { useTranslation } from 'react-i18next';
 import { Minus, Square, X, Copy } from 'lucide-react';
 
 const appWindow = getCurrentWindow();
 
 const TitleBar: React.FC = () => {
+    const { t } = useTranslation();
     const [isMaximized, setIsMaximized] = useState(false);
 
     useEffect(() => {
@@ -47,21 +49,21 @@ const TitleBar: React.FC = () => {
                 <button
                     onClick={handleMinimize}
                     className="flex items-center justify-center w-11 h-full hover:bg-white/5 transition-colors text-zinc-500 hover:text-zinc-200"
-                    title="Minimize"
+                    title={t('minimize')}
                 >
                     <Minus size={14} />
                 </button>
                 <button
                     onClick={handleMaximize}
                     className="flex items-center justify-center w-11 h-full hover:bg-white/5 transition-colors text-zinc-500 hover:text-zinc-200"
-                    title={isMaximized ? "Restore" : "Maximize"}
+                    title={isMaximized ? t('restore') : t('maximize')}
                 >
                     {isMaximized ? <Copy size={12} className="rotate-180" /> : <Square size={12} />}
                 </button>
                 <button
                     onClick={handleClose}
                     className="flex items-center justify-center w-11 h-full hover:bg-rose-600 transition-colors text-zinc-500 hover:text-white"
-                    title="Close"
+                    title={t('close')}
                 >
                     <X size={16} />
                 </button>
