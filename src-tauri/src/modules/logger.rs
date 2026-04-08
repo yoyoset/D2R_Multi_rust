@@ -1,12 +1,73 @@
 use serde::Serialize;
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Mutex, OnceLock, mpsc::{SyncSender, sync_channel}};
+use std::thread;
 use tauri::Emitter;
 
 #[derive(Serialize, Clone, Debug)]
 pub struct LogEntry {
     pub time: String,
     pub level: String,
+    pub key: Option<String>,
+    pub args: Option<serde_json::Value>,
     pub message: String,
+}
+
+static GLOBAL_APP_HANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
+static LOGGER_TX: OnceLock<SyncSender<LogEntry>> = OnceLock::new();
+
+pub fn init_global_handle(app: tauri::AppHandle) {
+    let _ = GLOBAL_APP_HANDLE.set(app);
+    start_logger_thread();
+}
+
+fn start_logger_thread() {
+    if LOGGER_TX.get().is_some() { return; }
+
+    let (tx, rx) = sync_channel::<LogEntry>(1000);
+    let _ = LOGGER_TX.set(tx);
+
+    thread::spawn(move || {
+        while let Ok(entry) = rx.recv() {
+            if let Some(log_path) = get_log_path() {
+                // Professional Log Rotation Check
+                if let Ok(metadata) = std::fs::metadata(&log_path) {
+                    if metadata.len() > MAX_LOG_SIZE {
+                        let _ = rotate_logs(&log_path);
+                    }
+                }
+
+                if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(&log_path) {
+                    let now = chrono::Local::now();
+                    let date_time_str = now.format("%Y-%m-%d %H:%M:%S").to_string();
+                    let log_line = format!(
+                        "[{}] [{}] {}\n",
+                        date_time_str,
+                        entry.level.to_uppercase(),
+                        entry.message
+                    );
+                    let _ = file.write_all(log_line.as_bytes());
+                }
+            }
+        }
+    });
+}
+
+fn rotate_logs(log_path: &std::path::Path) -> std::io::Result<()> {
+    // Industrial Rotation: .log -> .log.1 -> .log.2
+    let log1 = log_path.with_extension("log.1");
+    let log2 = log_path.with_extension("log.2");
+
+    if log1.exists() {
+        let _ = std::fs::rename(&log1, &log2);
+    }
+    if log_path.exists() {
+        let _ = std::fs::rename(log_path, &log1);
+    }
+    
+    // Create new blank log with a rotation header
+    let mut f = std::fs::File::create(log_path)?;
+    f.write_all(b"--- Log Rotated ---\n")?;
+    Ok(())
 }
 
 fn log_buffer() -> &'static Mutex<Vec<LogEntry>> {
@@ -19,7 +80,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 const LOG_FILENAME: &str = "d2r-multiplay.log";
-const MAX_LOG_SIZE: u64 = 5 * 1024 * 1024; // 5MB
+const MAX_LOG_SIZE: u64 = 10 * 1024 * 1024; // 10MB
 
 pub fn get_log_path() -> Option<PathBuf> {
     if let Ok(mut exe_path) = std::env::current_exe() {
@@ -30,48 +91,57 @@ pub fn get_log_path() -> Option<PathBuf> {
     None
 }
 
-pub fn log(app: &tauri::AppHandle, level: &str, message: &str) {
+pub fn log(app: Option<&tauri::AppHandle>, level: &str, key: Option<&str>, args: Option<serde_json::Value>, message: &str) {
     let now = chrono::Local::now();
     let time_str = now.format("%H:%M:%S").to_string();
-    let date_time_str = now.format("%Y-%m-%d %H:%M:%S").to_string();
 
     let entry = LogEntry {
         time: time_str,
         level: level.to_string(),
+        key: key.map(|k| k.to_string()),
+        args,
         message: message.to_string(),
     };
 
-    // Emit to frontend regardless of persistence for real-time visualization
-    let _ = app.emit("launch-log", entry.clone());
+    // 1. Emit to frontend (Non-blocking)
+    if let Some(h) = app {
+        let _ = h.emit("launch-log", entry.clone());
+    } else if let Some(h) = GLOBAL_APP_HANDLE.get() {
+        let _ = h.emit("launch-log", entry.clone());
+    }
 
-    // Optional: Buffer for persistent retrieval if history needed
+    // 2. Buffer for history
     if let Ok(mut buffer) = log_buffer().lock() {
-        buffer.push(entry);
+        buffer.push(entry.clone());
         if buffer.len() > 1000 {
             buffer.remove(0);
         }
     }
 
-    // Write to file (best effort)
-    if let Some(log_path) = get_log_path() {
-        // Size limit check
-        if let Ok(metadata) = std::fs::metadata(&log_path) {
-            if metadata.len() > MAX_LOG_SIZE {
-                // Truncate if too large
-                let _ = std::fs::write(&log_path, b"--- Log truncated due to size limit ---\n");
-            }
-        }
-
-        if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(&log_path) {
-            let log_line = format!(
-                "[{}] [{}] {}\n",
-                date_time_str,
-                level.to_uppercase(),
-                message
-            );
-            let _ = file.write_all(log_line.as_bytes());
-        }
+    // 3. Send to async logger thread (Non-blocking)
+    if let Some(tx) = LOGGER_TX.get() {
+        let _ = tx.try_send(entry);
     }
+}
+
+pub fn log_localized(app: Option<&tauri::AppHandle>, level: &str, key: &str, args: Option<serde_json::Value>, fallback: &str) {
+    log(app, level, Some(key), args, fallback);
+}
+
+pub fn info(message: &str) {
+    log(None, "info", None, None, message);
+}
+
+pub fn error(message: &str) {
+    log(None, "error", None, None, message);
+}
+
+pub fn warn(message: &str) {
+    log(None, "warning", None, None, message);
+}
+
+pub fn success(message: &str) {
+    log(None, "success", None, None, message);
 }
 
 pub fn clear_logs() {
