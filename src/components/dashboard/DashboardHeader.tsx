@@ -2,76 +2,106 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LayoutGrid, List, RefreshCw } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { SequencePresetControls } from './SequencePresetControls';
 import { LaunchActions } from './LaunchActions';
-import { AccountStatus } from '../../lib/api';
+import { AppConfig, AccountStatus } from '../../lib/api';
 
 interface DashboardHeaderProps {
-    accountsCount: number;
+    config: AppConfig;
     viewMode: 'card' | 'list';
     onViewModeChange: (mode: 'card' | 'list') => void;
-    onLaunch: (bnetOnly?: boolean) => void;
+    onLaunch: (bnetOnly?: boolean, advancedMode?: boolean) => void;
     isLaunching: boolean;
-    multiAccountMode?: boolean;
+    advancedLaunchMode?: boolean;
     selectedAccountStatus?: AccountStatus;
     isLaunchDisabled: boolean;
     onRefresh: () => void;
     isRefreshing: boolean;
+    onRefreshPaths?: () => void;
+    onEditSequencePreset: (index: number) => void;
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
-    accountsCount,
+    config,
     viewMode,
     onViewModeChange,
     onLaunch,
     isLaunching,
-    multiAccountMode,
+    advancedLaunchMode,
     selectedAccountStatus,
     isLaunchDisabled,
     onRefresh,
-    isRefreshing
+    isRefreshing,
+    onRefreshPaths,
+    onEditSequencePreset,
 }) => {
     const { t } = useTranslation();
 
     return (
-        <div className="sticky top-0 z-40 w-full flex flex-col items-center bg-zinc-950/80 backdrop-blur-lg border-b border-white/5 px-4 md:px-6 py-2 shadow-2xl">
-            {/* View Mode Toggle */}
-            <div className="w-full flex justify-between items-center sm:items-end flex-shrink-0 px-2">
-                <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-4">
-                        <h2 className="text-lg md:text-xl font-bold text-white tracking-tight flex items-center gap-3">
-                            <div className="w-1 h-5 bg-primary rounded-full shadow-[0_0_10px_rgb(var(--color-primary)/0.5)]"></div>
+        <div className="sticky top-0 z-40 w-full flex flex-col items-center bg-zinc-950 border-b border-white/5 px-4 py-1.5 shadow-sm">
+            {/* Main Header Content */}
+            <div className="w-full flex justify-between items-start flex-shrink-0 px-2 gap-4">
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                    {/* Row 1: Title & Status Refresh */}
+                    <div className="flex items-center gap-1.5 flex-nowrap overflow-hidden">
+                        <h2 className="text-xs font-black text-white uppercase tracking-tighter flex items-center gap-1.5 shrink-0">
+                            <div className="w-1 h-3 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--color-primary),0.4)]"></div>
                             {t('account_sanctum')}
                         </h2>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onRefresh();
-                            }}
-                            className={cn(
-                                "flex items-center gap-2 px-3 py-1 rounded-lg border border-white/5 bg-white/5 text-[11px] font-medium transition-all active:scale-95 shadow-sm",
-                                "hover:bg-primary/10 hover:border-primary/20 hover:text-primary",
-                                isRefreshing ? "text-primary bg-primary/10 border-primary/20 cursor-default" : "text-zinc-500"
-                            )}
-                            disabled={isRefreshing}
-                        >
-                            <RefreshCw size={13} className={cn(isRefreshing && "animate-spin")} />
-                            <span>{isRefreshing ? t('refreshing') : t('refresh_status')}</span>
-                        </button>
+                        
+                        <div className="flex items-center gap-1 min-w-0 overflow-hidden">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onRefresh();
+                                }}
+                                className={cn(
+                                    "flex items-center gap-1 px-2 py-0.5 rounded-sm border border-white/5 bg-zinc-900 text-[9px] font-black uppercase tracking-tight transition-all shrink-0",
+                                    "hover:bg-primary/10 hover:border-primary/30 hover:text-primary",
+                                    isRefreshing ? "text-primary bg-primary/10 border-primary/20 cursor-default" : "text-zinc-600"
+                                )}
+                                disabled={isRefreshing}
+                            >
+                                <RefreshCw size={10} className={cn(isRefreshing && "animate-spin")} />
+                                <span>{isRefreshing ? t('refreshing') : t('refresh_status')}</span>
+                            </button>
+                            
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onRefreshPaths) onRefreshPaths();
+                                }}
+                                className={cn(
+                                    "flex items-center gap-1 px-2 py-0.5 rounded-sm border border-white/5 bg-zinc-900 text-[9px] font-black uppercase tracking-tight transition-all shrink-0",
+                                    "hover:bg-primary/10 hover:border-primary/30 hover:text-white text-zinc-500 outline-none"
+                                )}
+                            >
+                                <RefreshCw size={10} />
+                                <span>{t('refresh_paths')}</span>
+                            </button>
+                        </div>
                     </div>
-                    <p className="text-[9px] text-zinc-500 uppercase tracking-widest pl-4">{t('entities_registered', { count: accountsCount })}</p>
+
+                    {/* Row 2: Sequence Presets (Stacked) */}
+                    <SequencePresetControls 
+                        config={config} 
+                        onEditPreset={onEditSequencePreset} 
+                    />
                 </div>
-                <div className="flex bg-zinc-900/40 border border-white/10 p-1 rounded-lg">
+
+                {/* Right side View Toggle */}
+                <div className="flex bg-zinc-900 border border-white/5 p-0.5 rounded-sm shrink-0">
                     <button
                         onClick={() => onViewModeChange('card')}
-                        className={cn("p-1.5 rounded-md transition-all", viewMode === 'card' ? "bg-zinc-800 text-primary shadow-sm" : "text-zinc-600 hover:text-zinc-300")}
+                        className={cn("p-1 rounded-sm transition-all", viewMode === 'card' ? "bg-zinc-800 text-primary" : "text-zinc-600 hover:text-zinc-400")}
                     >
-                        <LayoutGrid size={14} />
+                        <LayoutGrid size={12} />
                     </button>
                     <button
                         onClick={() => onViewModeChange('list')}
-                        className={cn("p-1.5 rounded-md transition-all", viewMode === 'list' ? "bg-zinc-800 text-primary shadow-sm" : "text-zinc-600 hover:text-zinc-300")}
+                        className={cn("p-1 rounded-sm transition-all", viewMode === 'list' ? "bg-zinc-800 text-primary" : "text-zinc-600 hover:text-zinc-400")}
                     >
-                        <List size={14} />
+                        <List size={12} />
                     </button>
                 </div>
             </div>
@@ -80,7 +110,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <LaunchActions
                 onLaunch={onLaunch}
                 isLaunching={isLaunching}
-                multiAccountMode={multiAccountMode}
+                advancedLaunchMode={advancedLaunchMode}
                 selectedAccountStatus={selectedAccountStatus}
                 isLaunchDisabled={isLaunchDisabled}
             />

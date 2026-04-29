@@ -9,7 +9,7 @@ pub struct ProcessLaunchResult {
 
 pub trait OSProvider: Send + Sync {
     fn get_whoami(&self) -> String;
-    fn list_local_users(&self, include_registry: bool) -> Result<Vec<String>>;
+    fn list_local_users(&self) -> Result<Vec<crate::modules::os::windows::user::WindowsUser>>;
     fn create_user(&self, username: &str, password: &str, never_expires: bool) -> Result<()>;
     fn set_password_never_expires(&self, username: &str, never_expires: bool) -> Result<()>;
     fn reset_password(&self, username: &str, password: &str) -> Result<()>;
@@ -23,7 +23,14 @@ pub trait OSProvider: Send + Sync {
         command_line: Option<&str>,
         current_directory: Option<&str>,
     ) -> Result<ProcessLaunchResult>;
-    fn is_process_running_for_user(&self, username: &str, process_names: &[&str]) -> Result<bool>;
+    fn is_process_running_for_user(&self, sys: &sysinfo::System, username: &str, process_names: &[&str]) -> Result<bool>;
+    fn get_multiple_process_status(
+        &self, 
+        sys: &sysinfo::System,
+        usernames: &[String], 
+        bnet_names: &[&str], 
+        d2r_names: &[&str]
+    ) -> Result<std::collections::HashMap<String, crate::modules::account::types::AccountStatus>>;
     fn is_user_initialized(&self, username: &str) -> bool;
 }
 

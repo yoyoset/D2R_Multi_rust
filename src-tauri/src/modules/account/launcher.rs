@@ -13,20 +13,40 @@ pub fn launch_game(
     account: &Account,
     bnet_only: bool,
     _force: bool,
+    advanced_mode: bool,
 ) -> Result<u32, AccountError> {
     // 0. Pre-Maintenance Audit: Look for "Double-Online" accounts to backup
-    logger::log_localized(Some(app), "info", "logs.launcher.scanning_env", None, "正在扫描运行环境 (锚点校验)...");
+    if !advanced_mode {
+        logger::log_localized(Some(app), "info", "logs.launcher.scanning_env", None, "Scanning environment (Anchor verification)...");
+    }
     
     let state = app.state::<crate::state::AppState>();
+    
+    // Industrial Hardening: Multi-Account Mode Enforcement
+    {
+        let config = state.config_lock();
+        if config.advanced_launch_mode == Some(false) {
+            let status_cache = state.status_lock();
+            let any_active = status_cache.iter().any(|(user, status)| {
+                // Ignore the current account if it's already online (launcher will kill it anyway)
+                user.to_lowercase() != account.win_user.to_lowercase() && status.d2r_pid.is_some()
+            });
+            
+            if any_active {
+                logger::log_localized(Some(app), "error", "error.game.multi_account_blocked", None, "Launch Blocked: Simultaneous accounts disabled in settings and another account is already active");
+                return Err(AccountError::SysInfo("error.game.multi_account_blocked".to_string()));
+            }
+        }
+    }
+
     state.refresh_game_processes();
     
     let sys = state.sys_lock();
-    let _users = state.users_lock();
+    let users = state.users_lock();
 
     // Map: Username -> (HasBnet, HasD2R, D2RPath)
     let mut user_states: std::collections::HashMap<String, (bool, bool, Option<PathBuf>)> = std::collections::HashMap::new();
 
-    let users = sysinfo::Users::new_with_refreshed_list();
     for (_pid, process) in sys.processes() {
         let name_os = process.name();
         let name = name_os.to_string_lossy().to_lowercase();
@@ -51,7 +71,11 @@ pub fn launch_game(
     }
 
     // 1. Snapshot Saving & Path Learning
-    {
+    // 释放 sys 和 users 锁以避免死锁（status.rs 的锁顺序是 config -> sys）
+    drop(sys);
+    drop(users);
+
+    if !advanced_mode {
         let mut current_config = state.config_lock();
         let _ = current_config.save(app);
         
@@ -72,20 +96,20 @@ pub fn launch_game(
                     if let Some(path) = d2r_path {
                         let path_str = path.to_string_lossy().to_string();
                         logger::log_localized(Some(app), "info", "logs.launcher.anchor_found", Some(serde_json::json!({ "user": acc.win_user, "path": path_str })),
-                            &format!("账号 {} 在位，锚点路径: {}", acc.win_user, path_str));
+                            &format!("Account {} active, anchor path: {}", acc.win_user, path_str));
                         
                         if acc.game_path != Some(path_str.clone()) {
                             acc.game_path = Some(path_str.clone());
                             config_changed = true;
                             logger::log_localized(Some(app), "success", "logs.launcher.path_captured", Some(serde_json::json!({ "user": acc.win_user, "path": path_str })),
-                                &format!("已捕获 {} 的最新游戏路径: {}", acc.win_user, path_str));
+                                &format!("Captured latest game path for {}: {}", acc.win_user, path_str));
                         }
                     }
 
                     // B. Rotate Save (Backup)
                     if !acc.skip_config_sync {
                         logger::log_localized(Some(app), "info", "logs.launcher.backing_up", Some(serde_json::json!({ "user": acc.win_user })),
-                            &format!("检测到账号 {} 双在位，正在备份快照...", acc.win_user));
+                            &format!("Account {} double-online detected, backing up snapshot...", acc.win_user));
                         if let Err(e) = file_swap::rotate_save(app, &acc.id) {
                             tracing::warn!("Backup failed for {}: {}", acc.win_user, e);
                         }
@@ -100,12 +124,7 @@ pub fn launch_game(
     }
 
     // 2. Cleanup (Kill Bnet/D2R, Mutexes)
-    logger::log_localized(Some(app), "info", "logs.launcher.clearing_env", None, "环境归零中...");
-    
-    // Release the lock before calling killer to prevent deadlocks if killer needs the lock
-    // Actually, process_killer_with_sys needs &mut System. We have MutexGuard.
-    drop(sys);
-    drop(users);
+    logger::log_localized(Some(app), "info", "logs.launcher.clearing_env", None, "Clearing environment...");
 
     let killed = {
         let mut sys_lock = state.sys_lock();
@@ -121,18 +140,15 @@ pub fn launch_game(
 
     if killed > 0 {
         logger::log_localized(Some(app), "success", "logs.launcher.killed_processes", Some(serde_json::json!({ "count": killed })),
-            &format!("已强制终止 {} 个相关进程", killed));
-        // Give OS a moment to release file handles after killing
-        logger::log_localized(Some(app), "info", "logs.launcher.waiting_file_handles", None, "等待系统释放文件句柄...");
-        std::thread::sleep(std::time::Duration::from_millis(500));
+            &format!("Terminated {} related processes", killed));
     }
 
-    if !bnet_only {
+    if !bnet_only && !advanced_mode {
         if win_admin::enable_debug_privilege() {
             match mutex::close_d2r_mutexes(app) {
                 Ok(count) if count > 0 => {
                     logger::log_localized(Some(app), "success", "logs.launcher.closed_mutexes", Some(serde_json::json!({ "count": count })),
-                        &format!("已关除 {} 个内核互斥体", count));
+                        &format!("Closed {} kernel mutexes", count));
                 }
                 _ => {}
             }
@@ -140,33 +156,33 @@ pub fn launch_game(
     }
 
     // 3. Environment Injection (Restore Target Snapshot)
-    logger::log_localized(Some(app), "info", "logs.launcher.verifying_permissions", None, "正在校验文件访问权限 (原子锁)...");
+    logger::log_localized(Some(app), "info", "logs.launcher.verifying_permissions", None, "Verifying file access permissions (Atomic lock)...");
     if let Err(e) = file_swap::verify_config_writable() {
          logger::log_localized(Some(app), "error", "logs.launcher.file_occupied_error", Some(serde_json::json!({ "error": e.to_string() })),
-             &format!("安全拦截: 战网配置文件仍被占用。原因: {}", e));
+             &format!("Security Interception: Battle.net config file still in use. Reason: {}", e));
          return Err(AccountError::FileSwap(e));
     }
 
-    logger::log_localized(Some(app), "info", "logs.launcher.aligning_files", None, "档案对齐中...");
+    logger::log_localized(Some(app), "info", "logs.launcher.aligning_files", None, "Aligning files...");
     
     // 3.1. Ensure we start with a clean Slate (Atomic Cleanup)
     file_swap::delete_config().map_err(|e| {
         logger::log_localized(Some(app), "error", "logs.launcher.cleanup_error", Some(serde_json::json!({ "error": e.to_string() })),
-            &format!("环境对齐失败: 无法清理旧档案。{}", e));
+            &format!("Alignment failed: Unable to clean old files. {}", e));
         AccountError::FileSwap(e)
     })?;
 
     // 3.2. Inject target snapshot
     match file_swap::restore_snapshot(app, &account.id) {
         Ok(true) => {
-            logger::log_localized(Some(app), "success", "logs.launcher.align_success", None, "环境档案对齐完成");
+            logger::log_localized(Some(app), "success", "logs.launcher.align_success", None, "Environment file alignment complete");
         }
         Ok(false) => {
-            logger::log_localized(Some(app), "info", "logs.launcher.no_snapshot", None, "目标账号无历史快照，使用战网初始环境运行");
+            logger::log_localized(Some(app), "info", "logs.launcher.no_snapshot", None, "No history snapshot found for target account, using clean Battle.net environment");
         }
         Err(e) => {
             logger::log_localized(Some(app), "error", "logs.launcher.align_critical_error", Some(serde_json::json!({ "error": e.to_string() })),
-                &format!("环境对齐严重异常: {}", e));
+                &format!("Critical error during file alignment: {}", e));
             return Err(AccountError::FileSwap(e));
         }
     }
@@ -180,45 +196,31 @@ pub fn launch_game(
     let target_user = account.win_user.to_lowercase();
 
     logger::log_localized(Some(app), "info", "logs.launcher.bnet_path", Some(serde_json::json!({ "path": bnet_path })),
-        &format!("战网路径: {}", bnet_path));
+        &format!("Battle.net path: {}", bnet_path));
 
     if target_user == current_user || target_user == std::env::var("USERNAME").unwrap_or_default().to_lowercase() {
-        logger::log_localized(Some(app), "info", "logs.launcher.host_user_detected", None, "检测到宿主用户，开始直接运行战网...");
+        logger::log_localized(Some(app), "info", "logs.launcher.host_user_detected", None, "Host user detected, starting Battle.net directly...");
         let mut cmd = std::process::Command::new(bnet_path);
         if let Some(wd) = working_dir { cmd.current_dir(wd); }
         let child = cmd.spawn().map_err(|e| anyhow::anyhow!("Failed to spawn: {}", e))?;
         logger::log_localized(Some(app), "success", "logs.launcher.launch_success", Some(serde_json::json!({ "pid": child.id() })),
-            &format!("已拉起战网 (PID: {})", child.id()));
+            &format!("Launched Battle.net (PID: {})", child.id()));
         Ok(child.id())
     } else {
         // Sandbox launch with credentials
-        let (domain, user) = if let Some(pos) = account.win_user.find('\\') {
+        let (domain, user) = if let Some(pos) = account.win_user.rfind('\\') {
             (Some(&account.win_user[..pos]), &account.win_user[pos + 1..])
         } else {
             (None, account.win_user.as_str())
         };
 
-        // 1. 安全预检 (Industrial-grade Security Shims)
-        // 刷新密码策略：防止由于系统 0x80070532 等策略导致的登录拦截
-        if account.auto_fix_password {
-            logger::log_localized(Some(app), "info", "logs.launcher.syncing_password_policy", None, "正在同步密码永不过期策略...");
-            if let Err(e) = os.set_password_never_expires(user, true) {
-                logger::log_localized(Some(app), "warn", "logs.launcher.sync_policy_note", Some(serde_json::json!({ "error": e.to_string() })),
-                    &format!("策略同步备注: {}", e));
-            }
-        }
-
-        // 核心：无损状态擦除。直接清除“下次登录必须修改密码”标记，无需重置密码。
-        if let Err(e) = os.clear_password_expiration_flags(user) {
-             logger::log_localized(Some(app), "warn", "logs.launcher.security_patch_skipped", Some(serde_json::json!({ "error": e.to_string() })),
-                 &format!("安全状态预修补跳过: {}", e));
-        }
+        // 1. 安全预检 (Industrial-grade Security Shims) - 已移除（会导致部分环境认证回退）
 
         let physical_password = match Vault::load_password(app, &account.id) {
             Ok(p) => p,
             Err(e) => {
                 logger::log_localized(Some(app), "error", "logs.launcher.vault_error", Some(serde_json::json!({ "error": e.to_string() })),
-                    &format!("隔离启动失败: 无法从加密仓提取凭据。{}", e));
+                    &format!("Launch failed: Could not retrieve credentials from vault. {}", e));
                 return Err(AccountError::SysInfo(format!("Vault Retrieval Error: {}", e)));
             }
         };
@@ -236,7 +238,7 @@ pub fn launch_game(
             "launch-log",
             LaunchLogPayload {
                 account_id: account.id.clone(),
-                message: format!("已拉起战网 (PID: {})", result.process_id),
+                message: format!("logs.launcher.launch_success|{{\"pid\":{}}}", result.process_id),
                 level: "success".into(),
             },
         );

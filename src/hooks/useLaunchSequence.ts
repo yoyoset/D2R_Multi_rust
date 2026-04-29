@@ -10,7 +10,7 @@ export function useLaunchSequence() {
     const { show: showBlocking, close: closeBlocking } = useBlockingNotification();
     const addLog = useLogs(state => state.addLog);
 
-    const performLaunch = async (account: Account, bnetOnly: boolean = false, force: boolean = false) => {
+    const performLaunch = async (account: Account, bnetOnly: boolean = false, force: boolean = false, advancedMode: boolean = false, onEdit?: (acc: Account) => void) => {
         try {
             setIsLaunching(true);
 
@@ -29,7 +29,7 @@ export function useLaunchSequence() {
             }
 
             // 2. Main Launch
-            await launchGame(account, "", bnetOnly, force);
+            await launchGame(account, bnetOnly, force, advancedMode);
             setIsLaunching(false);
         } catch (e) {
             const errorMsg = String(e);
@@ -54,7 +54,7 @@ export function useLaunchSequence() {
                                 try {
                                     await resolveLaunchConflict(account.id, 'delete');
                                     // Retry the exact same launch after one step resolution
-                                    await performLaunch(account, bnetOnly, force);
+                                    await performLaunch(account, bnetOnly, force, advancedMode);
                                 } catch (err) {
                                     addLog({
                                         message: t('conflict_resolve_failed', { error: String(err) }),
@@ -71,7 +71,7 @@ export function useLaunchSequence() {
                             onClick: async () => {
                                 try {
                                     await resolveLaunchConflict(account.id, 'reset');
-                                    await performLaunch(account, bnetOnly, force);
+                                    await performLaunch(account, bnetOnly, force, advancedMode);
                                 } catch (err) {
                                     addLog({
                                         message: t('double_cleanup_failed', { error: String(err) }),
@@ -84,6 +84,7 @@ export function useLaunchSequence() {
                         }
                     ],
                     'warning',
+                    undefined,
                     () => setIsLaunching(false)
                 );
                 return;
@@ -114,11 +115,42 @@ export function useLaunchSequence() {
                             variant: 'danger',
                             onClick: () => {
                                 closeBlocking();
-                                performLaunch(account, bnetOnly, true);
+                                performLaunch(account, bnetOnly, true, advancedMode, onEdit);
                             }
                         }
                     ],
                     'error',
+                    undefined,
+                    () => setIsLaunching(false)
+                );
+                return;
+            }
+
+            if (errorMsg.includes('Vault entry not found')) {
+                showBlocking(
+                    t('msg.auth.reauth_title'),
+                    t('msg.auth.reauth_required'),
+                    [
+                        {
+                            label: t('cancel'),
+                            variant: 'outline',
+                            onClick: () => {
+                                setIsLaunching(false);
+                                closeBlocking();
+                            }
+                        },
+                        {
+                            label: t('btn_edit_reauth'),
+                            variant: 'primary',
+                            onClick: () => {
+                                setIsLaunching(false);
+                                closeBlocking();
+                                if (onEdit) onEdit(account);
+                            }
+                        }
+                    ],
+                    'error',
+                    undefined,
                     () => setIsLaunching(false)
                 );
                 return;

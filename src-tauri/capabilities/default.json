@@ -3,7 +3,8 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": [
-    "main"
+    "main",
+    "sequencer"
   ],
   "permissions": [
     "core:default",
@@ -14,6 +15,8 @@
     "core:window:allow-maximize",
     "core:window:allow-close",
     "core:window:allow-set-title",
+    "core:window:allow-set-size",
+    "core:window:allow-set-resizable",
     "core:window:allow-start-dragging",
     "core:window:allow-toggle-maximize",
     "updater:default",

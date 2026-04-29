@@ -56,10 +56,11 @@ pub fn manual_launch_process(
     username: String,
     password: Option<String>,
 ) -> Result<String, String> {
-    let bnet_path = r"C:\Program Files (x86)\Battle.net\Battle.net.exe";
-    let working_dir = std::path::Path::new(bnet_path)
-        .parent()
-        .map(|p| p.to_string_lossy().to_string());
+    // 使用自动检测路径而非硬编码
+    let bnet_path_buf = crate::modules::account::launcher::get_bnet_path()
+        .ok_or_else(|| "Battle.net not found. Please ensure Battle.net is installed.".to_string())?;
+    let bnet_path = bnet_path_buf.to_string_lossy().to_string();
+    let working_dir = bnet_path_buf.parent().map(|p| p.to_string_lossy().to_string());
 
     let res = state
         .os
@@ -67,7 +68,7 @@ pub fn manual_launch_process(
             &username,
             None,
             password.as_deref().unwrap_or(""),
-            bnet_path,
+            &bnet_path,
             None,
             working_dir.as_deref(),
         )

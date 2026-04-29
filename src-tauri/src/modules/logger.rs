@@ -124,25 +124,29 @@ pub fn log(app: Option<&tauri::AppHandle>, level: &str, key: Option<&str>, args:
     }
 }
 
-pub fn log_localized(app: Option<&tauri::AppHandle>, level: &str, key: &str, args: Option<serde_json::Value>, fallback: &str) {
-    log(app, level, Some(key), args, fallback);
+pub fn log_localized(app: Option<&tauri::AppHandle>, level: &str, key: &str, args: Option<serde_json::Value>, _fallback: &str) {
+    // Use i18n translation instead of hardcoded fallback
+    let message = crate::modules::i18n::translate_with_fallback(key, &args, _fallback);
+    log(app, level, Some(key), args, &message);
 }
 
-pub fn info(message: &str) {
-    log(None, "info", None, None, message);
+
+pub fn success_key(app: Option<&tauri::AppHandle>, key: &str, args: Option<serde_json::Value>) {
+    log_localized(app, "success", key, args, key);
 }
 
-pub fn error(message: &str) {
-    log(None, "error", None, None, message);
+pub fn info_key(app: Option<&tauri::AppHandle>, key: &str, args: Option<serde_json::Value>) {
+    log_localized(app, "info", key, args, key);
 }
 
-pub fn warn(message: &str) {
-    log(None, "warning", None, None, message);
+pub fn error_key(app: Option<&tauri::AppHandle>, key: &str, args: Option<serde_json::Value>) {
+    log_localized(app, "error", key, args, key);
 }
 
-pub fn success(message: &str) {
-    log(None, "success", None, None, message);
+pub fn warn_key(app: Option<&tauri::AppHandle>, key: &str, args: Option<serde_json::Value>) {
+    log_localized(app, "warn", key, args, key);
 }
+
 
 pub fn clear_logs() {
     if let Ok(mut buffer) = log_buffer().lock() {

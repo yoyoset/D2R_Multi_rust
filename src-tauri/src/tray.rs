@@ -9,12 +9,9 @@ pub fn setup_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
     let lang = config.language.clone().unwrap_or_else(|| "zh-CN".to_string());
     drop(config);
 
-    let (show_text, quit_text) = match lang.as_str() {
-        "zh-CN" | "zh-TW" => ("显示主界面", "退出"),
-        "ja" => ("表示", "終了"),
-        "ko" => ("보기", "종료"),
-        _ => ("Show", "Quit"),
-    };
+    let lang_key = if lang.starts_with("zh") { "zh" } else { &lang };
+    let show_text = crate::modules::i18n::translate("tray.menu.show", lang_key, &None);
+    let quit_text = crate::modules::i18n::translate("tray.menu.quit", lang_key, &None);
 
     let quit_i = tauri::menu::MenuItem::with_id(app, "quit", quit_text, true, None::<&str>)?;
     let show_i = tauri::menu::MenuItem::with_id(app, "show", show_text, true, None::<&str>)?;
@@ -32,7 +29,15 @@ pub fn setup_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
             "quit" => {
                 let state = app.state::<crate::state::AppState>();
                 state.is_quitting.store(true, Ordering::SeqCst);
-                app.exit(0);
+                // 发送优雅退出信号
+                let _ = state.shutdown_tx.send(());
+                
+                // 给后台任务一点点时间（50ms）来响应
+                let app_clone = app.clone();
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                    app_clone.exit(0);
+                });
             }
             "show" => {
                 if let Some(window) = app.get_webview_window("main") {
@@ -67,12 +72,9 @@ pub fn update_tray_lang(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error
     let lang = config.language.clone().unwrap_or_else(|| "zh-CN".to_string());
     drop(config);
 
-    let (show_text, quit_text) = match lang.as_str() {
-        "zh-CN" | "zh-TW" => ("显示主界面", "退出"),
-        "ja" => ("表示", "終了"),
-        "ko" => ("보기", "종료"),
-        _ => ("Show", "Quit"),
-    };
+    let lang_key = if lang.starts_with("zh") { "zh" } else { &lang };
+    let show_text = crate::modules::i18n::translate("tray.menu.show", lang_key, &None);
+    let quit_text = crate::modules::i18n::translate("tray.menu.quit", lang_key, &None);
 
     if let Some(tray) = app.tray_by_id("main") {
         let quit_i = tauri::menu::MenuItem::with_id(app, "quit", quit_text, true, None::<&str>)?;

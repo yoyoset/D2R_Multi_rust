@@ -64,7 +64,7 @@ struct UNICODE_STRING {
 pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error> {
     // 0. Enable SeDebugPrivilege
     if !crate::modules::win_admin::enable_debug_privilege() {
-        crate::modules::logger::log_localized(Some(app), "warn", "logs.mutex.debug_priv_failed", None, "无法启用调试权限，探测过程可能受限");
+        crate::modules::logger::log_localized(Some(app), "warn", "logs.mutex.debug_priv_failed", None, "Failed to enable debug privilege, sensing process may be limited");
     }
 
     // 1. Identify target PIDs
@@ -88,7 +88,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
     }
 
     if target_pids.is_empty() {
-        crate::modules::logger::log_localized(Some(app), "info", "logs.mutex.no_processes", None, "未发现 D2R 进程，跳过互斥锁清理");
+        crate::modules::logger::log_localized(Some(app), "info", "logs.mutex.no_processes", None, "No D2R processes found, skipping mutex cleanup");
         return Ok(0);
     }
 
@@ -130,7 +130,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
             "debug",
             "logs.mutex.scanning_system_handles",
             Some(serde_json::json!({ "count": info.number_of_handles })),
-            &format!("正在扫描系统 {} 个句柄...", info.number_of_handles),
+            &format!("Scanning system {} handles...", info.number_of_handles),
         );
 
         let mut closed_count = 0;
@@ -169,13 +169,20 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
 
         // Pass 2: Global Scan (Type based - BAT style)
         // If we found the mutant type index, scan the WHOLE system for our specific heavy-duty names.
-        if found_mutant_type {
+        let multi_account = {
+            use tauri::Manager;
+            let state = app.state::<crate::state::AppState>();
+            let config = state.config_lock();
+            config.advanced_launch_mode.unwrap_or(true)
+        };
+
+        if found_mutant_type && multi_account {
             crate::modules::logger::log_localized(
                 Some(app),
                 "debug",
                 "logs.mutex.global_scan",
                 None,
-                "正在执行全系统逻辑锁扫描 (Cross-Session)...",
+                "Performing global system logic lock scan (Cross-Session)...",
             );
             for i in 0..info.number_of_handles {
                 let entry = *handles_ptr.add(i);
@@ -206,7 +213,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                 "logs.mutex.none_found",
                 Some(serde_json::json!({ "count": target_handle_count })),
                 &format!(
-                    "全量扫描完成，未命中任何 D2R 互斥锁 (Checked {} handles)",
+                    "System-wide scan complete, no D2R mutexes hit (Checked {} handles)",
                     target_handle_count
                 ),
             );
@@ -269,8 +276,18 @@ unsafe fn get_handle_name_safe(
         return None;
     }
 
-    // Remove strict Mutant filtering to support all lock types (Event, Section, etc.)
-    // Stability is maintained via surgical name matching in the caller.
+    let type_name = String::from_utf16_lossy(std::slice::from_raw_parts(
+        type_info.buffer,
+        (type_info.length / 2) as usize,
+    ));
+
+    // INDUSTRIAL SAFETY: Only query names for types that are known not to hang 
+    // and are relevant to our search (Mutants/Sections).
+    // This prevents ROB-001 (Thread leaks on hanging NtQueryObject calls).
+    if type_name != "Mutant" && type_name != "Section" && type_name != "Event" {
+        let _ = CloseHandle(h_dup);
+        return None;
+    }
 
     // 2. Name Query with RELAXED timeout (1500ms) for diagnostics
     let (tx, rx) = mpsc::channel();
@@ -309,7 +326,7 @@ unsafe fn get_handle_name_safe(
                 "debug",
                 "logs.mutex.probe_timeout",
                 Some(serde_json::json!({ "pid": pid, "handle": format!("0x{:X}", handle_val) })),
-                &format!("⚠️ 句柄探测超时 (PID: {}, Handle: 0x{:X})", pid, handle_val),
+                &format!("⚠️ Handle probe timeout (PID: {}, Handle: 0x{:X})", pid, handle_val),
             );
             None
         });
@@ -362,7 +379,7 @@ fn check_and_close_if_match(
             "success",
             "logs.mutex.found_and_cleaned",
             Some(serde_json::json!({ "name": name })),
-            &format!("🎯 发现并清理 D2R 互斥锁: {}", name),
+            &format!("🎯 Found and cleaned D2R mutex: {}", name),
         );
         unsafe {
             if close_remote_handle(pid, handle_val) {

@@ -5,35 +5,59 @@ interface SwitchProps {
     checked: boolean;
     onChange: (checked: boolean) => void;
     label?: string;
+    description?: string;
     disabled?: boolean;
     className?: string;
+    id?: string;
 }
 
-export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, disabled, className }) => {
+export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, description, disabled, className, id }) => {
     return (
-        <label className={cn(
-            "flex items-center gap-3 cursor-pointer select-none",
-            disabled && "opacity-50 cursor-not-allowed",
-            className
-        )}>
-            <div className="relative">
+        <div 
+            className={cn(
+                "flex items-start justify-between w-full group cursor-pointer select-none py-1.5 px-0.5 transition-opacity",
+                disabled && "opacity-50 cursor-not-allowed",
+                className
+            )}
+            onClick={() => !disabled && onChange(!checked)}
+        >
+            {(label || description) && (
+                <div className="flex flex-col gap-0.25">
+                    {label && (
+                        <span className="text-[10px] font-bold text-zinc-400 group-hover:text-zinc-200 transition-colors uppercase tracking-tight">
+                            {label}
+                        </span>
+                    )}
+                    {description && (
+                        <span className="text-[8px] text-zinc-600 uppercase tracking-tighter leading-tight italic">
+                            {description}
+                        </span>
+                    )}
+                </div>
+            )}
+            
+            <div className="relative pt-0.5 flex-shrink-0">
                 <input
+                    id={id}
                     type="checkbox"
                     className="sr-only"
                     checked={checked}
-                    onChange={(e) => !disabled && onChange(e.target.checked)}
+                    readOnly
                     disabled={disabled}
                 />
+                {/* Background Track */}
                 <div className={cn(
-                    "w-10 h-5 rounded-full transition-colors duration-300",
-                    checked ? "bg-emerald-500/40" : "bg-black/40 border border-white/10"
+                    "w-8 h-4 rounded-sm transition-colors duration-300 border",
+                    checked 
+                        ? "bg-primary/90 border-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]" 
+                        : "bg-zinc-900 border-white/10"
                 )}></div>
+                {/* Thumb Slider */}
                 <div className={cn(
-                    "absolute top-1 left-1 w-3 h-3 rounded-full transition-transform duration-300 shadow-sm",
-                    checked ? "translate-x-5 bg-emerald-400" : "translate-x-0 bg-zinc-600"
+                    "absolute top-[4px] left-[2px] w-2.5 h-2.5 bg-white rounded-[1px] transition-transform duration-200 shadow-xl",
+                    checked ? "translate-x-[1.125rem]" : "translate-x-0"
                 )}></div>
             </div>
-            {label && <span className="text-xs font-bold text-zinc-400">{label}</span>}
-        </label>
+        </div>
     );
 };

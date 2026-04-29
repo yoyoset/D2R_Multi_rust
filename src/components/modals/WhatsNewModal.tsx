@@ -30,24 +30,22 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
             <ModalContent className="max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-amber-500 to-rose-500"></div>
 
-                <ModalHeader onClose={onClose} className="border-b-0 pb-0">
+                <ModalHeader onClose={onClose}>
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <Sparkles className="text-primary" size={24} />
-                        </div>
+                        <Sparkles className="text-primary" size={14} />
                         <div className="flex flex-col">
-                            <h2 className="text-2xl font-black text-white tracking-tight">{t('whats_new_title') || "发现新特性"}</h2>
-                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold opacity-60">D2R Multi Version Evolution</p>
+                            <h2 className="text-[12px] font-black text-white uppercase tracking-widest">{t('whats_new_title')}</h2>
+                            <p className="text-[8px] text-zinc-600 font-mono uppercase tracking-tighter mt-0.5">{t('system_evolution_desc')}</p>
                         </div>
                     </div>
                 </ModalHeader>
 
-                <ModalBody className="overflow-y-auto px-8 py-6 custom-scrollbar space-y-6">
+                <ModalBody className="overflow-y-auto p-4 custom-scrollbar space-y-4">
                     {/* Detailed Changelog */}
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-zinc-100 font-bold border-b border-white/5 pb-2">
-                            <ListChecks size={18} className="text-zinc-500" />
-                            <span>{t('detailed_changelog') || "版本变动详情"}</span>
+                        <div className="flex items-center gap-2 text-zinc-400 font-black text-[9px] uppercase tracking-widest border-b border-white/5 pb-1.5">
+                            <ListChecks size={12} className="text-zinc-600" />
+                            <span>{t('detailed_changelog')}</span>
                         </div>
 
                         {loading ? (
@@ -55,18 +53,18 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
                                 <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                             </div>
                         ) : (
-                            <div className="prose prose-invert prose-sm max-w-none">
-                                <pre className="whitespace-pre-wrap text-zinc-400 font-sans leading-relaxed text-[13px] bg-black/20 p-5 rounded-2xl border border-white/5 max-h-60 overflow-y-auto custom-scrollbar italic">
+                            <div className="prose prose-invert prose-xs max-w-none">
+                                <div className="whitespace-pre-wrap text-zinc-400 font-mono leading-relaxed text-[11px] bg-black/50 p-4 rounded-sm border border-white/5 max-h-60 overflow-y-auto custom-scrollbar italic">
                                     {changelog}
-                                </pre>
+                                </div>
                             </div>
                         )}
                     </div>
                 </ModalBody>
 
-                <ModalFooter className="bg-zinc-900/30 border-t border-white/5">
-                    <Button variant="solid" onClick={onClose} className="bg-primary hover:bg-primary/90 text-white font-black px-12 h-11 italic uppercase tracking-tighter rounded-full shadow-lg shadow-primary/20">
-                        {t('explore_now') || "进入避难所"}
+                <ModalFooter className="bg-zinc-950/50 border-t border-white/5">
+                    <Button variant="solid" size="sm" onClick={onClose} className="bg-primary/80 hover:bg-primary text-white font-black px-8 rounded-sm uppercase tracking-widest">
+                        {t('explore_now')}
                     </Button>
                 </ModalFooter>
             </ModalContent>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Account } from '../../lib/api';
 import { User } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import {
@@ -24,41 +23,52 @@ import { useAccountStatus } from '../../hooks/useAccountStatus';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { SortableAccountItem } from '../dashboard/SortableAccountItem';
 import { LogConsole } from '../dashboard/LogConsole';
+import { AppConfig, Account } from '../../lib/api';
 
 interface DashboardProps {
+    config: AppConfig;
     accounts: Account[];
     invalidAccountIds: Set<string>;
+    missingCredentialIds: Set<string>;
     selectedAccountId: string | null;
     onSelectAccount: (id: string) => void;
-    onLaunch: (bnetOnly?: boolean) => void;
+    onLaunch: (bnetOnly?: boolean, advancedMode?: boolean) => void;
     isLaunching: boolean;
-    multiAccountMode?: boolean;
+    advancedLaunchMode?: boolean;
     onReorder: (newAccounts: Account[]) => void;
     onEdit: (account: Account) => void;
+    onSaveSnapshot: (account: Account) => void;
     launchLogs: any[];
     onClearLogs: () => void;
     viewMode: 'card' | 'list';
     onViewModeChange: (mode: 'card' | 'list') => void;
+    onRefreshPaths?: () => void;
+    onEditSequencePreset: (index: number) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
+    config,
     accounts,
     invalidAccountIds,
+    missingCredentialIds,
     selectedAccountId,
     onSelectAccount,
     onLaunch,
     isLaunching,
-    multiAccountMode,
+    advancedLaunchMode,
     onReorder,
     onEdit,
+    onSaveSnapshot,
     launchLogs,
     onClearLogs,
     viewMode,
-    onViewModeChange
+    onViewModeChange,
+    onRefreshPaths,
+    onEditSequencePreset
 }) => {
     const { t } = useTranslation();
     const { accountStatuses, refresh, isRefreshing } = useAccountStatus(accounts);
-
+    
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -75,30 +85,34 @@ const Dashboard: React.FC<DashboardProps> = ({
 
     const selectedAccount = accounts.find(a => a.id === selectedAccountId);
     const selectedAccountStatus = selectedAccount ? accountStatuses[selectedAccount.win_user] : undefined;
-    // 只有在没有账号、未登录、或正在启动中时才禁用。不再因为“检测到运行中”而彻底锁定按钮，允许用户再次点击尝试清理或强制启动。
+    
+    // Disable launch only if no accounts exist, none selected, or already launching. 
+    // We no longer lock the button solely due to "detected running" to allow users to attempt cleanup or forced re-launch.
     const isLaunchDisabled = accounts.length === 0 || !selectedAccountId || isLaunching;
 
     return (
-        <div className="flex flex-col items-center w-full p-4 md:p-6 gap-4 md:gap-6">
+        <div className="flex flex-col items-center w-full">
             <DashboardHeader
-                accountsCount={accounts.length}
+                config={config}
                 viewMode={viewMode}
                 onViewModeChange={onViewModeChange}
                 onLaunch={onLaunch}
                 isLaunching={isLaunching}
-                multiAccountMode={multiAccountMode}
+                advancedLaunchMode={advancedLaunchMode}
                 selectedAccountStatus={selectedAccountStatus}
                 isLaunchDisabled={isLaunchDisabled}
                 onRefresh={refresh}
                 isRefreshing={isRefreshing}
+                onRefreshPaths={onRefreshPaths}
+                onEditSequencePreset={onEditSequencePreset}
             />
 
-            <div className="w-full shrink-0 pb-10">
+            <div className="w-full shrink-0 px-4 pt-1 pb-10">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <div className={cn(
-                        "w-full pb-6",
+                        <div className={cn(
+                        "w-full",
                         viewMode === 'card'
-                            ? "grid grid-cols-[repeat(auto-fill,minmax(143px,154px))] gap-2 md:gap-3 justify-center"
+                            ? "grid gap-2 w-full grid-cols-[repeat(auto-fill,minmax(130px,1fr))]"
                             : "flex flex-col gap-2"
                     )}>
                         <SortableContext
@@ -110,17 +124,19 @@ const Dashboard: React.FC<DashboardProps> = ({
                                     key={account.id}
                                     account={account}
                                     isInvalid={invalidAccountIds.has(account.id)}
+                                    isMissingCredentials={missingCredentialIds.has(account.id)}
                                     viewMode={viewMode}
                                     selectedAccountId={selectedAccountId}
                                     onSelectAccount={onSelectAccount}
                                     onEdit={onEdit}
+                                    onSaveSnapshot={onSaveSnapshot}
                                     status={accountStatuses[account.win_user]}
                                 />
                             ))}
                         </SortableContext>
 
                         {accounts.length === 0 && (
-                            <div className="col-span-full w-full max-w-md mx-auto text-center p-8 md:p-12 text-zinc-600 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/10 mt-10">
+                            <div className="col-span-full w-full max-w-md mx-auto text-center p-4 text-zinc-600 border border-dashed border-zinc-800 rounded-sm bg-zinc-900/10 mt-6">
                                 <User size={48} className="mx-auto mb-4 opacity-10" />
                                 <p className="text-sm">{t('no_accounts_hint')}</p>
                             </div>
@@ -129,7 +145,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </DndContext>
             </div>
 
-            <LogConsole logs={launchLogs} onClear={onClearLogs} />
+            {launchLogs.length > 0 && (
+                <LogConsole logs={launchLogs} onClear={onClearLogs} />
+            )}
         </div>
     );
 };

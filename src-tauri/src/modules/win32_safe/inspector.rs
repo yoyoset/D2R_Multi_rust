@@ -71,7 +71,7 @@ pub fn list_process_handles(
     pid: u32,
 ) -> Result<Vec<HandleInfo>, anyhow::Error> {
     if !crate::modules::win_admin::enable_debug_privilege() {
-        crate::modules::logger::log_localized(Some(app), "warn", "logs.inspector.debug_priv_failed", None, "无法启用调试权限，句柄枚举可能不完整");
+        crate::modules::logger::log_localized(Some(app), "warn", "logs.inspector.debug_priv_failed", None, "Failed to enable debug privilege, handle enumeration may be incomplete");
     }
 
     unsafe {
@@ -94,7 +94,7 @@ pub fn list_process_handles(
                 break;
             } else {
                 return Err(anyhow::anyhow!(
-                    "NtQuerySystemInformation(64) Failed: 0x{:X}",
+                    "logs.inspector.nt_query_fail|{{\"status\":\"{:X}\"}}",
                     status.0
                 ));
             }
@@ -127,7 +127,7 @@ pub fn close_specific_handle(pid: u32, handle_val: usize) -> Result<(), anyhow::
             Ok(())
         } else {
             Err(anyhow::anyhow!(
-                "Failed to close handle 0x{:X} for PID {}",
+                "logs.inspector.handle_close_fail|{{\"handle\":\"{:X}\",\"pid\":{}}}",
                 handle_val,
                 pid
             ))
@@ -195,7 +195,7 @@ unsafe fn get_handle_name_detailed(
         &mut ret_len,
     );
 
-    let mut type_name = String::from("Unknown");
+    let mut type_name = String::from("status_unknown");
     if status == STATUS_SUCCESS {
         let type_info = &*(type_buf.as_ptr() as *const UNICODE_STRING);
         if type_info.length > 0 && !type_info.buffer.is_null() {

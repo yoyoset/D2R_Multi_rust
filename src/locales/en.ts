@@ -66,9 +66,10 @@ export default {
     "account_sanctum": "Account Camp",
     "setting_close_to_tray": "Minimize to Tray",
     "setting_close_to_tray_desc": "Hide to system tray instead of exiting when closing",
-    "setting_multi_account_mode": "Multi-Account Management Mode",
-    "setting_multi_account_mode_desc": "Provides two specialized buttons for quick account/region swapping",
-    "launch_full": "One-click Start",
+    "setting_advanced_launch_mode": "Advanced Launch Control",
+    "setting_advanced_launch_mode_desc": "Enables dual-button launch: Managed (with full checks & backup) and Advanced (direct, minimalist cleaning).",
+    "launch_managed": "Managed Launch",
+    "launch_advanced": "Advanced (Fast)",
     "full_preparation": "Full Prep Sequence",
     "launch_bnet_only": "Bnet Client Only",
     "identity_only": "Identity Swap Only",
@@ -94,6 +95,7 @@ export default {
     "isolation_core_ready": "Isolation Core Primed & Ready",
     "launch_game": "Launch Game",
     "launch_failed": "Launch failed",
+    "captured_game_path": "Captured Game Path",
     "bnet_not_found": "Battle.net not found. This software requires all accounts to have Battle.net installed at the default path (C:\\Program Files (x86)\\Battle.net)",
     "update_found": "New version found",
     "update_installed": "Update downloaded and installed. Please restart the application",
@@ -121,13 +123,17 @@ export default {
     "win_user_binding": "Windows User Binding",
     "win_username": "Windows Username",
     "win_password": "Windows Password",
+    "credential_stored_hint": "Encryption stored in Vault",
+    "blank_password_hint": "Password is empty (Keep this if you have no Windows password)",
     "win_create_warning": "* Standard local user will be created. Needs Admin rights.",
     "apply_password_policy": "Manage System Password Policy",
-    "apply_password_policy_hint": "If enabled, the Windows account password will be synced and set to 'Never Expires' on save.",
+    "apply_password_policy_hint": "Sync system password and set to 'Never Expires' on save",
     "unmanaged_user_warning": "Account is unmanaged (e.g. Domain or Microsoft Account)",
     "unmanaged_user_hint": "Domain accounts (except current) cannot be managed via API. Recommended to DISABLE policy management and save locally only.",
     "note_placeholder": "e.g. Main Sorc, Crafting Mule...",
+    "note": "Note",
     "bnet_account": "Bnet Remark / ID",
+    "bnet_id_placeholder": "Bnet ID (e.g. User#1234)...",
     "scan_users": "Scan Users",
     "select_win_user": "Select Windows User (Local)",
     "scan_hint": "Default: Local users only. Deep scan resolves Domain/MS accounts via SID. May be slow.",
@@ -142,6 +148,7 @@ export default {
     "confirm_delete_title": "Confirm Delete",
     "confirm_delete_desc": "Delete this account configuration?",
     "confirm_delete": "Delete",
+    "donate_blessing": "Thank you for your incredible support and kindness. Your generosity is my driving force and a warm light in Sanctuary. Wishing you: legendary luck on every drop, perfect rolls on every identification, and non-stop Jah, Ber, and Lo runes. May every beam of light from the sky be the god-tier loot you've been dreaming of!",
     "ms_account_unusable_title": "Shadow Account Unusable",
     "ms_account_unusable_desc": "Microsoft shadow accounts cannot be validated when not logged in. Switch to this Windows user or convert to a local account.",
     "already_added": "Already Added",
@@ -174,12 +181,13 @@ export default {
     "ai_screenshot_active": "AI Active",
     "recording": "Recording...",
     "ai_ask": "Ask AI",
-    "donate": "Donate",
+    "donate": "Buy me a coffee",
     "donate_title": "Support the Developer",
-    "donate_blessing": "Donating brings good luck! May your drops be legendary and your rolls be perfect.",
+    "support_dev_subtitle": "Support & Development",
     "donate_alipay": "Alipay",
     "donate_wechat": "WeChat Pay",
     "donate_paypal": "PayPal",
+    "industrial_status_footer": "Industrial Edition • Operation: Stable",
     "admin_mode": "Admin Mode",
     "user_mode": "User Mode",
     "avatar": "Avatar Select",
@@ -201,6 +209,25 @@ export default {
     "reinstall_hint_title": "How to Fix?",
     "reinstall_hint_desc": "If Battle.net is installed elsewhere, please uninstall it and reinstall using the default settings. This won't affect your downloaded game data.",
     "got_it": "Got it",
+    "guide_launch_modes_title": "Launch Mode Details",
+    "guide_launch_managed_title": "Managed Launch",
+    "guide_launch_managed_desc": "Safest path. Performs environment checks, auto-backups (if D2R+Bnet are detected online), and full cleanup (Mutex + Bnet). Recommended for daily use.",
+    "guide_launch_advanced_title": "Advanced Launch",
+    "guide_launch_advanced_desc": "Skips all sensing and backup logic. minimalist cleanup (Kills Bnet only, skips Mutex cleaning). High speed, recommended for expert users.",
+    "guide_bnet_path_desc": "Must be installed in the default path",
+    "guide_bnet_install_all_users_desc": "When installing Battle.net, you MUST check 'Install for all users of this computer'.",
+    "guide_bnet_path_reason_desc": "To avoid permission conflicts in a multi-user environment, Battle.net cannot be installed on a non-system drive or custom directory.",
+    "migration_security_infra": "Security Infrastructure Upgrade",
+    "migration_vault_title": "Vault Security Migration",
+    "migration_vault_desc": "Migrating your account credentials to the Vault. This ensures your sensitive info is physically isolated from config files, resolving save conflicts and boosting security.",
+    "migration_encryption_progress": "Encryption Progress",
+    "migration_initializing": "Initializing Subsystems...",
+    "migration_waiting_telemetry": "Waiting for backend telemetry...",
+    "migration_success": "Vault Migration Completed Successfully",
+    "migration_footer_note": "Atomic Operations Only • Power Loss Protection Active • v2.0 Architecture",
+    "status_pass": "Pass",
+    "status_fail": "Fail",
+    "status_warning": "Warning",
     "label_initial_password": "Set Initial Password",
     "label_verify_password": "Verify System Password",
     "btn_create_now": "Create & Sync Now",
@@ -295,6 +322,12 @@ export default {
     "skip_config_sync": "Manual Mode (Skip Sync)",
     "skip_config_sync_hint": "If enabled, starting this account will skip the automatic Battle.net configuration (product.db) synchronization.",
     "skip_config_sync_active": "Manual mode active: Config not synced automatically",
+    "manual_snapshot_label": "Manual Snapshot Backup",
+    "manual_snapshot_desc": "If enabled, the system will not automatically backup the snapshot during the launch sequence. Snapshots are managed entirely by your manual backup trigger.",
+    "manual_snapshot_desc_short": "Skip auto-backup during launch",
+    "manual_snapshot_mode_active_hint": "Manual backup active: Remember to save your snapshot manually after changing settings.",
+    "manual_snapshot_mode": "Manual Snapshot Mode",
+    "manual_snapshot_badge": "Manual",
     "save_snapshot_hint": "Backup current environment config to this account",
     "snapshot_save_success": "Account configuration snapshot saved successfully",
     "footer_session": "SESSION",
@@ -304,6 +337,7 @@ export default {
     "footer_access_superuser": "SUPERUSER",
     "footer_access_standard": "STANDARD",
     "footer_version_industrial": "INDUSTRIAL",
+    "footer_build": "BUILD",
     "footer_runtime": "RUNTIME",
     "footer_runtime_ready": "READY",
     "footer_entities_total": "ENTITIES",
@@ -385,9 +419,12 @@ export default {
             "found_and_cleaned": "🎯 Found and cleaned D2R mutex: {{name}}"
         },
         "status": {
-            "no_user_info": "Detected D2R.exe (PID={{pid}}), but could not get user info (Insufficient permissions?)",
-            "no_path": "Detected D2R.exe (PID={{pid}}), but could not get execution path",
+            "no_user_info": "Detected D2R.exe (PID={{pid}})，but could not get user info (Insufficient permissions?)",
+            "no_path": "Detected D2R.exe (PID={{pid}})，but could not get execution path",
             "refresh_success": "Paths refreshed/completed successfully"
+        },
+        "system": {
+            "atomic_save": "Atomic configuration persistence pulse: OK"
         },
         "sequence": {
             "interrupted": "Sequence automation manually interrupted by user",
@@ -396,6 +433,132 @@ export default {
         },
         "inspector": {
             "debug_priv_failed": "Failed to enable debug privilege, handle enumeration may be incomplete"
+        },
+        "file_swap": {
+            "cleaned_count": "Cleaned {{count}} archive files"
+        },
+        "mirror": {
+            "create_success": "Mirror created successfully: {{path}}"
+        },
+        "game": {
+            "mutex_killed": "Successfully killed {{count}} kernel mutexes",
+            "process_killed": "Successfully killed {{count}} residual processes",
+            "launch_done": "Battle.net launched successfully (PID: {{pid}})",
+            "bnet_stop_done": "Force-stopped {{count}} Battle.net background processes",
+            "permission_fix_start": "Fixing directory permissions: {{path}}",
+            "permission_fix_done": "Directory permission repair complete: {{path}}",
+            "permission_fix_error": "Directory permission repair failed: {{path}}",
+            "icacls_summary": "Permission processing summary: {{msg}}",
+            "icacls_busy": "Processing: {{path}}"
+        },
+        "config": {
+            "migration_success": "Snapshot migration success (Initial update protection), recovered login states for {{count}} accounts",
+            "migration_encrypting": "Encrypting account credentials ({{idx}}/{{total}}): {{id}}",
+            "rescue_success": "Successfully rescued from old directory: {{user}} ({{id}})",
+            "save_retry": "Failed to save configuration (Attempt {{attempt}}): {{error}}. Retrying...",
+            "temp_write_retry": "Failed to write temporary config (Attempt {{attempt}}): {{error}}. Retrying..."
         }
-    }
+    },
+    "errors": {
+        "auth": {
+            "locked_out": "Windows account is locked out due to too many failed attempts (Error 1909).",
+            "system_error": "System Authentication Error: {{code}}"
+        },
+        "mirror": {
+            "source_invalid": "Source path does not exist or is not a directory",
+            "target_exists": "Target path already exists: {{path}}",
+            "mkdir_parent_fail": "Failed to create parent directory: {{error}}",
+            "mkdir_fail": "Failed to create directory: {{error}}",
+            "canonicalize_fail": "Failed to canonicalize source path: {{error}}",
+            "handle_fail": "Failed to obtain directory handle: {{error}}",
+            "device_io_fail": "Lower-level reparse point setup failed"
+        },
+        "file_swap": {
+            "deletion_failed": "Unable to clean archives: {{0}} (Ensure Bnet is closed)",
+            "env_error": "System environment error: ProgramData path not found",
+            "permission_denied": "Insufficient permissions: Cannot access {{0}}. Please run as Admin.",
+            "file_in_use": "File in use: {{0}}. Ensure relevant apps have exited.",
+            "io": "IO Error: {{0}}"
+        },
+        "os": {
+            "vault_failure": "Vault extraction failed: {{error}}. Please re-save password."
+        },
+        "game": {
+            "not_found": "D2R executable (D2R.exe) not found",
+            "bnet_not_found": "Battle.net executable not found",
+            "path_invalid": "Specified path is invalid or does not exist",
+            "invalid_path": "Battle.net installation path not found",
+            "user_uninitialized": "Windows account environment initialization incomplete",
+            "icacls_spawn_fail": "Failed to spawn or start icacls repair tool: {{error}}",
+            "stdout_fail": "Failed to open repair tool output stream",
+            "stderr_fail": "Failed to open repair tool error stream",
+            "icacls_wait_fail": "System error while waiting for repair tool: {{error}}"
+        },
+        "config": {
+            "save_failed": "Failed to save configuration after multiple attempts due to sharing violations. Please close programs using this file."
+        }
+    },
+    "app_name_part1": "D2R",
+    "app_name_part2": "Multi",
+    "app_name_short": "D2R MULTI",
+    "status_unknown": "Unknown",
+    "status_system": "System",
+    "logic_stream_output": "Logic Stream Output",
+    "syncing_caps": "SYNCING...",
+    "example_game_path": "D:\\Games\\Diablo II Resurrected\\D2R.exe",
+    "example_mirror_source": "C:\\Games\\Diablo II Resurrected",
+    "example_mirror_dest": "D:\\Mirrors",
+    "example_mirror_name": "D2R_Client_1",
+    "diag": {
+        "category": {
+            "permission": "Permission",
+            "service": "System Service",
+            "sys_component": "System Component",
+            "security_policy": "Security Policy",
+            "filesystem": "File System",
+            "env": "Environment"
+        },
+        "name": {
+            "admin_rights": "Administrator Rights",
+            "seclogon": "Secondary Logon Service",
+            "sam": "Local User Management (SAM)",
+            "interactive_logon": "Interactive Logon Permission",
+            "junction": "Directory Mirroring (Junction)",
+            "game_exe": "Game Executable Check",
+            "users_acl": "Users Group Access Rights"
+        },
+        "msg": {
+            "admin_ok": "Current process is running with administrator rights, allowing user creation and cross-session management.",
+            "admin_fail": "Not running as administrator. Cannot create users, clear mutexes, or launch processes as other users.",
+            "seclogon_running": "seclogon service is running, supporting process launches as other users.",
+            "seclogon_stopped": "seclogon service is stopped! This will prevent launching Battle.net as a sub-account. Please start 'Secondary Logon' in services.msc.",
+            "seclogon_not_found": "seclogon service not found. Your Windows version may be stripped of multi-user components.",
+            "seclogon_unknown": "Unable to query seclogon state, please check services.msc manually.",
+            "sam_ok": "SAM database is accessible, supporting local user enumeration and creation.",
+            "sam_fail": "Unable to access local SAM database. Possible causes: Domain policy restricts local management, or a stripped Windows version.",
+            "logon_ok": "System supports local interactive logon (LOGON32_LOGON_INTERACTIVE), sub-accounts can be verified.",
+            "logon_domain": "Domain environment detected. Domain policies may restrict interactive logon. Contact your admin if launch fails.",
+            "logon_unknown": "Unable to determine logon policy status, creation of a test account is recommended.",
+            "junction_ok": "NTFS Junction created successfully, directory mirroring is available.",
+            "junction_fail": "Failed to create Junction link. Mirror management may be unavailable, but core multiplay is unaffected.",
+            "game_exe_ok": "D2R.exe core file found.",
+            "game_exe_fail": "D2R.exe not found at the specified location. Please ensure the path is correct.",
+            "acl_full": "Users group has Full Control (F), sub-accounts can read/write game files normally.",
+            "acl_readonly": "Users group has Read-Only access. Sub-accounts may fail to write config or update files. Use 'Fix Permissions'.",
+            "acl_none": "Users group has no access! Sub-accounts will be unable to launch the game. Use 'Fix Permissions' to authorize."
+        }
+    },
+    "system_evolution_desc": "D2R Multi Version Evolution",
+    "logic_pattern_matcher": "Logic Pattern Matcher",
+    "process_monitor": "Process Monitor",
+    "io_subsystem": "I/O Subsystem",
+    "no_diagnostics_data": "No diagnostics data available",
+    "msg": {
+        "auth": {
+            "reauth_required": "Due to a security upgrade, this account's credentials need re-validation. Please click 'Edit' and re-enter the password.",
+            "reauth_title": "Re-authentication Required"
+        }
+    },
+    "btn_edit_reauth": "Fix Credentials",
+    "status_ready": "Status: Ready"
 };

@@ -11,7 +11,7 @@ pub struct InfraHealthReport {
 
 pub fn get_infra_health(accounts: &[crate::modules::account::Account]) -> InfraHealthReport {
     let bnet_path = crate::modules::account::get_bnet_path();
-    let is_bnet_all_users = if let Some(path) = &bnet_path {
+    let is_bnet_all_users = if let Some(ref path) = bnet_path {
         path.to_string_lossy()
             .to_lowercase()
             .contains("program files")
@@ -48,8 +48,9 @@ fn is_dir_writable(path: &PathBuf) -> bool {
     if !path.exists() {
         return false;
     }
-    // Simplistic check for write permission by trying to create a temp file
-    let temp_file = path.join(".health_check_probe");
+    // Industrial safety: use unique PID-based probe to avoid race conditions
+    let pid = std::process::id();
+    let temp_file = path.join(format!(".health_check_probe_{}", pid));
     match std::fs::File::create(&temp_file) {
         Ok(_) => {
             let _ = std::fs::remove_file(temp_file);

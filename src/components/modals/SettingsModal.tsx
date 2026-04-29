@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/Button";
+import { Switch } from "../ui/Switch";
 import { AppConfig, saveConfig, invoke } from "../../lib/api";
 import { useLogs } from "../../store/useLogs";
 import { useNotification } from "../../store/useNotification";
 import { useTranslation } from "react-i18next";
-import { Check, Palette, Settings as SettingsIcon, ShieldAlert, Trash2, FileText } from "lucide-react";
+import { Check, Palette, Settings as SettingsIcon, Trash2, FileText, Github, RefreshCw } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { applyThemeColor } from "../../lib/utils/color";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 import { getVersion } from "@tauri-apps/api/app";
 import { check } from "@tauri-apps/plugin-updater";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { Github, ExternalLink, Info, RefreshCw } from "lucide-react";
 import { APP_METADATA } from "../../metadata";
 
 interface SettingsModalProps {
@@ -35,7 +36,9 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
     const [themeColor, setThemeColor] = useState(config.theme_color || '#3b82f6');
     const [closeToTray, setCloseToTray] = useState(config.close_to_tray ?? true);
     const [enableLogging, setEnableLogging] = useState(config.enable_logging ?? false);
-    const [multiAccountMode, setMultiAccountMode] = useState(config.multi_account_mode ?? false);
+    const [advancedLaunchMode, setAdvancedLaunchMode] = useState(config.advanced_launch_mode ?? false);
+    const [enableWindowRename, setEnableWindowRename] = useState(config.enable_window_rename ?? false);
+    const [windowRenameFormat, setWindowRenameFormat] = useState(config.window_rename_format || 'note');
     const [isSaving, setIsSaving] = useState(false);
     const clearLogs = useLogs(state => state.clearLogs);
     const { addNotification } = useNotification();
@@ -96,18 +99,14 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
         setThemeColor(config.theme_color || '#3b82f6');
         setCloseToTray(config.close_to_tray ?? true);
         setEnableLogging(config.enable_logging ?? false);
-        setMultiAccountMode(config.multi_account_mode ?? false);
+        setAdvancedLaunchMode(config.advanced_launch_mode ?? false);
+        setEnableWindowRename(config.enable_window_rename ?? false);
+        setWindowRenameFormat(config.window_rename_format || 'note');
     }, [config]);
 
     // Apply Live Theme Preview
     useEffect(() => {
-        try {
-            const hex = themeColor.replace('#', '');
-            const r = parseInt(hex.substring(0, 2), 16);
-            const g = parseInt(hex.substring(2, 4), 16);
-            const b = parseInt(hex.substring(4, 6), 16);
-            document.documentElement.style.setProperty('--color-primary', `${r} ${g} ${b}`);
-        } catch (e) { }
+        applyThemeColor(themeColor);
     }, [themeColor]);
 
     const handleCancel = () => {
@@ -122,7 +121,9 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                 theme_color: themeColor,
                 close_to_tray: closeToTray,
                 enable_logging: enableLogging,
-                multi_account_mode: multiAccountMode,
+                advanced_launch_mode: advancedLaunchMode,
+                enable_window_rename: enableWindowRename,
+                window_rename_format: windowRenameFormat,
             };
             await saveConfig(newConfig);
             onSave(newConfig);
@@ -139,251 +140,177 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalContent>
+            <ModalContent className="max-w-[500px]">
                 <ModalHeader onClose={onClose}>
-                    <SettingsIcon size={18} className="text-primary" />
-                    {t('settings')}
+                    <div className="flex items-center gap-2">
+                        <SettingsIcon size={14} className="text-primary" />
+                        <span className="text-[11px] font-black uppercase tracking-[0.2em]">{t('settings')}</span>
+                    </div>
                 </ModalHeader>
 
-                <ModalBody>
-                    <div className="space-y-8">
-                        {/* Appearance */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Palette size={14} className="text-zinc-500" />
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                                    {t('appearance')}
-                                </label>
+                <ModalBody className="p-0">
+                    <div className="divide-y divide-white/5">
+                        {/* Appearance Section */}
+                        <div className="p-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                                <Palette size={10} className="text-zinc-500" />
+                                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{t('appearance')}</span>
                             </div>
-                            <div className="flex flex-wrap gap-3">
+                            <div className="flex flex-wrap gap-2">
                                 {THEMES.map((theme) => (
                                     <button
                                         key={theme.color}
                                         onClick={() => setThemeColor(theme.color)}
                                         className={cn(
-                                            "w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110",
-                                            themeColor === theme.color ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-950 shadow-xl" : "opacity-80 hover:opacity-100"
+                                            "w-7 h-7 rounded-sm flex items-center justify-center transition-all border border-white/5",
+                                            themeColor === theme.color ? "border-white ring-1 ring-white/20" : "opacity-60 hover:opacity-100"
                                         )}
                                         style={{ backgroundColor: theme.color }}
                                     >
-                                        {themeColor === theme.color && <Check size={16} className="text-white drop-shadow-md" />}
+                                        {themeColor === theme.color && <Check size={12} className="text-white" />}
                                     </button>
                                 ))}
                             </div>
                         </div>
 
-                        <hr className="border-white/5" />
+                        {/* General Settings */}
+                        <div className="p-4 space-y-1.5 pt-3">
+                            <Switch
+                                label={t('setting_close_to_tray')}
+                                checked={closeToTray}
+                                onChange={setCloseToTray}
+                            />
 
-                        {/* System Tray Setting */}
-                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-white/10 transition-all cursor-pointer"
-                            onClick={() => setCloseToTray(!closeToTray)}>
-                            <div className="space-y-0.5">
-                                <div className="text-sm font-bold text-zinc-200">{t('setting_close_to_tray')}</div>
-                            </div>
-                            <div className={cn(
-                                "w-10 h-5 rounded-full relative transition-colors duration-200 shrink-0",
-                                closeToTray ? "bg-primary" : "bg-zinc-800"
-                            )}>
-                                <div className={cn(
-                                    "absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm",
-                                    closeToTray ? "left-6" : "left-1"
-                                )} />
-                            </div>
+                            <Switch
+                                label={t('setting_enable_logging')}
+                                description={t('setting_enable_logging_desc')}
+                                checked={enableLogging}
+                                onChange={setEnableLogging}
+                            />
+
+                            <Switch
+                                label={t('setting_advanced_launch_mode')}
+                                description={t('setting_advanced_launch_mode_desc')}
+                                checked={advancedLaunchMode}
+                                onChange={setAdvancedLaunchMode}
+                            />
                         </div>
 
-                        {/* Advanced / Logging */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <ShieldAlert size={14} className="text-zinc-500" />
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                                    {t('advanced_settings')}
-                                </label>
+                        {/* Window Management Section */}
+                        <div className="p-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                                <SettingsIcon size={10} className="text-zinc-500" />
+                                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{t('independent_launch')}</span>
                             </div>
+                            
+                            {/* Enable Window Rename */}
+                            <Switch
+                                label={t('setting_enable_window_rename')}
+                                description={t('setting_enable_window_rename_desc')}
+                                checked={enableWindowRename}
+                                onChange={setEnableWindowRename}
+                            />
 
-                            <div className="space-y-3">
-                                {/* Enable Logging */}
-                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-white/10 transition-all cursor-pointer"
-                                    onClick={() => setEnableLogging(!enableLogging)}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-zinc-800/50 text-zinc-400 group-hover:text-primary transition-colors">
-                                            <FileText size={16} />
-                                        </div>
-                                        <div className="space-y-0.5">
-                                            <div className="text-sm font-bold text-zinc-200">{t('setting_enable_logging')}</div>
-                                            <div className="text-[11px] text-zinc-500 opacity-80">{t('setting_enable_logging_desc')}</div>
-                                        </div>
-                                    </div>
-                                    <div className={cn(
-                                        "w-10 h-5 rounded-full relative transition-colors duration-200 shrink-0",
-                                        enableLogging ? "bg-primary" : "bg-zinc-800"
-                                    )}>
-                                        <div className={cn(
-                                            "absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm",
-                                            enableLogging ? "left-6" : "left-1"
-                                        )} />
+                            {enableWindowRename && (
+                                <div className="space-y-1.5 pt-1 border-t border-white/5">
+                                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{t('setting_window_rename_format')}</span>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {[
+                                            { id: 'note', label: t('rename_format_note') },
+                                            { id: 'bnet', label: t('rename_format_bnet') },
+                                            { id: 'username', label: t('rename_format_username') },
+                                            { id: 'full', label: t('rename_format_full') },
+                                        ].map(opt => (
+                                            <button
+                                                key={opt.id}
+                                                onClick={() => setWindowRenameFormat(opt.id as any)}
+                                                className={cn(
+                                                    "px-2 py-1.5 rounded-sm border text-left transition-all",
+                                                    windowRenameFormat === opt.id 
+                                                        ? "bg-primary/10 border-primary/40 text-primary shadow-lg shadow-primary/5" 
+                                                        : "bg-black/20 border-white/5 text-zinc-500 hover:border-white/10"
+                                                )}
+                                            >
+                                                <div className="text-[8px] font-black uppercase tracking-tighter">{opt.label}</div>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
-
-                                {/* Multi-Account Mode */}
-                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-white/10 transition-all cursor-pointer"
-                                    onClick={() => setMultiAccountMode(!multiAccountMode)}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-zinc-800/50 text-zinc-400 group-hover:text-primary transition-colors">
-                                            <ShieldAlert size={16} />
-                                        </div>
-                                        <div className="space-y-0.5">
-                                            <div className="text-sm font-bold text-zinc-200">{t('setting_multi_account_mode')}</div>
-                                            <div className="text-[11px] text-zinc-500 opacity-80">{t('setting_multi_account_mode_desc')}</div>
-                                        </div>
-                                    </div>
-                                    <div className={cn(
-                                        "w-10 h-5 rounded-full relative transition-colors duration-200 shrink-0",
-                                        multiAccountMode ? "bg-primary" : "bg-zinc-800"
-                                    )}>
-                                        <div className={cn(
-                                            "absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-200 shadow-sm",
-                                            multiAccountMode ? "left-6" : "left-1"
-                                        )} />
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={async () => {
-                                        try {
-                                            await invoke('open_log_file');
-                                        } catch (e) {
-                                            addNotification('error', `${t('error')}: ${e}`);
-                                        }
-                                    }}
-                                    className="w-full flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-white/10 transition-all cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-zinc-800/50 text-zinc-400 group-hover:text-primary transition-colors">
-                                            <FileText size={16} />
-                                        </div>
-                                        <div className="space-y-0.5 text-left">
-                                            <div className="text-sm font-bold text-zinc-200">{t('view_logs')}</div>
-                                            <div className="text-[11px] text-zinc-500 opacity-80">{t('view_logs_desc')}</div>
-                                        </div>
-                                    </div>
-                                    <ExternalLink size={12} className="text-zinc-500 group-hover:text-primary transition-colors" />
-                                </button>
-
-                                <button
-                                    onClick={() => {
-                                        clearLogs();
-                                        addNotification('info', t('logs_cleared') || 'Logs cleared');
-                                    }}
-                                    className="w-full flex items-center justify-between p-4 bg-rose-500/5 rounded-xl border border-rose-500/10 group hover:border-rose-500/20 transition-all"
-                                >
-                                    <div className="flex items-center gap-3 text-rose-400/80 group-hover:text-rose-400">
-                                        <Trash2 size={16} />
-                                        <span className="text-sm font-bold">{t('clear_all_logs')}</span>
-                                    </div>
-                                    <span className="text-[10px] text-rose-500/40 uppercase font-bold tracking-widest">{t('danger_zone')}</span>
-                                </button>
-                            </div>
+                            )}
                         </div>
 
-                        <hr className="border-white/5" />
+                        {/* Logs & Maintenance */}
+                        <div className="p-4 flex gap-2">
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={async () => {
+                                    try { await invoke('open_log_file'); } catch (e) { addNotification('error', `${t('error')}: ${e}`); }
+                                }}
+                                className="flex-1 h-8 text-[9px] bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/5"
+                            >
+                                <FileText size={10} className="mr-2 opacity-60" />
+                                {t('view_logs')}
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => { clearLogs(); addNotification('info', t('logs_cleared')); }}
+                                className="flex-1 h-8 text-[9px] bg-rose-500/5 hover:bg-rose-500/10 text-rose-400/80 hover:text-rose-400 rounded-sm border border-rose-500/10"
+                            >
+                                <Trash2 size={10} className="mr-2 opacity-60" />
+                                {t('clear_all_logs')}
+                            </Button>
+                        </div>
 
                         {/* About Section */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Info size={14} className="text-zinc-500" />
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                                    {t('about')}
-                                </label>
+                        <div className="p-4 bg-zinc-950/50 space-y-3">
+                            <div className="flex justify-between items-center">
+                                <div className="flex flex-col">
+                                    <div className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">{APP_METADATA.name}</div>
+                                    <div className="text-[8px] text-zinc-500 uppercase tracking-tighter font-mono">STABLE RELEASE v{version}</div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button size="sm" variant="ghost" onClick={handleCheckUpdate} isLoading={isCheckingUpdate} className="h-6 px-2 text-[8px] bg-white/5 hover:bg-white/10">
+                                        <RefreshCw size={8} className={cn("mr-1.5", isCheckingUpdate && "animate-spin")} />
+                                        {t('check_update')}
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={onOpenWhatsNew} className="h-6 px-2 text-[8px] bg-white/5 hover:bg-white/10">
+                                        <FileText size={8} className="mr-1.5" />
+                                        {t('detailed_changelog')}
+                                    </Button>
+                                </div>
                             </div>
-
-                            <div className="p-4 bg-zinc-900/50 rounded-xl border border-white/5 space-y-4 relative overflow-hidden group/about">
-                                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover/about:opacity-10 transition-opacity">
-                                    <SettingsIcon size={80} />
-                                </div>
-
-                                <div className="flex justify-between items-start">
-                                    <div className="space-y-1">
-                                        <div className="text-sm font-bold text-zinc-200 flex items-center gap-2">
-                                            {APP_METADATA.name}
-                                            <span className="text-[10px] font-mono bg-primary/20 text-primary px-1.5 py-0.5 rounded border border-primary/20">
-                                                v{version}
-                                            </span>
-                                        </div>
-                                        <div className="text-[11px] text-zinc-500">
-                                            {t('maintainer')}: <span className="text-zinc-400 font-medium">{APP_METADATA.author}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={onOpenWhatsNew}
-                                            className="h-8 text-[11px] bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white"
-                                        >
-                                            <FileText size={12} className="mr-1.5 opacity-60" />
-                                            {t('detailed_changelog')}
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={handleCheckUpdate}
-                                            isLoading={isCheckingUpdate}
-                                            className="h-8 text-xs bg-white/5 hover:bg-white/10 text-zinc-300"
-                                        >
-                                            <RefreshCw size={12} className={cn("mr-1.5", isCheckingUpdate && "animate-spin")} />
-                                            {t('check_update')}
-                                        </Button>
+                            
+                            {pendingUpdate && (
+                                <div className="p-2 rounded-sm bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-between gap-3 animate-in fade-in">
+                                    <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">{t('update_available_title', { version: pendingUpdate.version })}</span>
+                                    <div className="flex gap-1.5">
+                                        <button onClick={handleAutoUpdate} className="px-2 py-0.5 bg-emerald-600 text-white text-[8px] rounded-sm font-black uppercase">{t('update_auto')}</button>
+                                        <button onClick={handleManualUpdate} className="px-2 py-0.5 bg-white/5 text-zinc-400 text-[8px] rounded-sm font-black uppercase">{t('update_manual')}</button>
                                     </div>
                                 </div>
+                            )}
 
-                                {pendingUpdate && (
-                                    <div className="p-3 mb-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 animate-in fade-in slide-in-from-top-2">
-                                        <div className="text-xs font-bold text-emerald-400 mb-2">
-                                            {t('update_available_title', { version: pendingUpdate.version })}
-                                        </div>
-                                        <div className="grid grid-cols-1 gap-2">
-                                            <Button size="sm" variant="solid" className="bg-emerald-600 hover:bg-emerald-500 w-full justify-start text-xs" onClick={handleAutoUpdate}>
-                                                <RefreshCw size={12} className="mr-2" />
-                                                {t('update_auto')}
-                                            </Button>
-                                            <Button size="sm" variant="outline" className="border-emerald-500/30 hover:bg-emerald-500/10 w-full justify-start text-xs" onClick={handleManualUpdate}>
-                                                <ExternalLink size={12} className="mr-2" />
-                                                {t('update_manual')}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
-
-
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        onClick={() => openUrl(APP_METADATA.github)}
-                                        className="flex items-center gap-2 p-2.5 rounded-lg bg-black/30 border border-white/5 hover:border-zinc-700 transition-all text-zinc-400 hover:text-white group/link text-left"
-                                    >
-                                        <Github size={14} />
-                                        <span className="text-[11px] font-medium grow">{t('github_repo')}</span>
-                                        <ExternalLink size={10} className="opacity-40 group-hover/link:opacity-100 transition-opacity" />
-                                    </button>
-                                    <button
-                                        onClick={() => openUrl(APP_METADATA.blog)}
-                                        className="flex items-center gap-2 p-2.5 rounded-lg bg-black/30 border border-white/5 hover:border-zinc-700 transition-all text-zinc-400 hover:text-white group/link text-left"
-                                    >
-                                        <FileText size={14} />
-                                        <span className="text-[11px] font-medium grow">{t('blog')}</span>
-                                        <ExternalLink size={10} className="opacity-40 group-hover/link:opacity-100 transition-opacity" />
-                                    </button>
-                                </div>
+                            <div className="flex gap-4 border-t border-white/5 pt-3">
+                                <button onClick={() => openUrl(APP_METADATA.github)} className="flex items-center gap-1.5 text-zinc-600 hover:text-zinc-300 transition-colors">
+                                    <Github size={10} />
+                                    <span className="text-[8px] font-black uppercase tracking-widest">{t('github_repo')}</span>
+                                </button>
+                                <button onClick={() => openUrl(APP_METADATA.blog)} className="flex items-center gap-1.5 text-zinc-600 hover:text-zinc-300 transition-colors">
+                                    <FileText size={10} />
+                                    <span className="text-[8px] font-black uppercase tracking-widest">{t('blog')}</span>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </ModalBody>
 
-                <ModalFooter>
-                    <Button variant="ghost" className="text-zinc-500 px-6" onClick={handleCancel} disabled={isSaving}>
+                <ModalFooter className="bg-zinc-900/30">
+                    <Button variant="ghost" className="text-zinc-500 h-8 text-[10px] uppercase font-black tracking-widest" onClick={handleCancel} disabled={isSaving}>
                         {t('cancel')}
                     </Button>
-                    <Button variant="solid" className="px-8 bg-primary font-bold shadow-lg shadow-primary/20" onClick={handleSave} isLoading={isSaving}>
+                    <Button variant="solid" className="h-8 px-6 bg-primary font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/10 border-none" onClick={handleSave} isLoading={isSaving}>
                         {t('save')}
                     </Button>
                 </ModalFooter>

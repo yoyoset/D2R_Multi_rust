@@ -67,7 +67,15 @@ pub fn enable_debug_privilege() -> bool {
         let result = AdjustTokenPrivileges(h_token, false, Some(&tkp), 0, None, None);
         let _ = CloseHandle(h_token);
 
-        result.is_ok()
+        // 必须检查 ERROR_NOT_ALL_ASSIGNED，因为 AdjustTokenPrivileges
+        // 即使部分特权提升失败也返回 TRUE
+        if result.is_err() {
+            return false;
+        }
+
+        let last_error = windows::Win32::Foundation::GetLastError();
+        // ERROR_NOT_ALL_ASSIGNED = 1300
+        last_error.0 != 1300u32
     }
 }
 

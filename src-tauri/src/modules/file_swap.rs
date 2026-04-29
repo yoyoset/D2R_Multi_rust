@@ -5,14 +5,52 @@ use tauri::{AppHandle, Manager};
 
 #[derive(thiserror::Error, Debug)]
 pub enum FileSwapError {
-    #[error("无法清理档案 (可能战网未关闭)")]
-    FileDeletionFailed(#[source] std::io::Error),
-    #[error("Environment error: ProgramData not found")]
+    #[error("error.file_swap.deletion_failed")]
+    FileDeletionFailed(String),
+    #[error("error.file_swap.env_error")]
     EnvError,
-    #[error("IO Error: {0}")]
+    #[error("error.file_swap.permission_denied")]
+    PermissionDenied(String),
+    #[error("error.file_swap.file_in_use")]
+    FileInUse(String),
+    #[error("error.file_swap.io")]
     Io(#[from] std::io::Error),
-    #[error("Conflict: product.db still exists")]
-    Conflict,
+}
+
+fn map_io_error(e: std::io::Error, path: &Path) -> FileSwapError {
+    match e.kind() {
+        std::io::ErrorKind::PermissionDenied => {
+            FileSwapError::PermissionDenied(path.to_string_lossy().to_string())
+        }
+        _ => {
+            // code 32 = ERROR_SHARING_VIOLATION
+            let msg = e.to_string();
+            if msg.contains("32") || msg.contains("sharing") {
+                FileSwapError::FileInUse(path.to_string_lossy().to_string())
+            } else {
+                FileSwapError::Io(e)
+            }
+        }
+    }
+}
+
+/// (Industrial Grade Verify) Attempt to open the file with exclusive access to check for locks
+pub fn verify_config_writable() -> Result<(), FileSwapError> {
+    let path = get_bnet_config_path()?;
+    if !path.exists() {
+        return Ok(());
+    }
+
+    // Try to open with write access and NO sharing (exclusive)
+    // On Windows, this will fail if any other process (like Battle.net or Agent) has it open
+    match fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(&path) 
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(map_io_error(e, &path)),
+    }
 }
 
 fn get_bnet_config_path() -> Result<PathBuf, FileSwapError> {
@@ -45,29 +83,25 @@ pub fn rotate_save(app: &AppHandle, last_account_id: &str) -> Result<(), FileSwa
     }
 
     let snapshot_path = get_snapshot_path(app, last_account_id)?;
+    let tmp_snapshot = snapshot_path.with_extension("tmp");
+
     if let Some(parent) = snapshot_path.parent() {
-        fs::create_dir_all(parent)?;
+        fs::create_dir_all(parent).map_err(|e| map_io_error(e, parent))?;
     }
 
-    match fs::copy(&current_db, &snapshot_path) {
-        Ok(_) => {
-            tracing::info!("Backup successful: {:?} -> {:?}", current_db, snapshot_path);
-            Ok(())
-        }
-        Err(e) => {
-            tracing::error!(
-                "Backup failed: {:?} -> {:?} (Error: {})",
-                current_db,
-                snapshot_path,
-                e
-            );
-            Err(e.into())
-        }
-    }
+    // INDUSTRIAL ATOMICITY: Copy to .tmp first, then rename
+    fs::copy(&current_db, &tmp_snapshot).map_err(|e| map_io_error(e, &current_db))?;
+    fs::rename(&tmp_snapshot, &snapshot_path).map_err(|e| map_io_error(e, &snapshot_path))?;
+
+    tracing::info!("Backup successful (Atomic): {:?} -> {:?}", current_db, snapshot_path);
+    Ok(())
 }
 
 /// Forcefully delete the current Battle.net product.db
 pub fn delete_config() -> Result<(), FileSwapError> {
+    // Audit before operation
+    verify_config_writable()?;
+
     let target_db = get_bnet_config_path()?;
     if target_db.exists() {
         match fs::remove_file(&target_db) {
@@ -77,7 +111,7 @@ pub fn delete_config() -> Result<(), FileSwapError> {
             }
             Err(e) => {
                 tracing::error!("Failed to delete config: {:?} (Error: {})", target_db, e);
-                Err(FileSwapError::FileDeletionFailed(e))
+                Err(FileSwapError::FileDeletionFailed(e.to_string()))
             }
         }
     } else {
@@ -87,27 +121,31 @@ pub fn delete_config() -> Result<(), FileSwapError> {
 }
 
 /// Restore a specific account's snapshot to the active position
-pub fn restore_snapshot(app: &AppHandle, account_id: &str) -> Result<(), FileSwapError> {
+/// Returns Ok(true) if restored, Ok(false) if snapshot not found (skipped)
+pub fn restore_snapshot(app: &AppHandle, account_id: &str) -> Result<bool, FileSwapError> {
+    // Critical pre-flight check
+    verify_config_writable()?;
+
     let target_db = get_bnet_config_path()?;
-
-    // Task 2: Critical check before restore
-    if target_db.exists() {
-        return Err(FileSwapError::Conflict);
-    }
-
     let snapshot_path = get_snapshot_path(app, account_id)?;
 
-    if snapshot_path.exists() {
-        if let Some(parent) = target_db.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        fs::copy(&snapshot_path, &target_db)?;
-        tracing::debug!("Restored snapshot: {:?}", snapshot_path);
-        Ok(())
-    } else {
-        tracing::warn!("Snapshot not found: {:?}", snapshot_path);
-        Ok(())
+    if !snapshot_path.exists() {
+        tracing::info!("Restore skipped: Snapshot not found at {:?}", snapshot_path);
+        return Ok(false);
     }
+
+    if let Some(parent) = target_db.parent() {
+        fs::create_dir_all(parent).map_err(|e| map_io_error(e, parent))?;
+    }
+
+    // INDUSTRIAL ATOMICITY: Restore to .tmp first, then rename to replace target_db
+    // This prevents leaving the system with NO config if copy fails.
+    let tmp_restore = target_db.with_extension("tmp");
+    fs::copy(&snapshot_path, &tmp_restore).map_err(|e| map_io_error(e, &snapshot_path))?;
+    fs::rename(&tmp_restore, &target_db).map_err(|e| map_io_error(e, &target_db))?;
+
+    tracing::debug!("Restored snapshot (Atomic): {:?}", snapshot_path);
+    Ok(true)
 }
 
 /// Delete a specific account's snapshot file
@@ -153,5 +191,5 @@ pub fn cleanup_bnet_archives() -> Result<String, FileSwapError> {
         let _ = fs::remove_dir_all(logs_dir);
     }
 
-    Ok(format!("Cleaned {} archive files", cleaned_count))
+    Ok(format!("logs.file_swap.cleaned_count|{{\"count\":{}}}", cleaned_count))
 }

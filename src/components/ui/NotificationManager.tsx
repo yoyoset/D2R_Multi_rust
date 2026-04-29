@@ -1,20 +1,32 @@
-
+import { useState, useEffect } from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from './Modal';
 import { Button } from "./Button";
 import { AlertTriangle, Info, CheckCircle2, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useBlockingNotification } from "../../store/useBlockingNotification";
+import { cn } from "../../lib/utils";
 
 const ICON_MAP = {
-    info: <Info size={24} className="text-blue-400" />,
-    warning: <AlertTriangle size={24} className="text-amber-400" />,
-    error: <XCircle size={24} className="text-rose-400" />,
-    success: <CheckCircle2 size={24} className="text-emerald-400" />,
+    info: <Info size={14} className="text-blue-400" />,
+    warning: <AlertTriangle size={14} className="text-amber-400" />,
+    error: <XCircle size={14} className="text-rose-400" />,
+    success: <CheckCircle2 size={14} className="text-emerald-400" />,
 };
 
 export function NotificationManager() {
-    const { isOpen, title, message, type, actions, close } = useBlockingNotification();
+    const { t } = useTranslation();
+    const { isOpen, title, message, type, actions, confirmText, close } = useBlockingNotification();
+    const [safetyInput, setSafetyInput] = useState("");
+
+    useEffect(() => {
+        if (!isOpen) {
+            setSafetyInput("");
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
+
+    const isAuthorized = !confirmText || safetyInput === confirmText;
 
     return (
         <Modal isOpen={isOpen} onClose={close}>
@@ -22,28 +34,47 @@ export function NotificationManager() {
                 <ModalHeader onClose={close}>
                     <div className="flex items-center gap-3">
                         {ICON_MAP[type]}
-                        <span className="text-lg font-bold">{title}</span>
+                        <span className="text-[12px] font-black uppercase tracking-widest">{title}</span>
                     </div>
                 </ModalHeader>
                 <ModalBody>
-                    <div className="text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                        {message.split(/(!!.*?!!)/g).map((part, i) => {
-                            if (part.startsWith('!!') && part.endsWith('!!')) {
-                                return (
-                                    <span key={i} className="text-rose-500 font-bold">
-                                        {part.slice(2, -2)}
-                                    </span>
-                                );
-                            }
-                            return part;
-                        })}
+                    <div className="space-y-4">
+                        <div className="text-zinc-400 leading-relaxed whitespace-pre-wrap text-[11px] font-mono uppercase italic">
+                            {message.split(/(!!.*?!!)/g).map((part, i) => {
+                                if (part.startsWith('!!') && part.endsWith('!!')) {
+                                    return (
+                                        <span key={i} className="text-rose-500 font-black">
+                                            {part.slice(2, -2)}
+                                        </span>
+                                    );
+                                }
+                                return part;
+                            })}
+                        </div>
+
+                        {confirmText && (
+                            <div className="mt-4 p-4 border border-rose-500/10 bg-rose-500/5 rounded-sm space-y-2 animate-in slide-in-from-bottom-2 duration-300">
+                                <span className="text-[10px] text-rose-500/80 font-black uppercase tracking-tighter block mb-1">
+                                    {t('confirm_authorization_required')}
+                                </span>
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    value={safetyInput}
+                                    onChange={(e) => setSafetyInput(e.target.value)}
+                                    placeholder={t('confirm_authorize_placeholder', { text: confirmText })}
+                                    className="w-full bg-black/60 border border-white/10 rounded-sm px-3 py-2 text-sm text-white placeholder:text-zinc-700 outline-none focus:border-rose-500/50 transition-all font-mono"
+                                />
+                            </div>
+                        )}
                     </div>
                 </ModalBody>
                 <ModalFooter>
                     <div className="flex gap-3 w-full justify-end">
                         {actions.map((action, index) => {
                             let btnVariant: any = 'solid';
-                            let customClass = '';
+                            const isHighRisk = action.variant === 'danger' || action.variant === 'primary' || action.variant === 'solid';
+                            const isDisabled = isHighRisk && !isAuthorized;
 
                             if (action.variant === 'danger') {
                                 btnVariant = 'danger';
@@ -58,8 +89,10 @@ export function NotificationManager() {
                             return (
                                 <Button
                                     key={index}
-                                    variant={btnVariant}
-                                    className={customClass}
+                                    variant={btnVariant as any}
+                                    size="sm"
+                                    disabled={isDisabled}
+                                    className={cn("rounded-sm font-black uppercase tracking-widest text-[9px]")}
                                     onClick={async () => {
                                         try {
                                             await action.onClick();

@@ -15,7 +15,7 @@ pub fn save_sequence_preset(
     preset: SequencePreset,
 ) -> Result<(), String> {
     if index >= 3 {
-        return Err("Invalid preset index".into());
+        return Err("error.sequence.invalid_index".into());
     }
 
     let mut config = state.config_lock();
@@ -76,7 +76,7 @@ pub async fn start_sequence(
         let config = state.config_lock();
         config.sequence_presets[preset_index]
             .as_ref()
-            .ok_or("Preset not found")?
+            .ok_or("error.sequence.not_found")?
             .clone()
     };
 
@@ -106,9 +106,6 @@ pub async fn start_sequence(
     // 4. Broadcast state immediately (Industrial Push)
     let _ = app.emit("sequence-state-changed", Some(sequence_state.clone()));
 
-    // 5. Trigger first step
-    trigger_current_step(&app, &state, sequence_state).await?;
-
     Ok(())
 }
 
@@ -119,13 +116,28 @@ pub async fn next_sequence_step(
 ) -> Result<bool, String> {
     let mut sequence_state = {
         let active = state.sequence_lock();
-        active.clone().ok_or("No active sequence")?
+        active.clone().ok_or("error.sequence.no_active")?
     };
 
+    // 1. Trigger launch for CURRENT step
+    let result = trigger_current_step(&app, &state, sequence_state.clone()).await;
+    
+    if let Err(e) = result {
+        // 如果启动失败，标记序列为失败状态
+        logger::log_localized(Some(&app), "error", "logs.sequence.step_failed", 
+            Some(serde_json::json!({ "error": e })),
+            &format!("Sequence step failed: {}", e));
+        
+        // 停止序列
+        interrupt_sequence(app, state.clone()).await?;
+        return Err(e);
+    }
+
+    // 2. Advance to NEXT index
     sequence_state.current_index += 1;
 
     if sequence_state.current_index >= sequence_state.queue.len() {
-        // Sequence Finished
+        // Sequence Finished - Clear states
         let mut active = state.sequence_lock();
         *active = None;
         
@@ -135,10 +147,13 @@ pub async fn next_sequence_step(
             config.save(&app).map_err(|e| e.to_string())?;
         }
         
+        // Broadcast finish
+        let _ = app.emit("sequence-state-changed", Option::<ActiveSequenceState>::None);
+        
         return Ok(true);
     }
 
-    // Update state
+    // 3. Update and Persist Next State
     {
         let mut active = state.sequence_lock();
         *active = Some(sequence_state.clone());
@@ -150,10 +165,8 @@ pub async fn next_sequence_step(
         config.save(&app).map_err(|e| e.to_string())?;
     }
 
-    // 3. Broadcast state (Industrial Push)
+    // 4. Broadcast Next State (Industrial Push)
     let _ = app.emit("sequence-state-changed", Some(sequence_state.clone()));
-
-    trigger_current_step(&app, &state, sequence_state).await?;
     
     Ok(false)
 }
@@ -163,7 +176,7 @@ pub async fn interrupt_sequence(
     app: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
-    logger::log_localized(Some(&app), "warn", "logs.sequence.interrupted", None, "序列自动化已由用户手动中断");
+    logger::log_localized(Some(&app), "warn", "logs.sequence.interrupted", None, "Sequence automation manually interrupted by user");
 
     // 1. Clear memory state
     {
@@ -195,30 +208,33 @@ pub async fn trigger_current_step(
         let config = state.config_lock();
         config.accounts.iter().find(|a| a.id == *account_id)
             .cloned()
-            .ok_or_else(|| format!("Account {} not found", account_id))?
+            .ok_or_else(|| format!("error.sequence.account_not_found|{{\"id\":\"{}\"}}", account_id))?
     };
 
     logger::log_localized(Some(app), "info", "logs.sequence.advancing", 
         Some(serde_json::json!({ "user": account.win_user, "current": seq.current_index + 1, "total": seq.queue.len() })),
-        &format!("序列推进: 正在启动账号 {} ({}/{})", account.win_user, seq.current_index + 1, seq.queue.len()));
+        &format!("Sequence Advancing: Starting account {} ({}/{})", account.win_user, seq.current_index + 1, seq.queue.len()));
 
     // (Industrial Optimization) Offload blocking launch_game to background thread pool
     // This prevents the whole tokio runtime/command pool from starving during slow Win32 API calls.
+    // We await the handle here to ensure logic integrity (Wait for launch before advancing or reporting success)
     let os = state.os.clone();
     let app_handle = app.clone();
     let account_clone = account.clone();
 
-    tauri::async_runtime::spawn_blocking(move || {
-        // We catch errors inside the thread and report via logger/events
-        // instead of blocking the main sequence orchestration.
-        if let Err(e) = launch_game(&*os, &app_handle, &account_clone, true, false) {
-            let _ = app_handle.emit("launch-log", LaunchLogPayload {
-                account_id: account_clone.id.clone(),
-                message: format!("启动失败: {}", e),
-                level: "error".into(),
-            });
-        }
-    });
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        launch_game(&*os, &app_handle, &account_clone, false, false, false)
+    }).await.map_err(|e| format!("logs.inspector.task_join_error|{{\"error\":\"{}\"}}", e))?;
+
+    if let Err(e) = result {
+        // Log the error globally as well
+        let _ = app.emit("launch-log", LaunchLogPayload {
+            account_id: account.id.clone(),
+            message: format!("logs.sequence.launch_failed|{{\"error\":\"{}\"}}", e),
+            level: "error".into(),
+        });
+        return Err(e.to_string());
+    }
 
     Ok(())
 }

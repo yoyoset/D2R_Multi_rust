@@ -33,27 +33,27 @@ pub async fn create_mirror_junction(
 ) -> Result<String, String> {
     let source_path = Path::new(&source);
     if !source_path.exists() || !source_path.is_dir() {
-        return Err("源路径不存在或不是一个目录".to_string());
+        return Err("error.mirror.source_invalid".to_string());
     }
 
     let target_path = Path::new(&destination).join(&name);
     if target_path.exists() {
-        return Err(format!("目标路径已存在: {:?}", target_path));
+        return Err(format!("error.mirror.target_exists|{{\"path\":\"{}\"}}", target_path.to_string_lossy()));
     }
 
     // 1. Create the empty directory first
     if let Some(parent) = target_path.parent() {
         if !parent.exists() {
-            std::fs::create_dir_all(parent).map_err(|e| format!("创建父目录失败: {}", e))?;
+            std::fs::create_dir_all(parent).map_err(|e| format!("error.mirror.mkdir_parent_fail|{{\"error\":\"{}\"}}", e))?;
         }
     }
-    std::fs::create_dir(target_path.clone()).map_err(|e| format!("无法创建目录: {}", e))?;
+    std::fs::create_dir(target_path.clone()).map_err(|e| format!("error.mirror.mkdir_fail|{{\"error\":\"{}\"}}", e))?;
 
     // 2. Prepare paths
     // Substitute name must start with \??\
     let source_full = source_path
         .canonicalize()
-        .map_err(|e| format!("无法规范化源路径: {}", e))?;
+        .map_err(|e| format!("error.mirror.canonicalize_fail|{{\"error\":\"{}\"}}", e))?;
     let source_str = source_full.to_string_lossy().replace(r"\\?\", r"\??\");
     let print_name_str = source_full.to_string_lossy().replace(r"\\?\", "");
 
@@ -98,7 +98,7 @@ pub async fn create_mirror_junction(
             FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
             Some(HANDLE::default()),
         )
-        .map_err(|e| format!("无法获取目录句柄: {}", e))?;
+        .map_err(|e| format!("error.mirror.handle_fail|{{\"error\":\"{}\"}}", e))?;
 
         let mut bytes_returned = 0u32;
         let success = DeviceIoControl(
@@ -116,11 +116,11 @@ pub async fn create_mirror_junction(
         let _ = CloseHandle(handle);
 
         if success {
-            Ok(format!("成功创建镜像: {:?}", target_path))
+            Ok(format!("logs.mirror.create_success|{{\"path\":\"{}\"}}", target_path.to_string_lossy()))
         } else {
             // Cleanup on failure
             let _ = std::fs::remove_dir(target_path);
-            Err("DeviceIoControl 设置重解析点失败".to_string())
+            Err("error.mirror.device_io_fail".to_string())
         }
     }
 }

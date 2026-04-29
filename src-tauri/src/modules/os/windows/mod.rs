@@ -4,22 +4,17 @@ use anyhow::Result;
 pub mod process;
 pub mod user;
 pub mod utils;
+pub mod maintenance;
 
 pub struct WindowsProvider;
 
 impl OSProvider for WindowsProvider {
     fn get_whoami(&self) -> String {
-        let username = std::env::var("USERNAME").unwrap_or_default();
-        let domain = std::env::var("USERDOMAIN").unwrap_or_default();
-        if domain.is_empty() {
-            username
-        } else {
-            format!("{}\\{}", domain, username)
-        }
+        whoami::username().unwrap_or_else(|_| std::env::var("USERNAME").unwrap_or_else(|_| "unknown".into()))
     }
 
-    fn list_local_users(&self, include_registry: bool) -> Result<Vec<String>> {
-        user::list_local_users(include_registry)
+    fn list_local_users(&self) -> Result<Vec<user::WindowsUser>> {
+        user::list_local_users()
     }
 
     fn create_user(&self, username: &str, password: &str, never_expires: bool) -> Result<()> {
@@ -57,8 +52,18 @@ impl OSProvider for WindowsProvider {
         )
     }
 
-    fn is_process_running_for_user(&self, username: &str, process_names: &[&str]) -> Result<bool> {
-        process::is_process_running_for_user(username, process_names)
+    fn is_process_running_for_user(&self, sys: &sysinfo::System, username: &str, process_names: &[&str]) -> Result<bool> {
+        process::is_process_running_for_user(sys, username, process_names)
+    }
+
+    fn get_multiple_process_status(
+        &self, 
+        sys: &sysinfo::System,
+        usernames: &[String], 
+        bnet_names: &[&str], 
+        d2r_names: &[&str]
+    ) -> Result<std::collections::HashMap<String, crate::modules::account::types::AccountStatus>> {
+        process::get_multiple_process_status(sys, usernames, bnet_names, d2r_names)
     }
 
     fn is_user_initialized(&self, username: &str) -> bool {

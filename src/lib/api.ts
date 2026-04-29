@@ -1,15 +1,25 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 
 export const invoke = tauriInvoke;
 
 export interface Account {
-    id: string;
-    win_user: string;
-    win_pass?: string;
-    bnet_account: string;
-    avatar?: string;
-    note?: string;
-    password_never_expires: boolean;
+    id: string;               // UUID
+    win_user: string;         // The bound Windows Username
+    win_pass?: string;        // Sensitive: Stored separately in Vault
+    bnet_account: string;     // Display only
+    avatar?: string;          // Base64 encoded image or library icon ID
+    note?: string;            // Role remarks
+    auto_fix_password?: boolean; // 自动刷新密码策略 (0x80070532 修复)
+    game_path?: string;       // 自定义路径
+    skip_config_sync?: boolean;  // 跳过 product.db 同步
+}
+
+export interface DiagnosticResult {
+    category: string;
+    name: string;
+    status: 'Pass' | 'Warning' | 'Fail';
+    message: string;
 }
 
 export interface AccountStatus {
@@ -29,6 +39,18 @@ export interface HandleInfo {
     type_name: string;
 }
 
+export interface SequencePreset {
+    name: string;
+    accounts: string[]; // Account IDs
+}
+
+export interface ActiveSequenceState {
+    preset_index: number;
+    preset_name: string;
+    current_index: number;
+    queue: string[]; // Account IDs
+}
+
 export interface AppConfig {
     accounts: Account[];
     game_path: string;
@@ -38,13 +60,24 @@ export interface AppConfig {
     language?: string;
     enable_logging?: boolean;
     dashboard_view_mode?: 'card' | 'list';
-    multi_account_mode?: boolean;
+    advanced_launch_mode?: boolean;
     has_shown_guide?: boolean;
     last_notified_version?: string;
+    enable_window_rename?: boolean;
+    window_rename_format?: 'note' | 'bnet' | 'username' | 'full';
+    sequence_presets: (SequencePreset | null)[];
+    active_sequence?: ActiveSequenceState;
 }
 
-export async function getWindowsUsers(deepScan: boolean = false): Promise<string[]> {
-    return await invoke('get_windows_users', { deepScan });
+export interface WindowsUser {
+    name: string;
+    is_current: boolean;
+    is_initialized: boolean;
+    is_ms_account: boolean;
+}
+
+export async function getWindowsUsers(): Promise<WindowsUser[]> {
+    return await invoke('get_windows_users');
 }
 
 export async function getWhoami(): Promise<string> {
@@ -59,8 +92,8 @@ export async function setPasswordNeverExpires(username: string, neverExpires: bo
     await invoke('set_password_never_expires', { username, neverExpires });
 }
 
-export async function verifyWindowsPassword(username: string, password: string): Promise<boolean> {
-    return await invoke('verify_windows_password', { username, password });
+export async function verifyWindowsPassword(username: string, password: string, accountId?: string): Promise<boolean> {
+    return await invoke('verify_windows_password', { username, password, accountId });
 }
 
 export async function killMutexes(): Promise<string> {
@@ -71,12 +104,12 @@ export async function killMutexes(): Promise<string> {
     }
 }
 
-export async function launchGame(account: Account, gamePath: string, bnetOnly: boolean = false, force: boolean = false): Promise<string> {
+export async function launchGame(account: Account, bnetOnly: boolean = false, force: boolean = false, advancedMode: boolean = false): Promise<string> {
     return await invoke("launch_game", {
         account,
-        gamePath,
         bnetOnly,
-        force
+        force,
+        advancedMode
     });
 }
 
@@ -84,8 +117,20 @@ export async function getConfig(): Promise<AppConfig> {
     return await invoke("get_config");
 }
 
+export async function checkVaultIntegrity(): Promise<string[]> {
+    return await invoke('check_vault_integrity');
+}
+
 export async function saveConfig(config: AppConfig): Promise<void> {
     await invoke("save_config", { config });
+}
+
+export async function getAccountPassword(id: string): Promise<string> {
+    return await invoke("get_account_password", { id });
+}
+
+export async function manualBackupSave(accountId: string): Promise<string> {
+    return await invoke('manual_backup_save', { accountId });
 }
 
 export async function getAccountsProcessStatus(usernames: string[]): Promise<Record<string, AccountStatus>> {
@@ -152,3 +197,65 @@ export async function closeSpecificHandle(pid: number, handle: number): Promise<
     await invoke('close_specific_handle', { pid, handle });
 }
 
+export async function getRunningGamePaths(): Promise<void> {
+    return await invoke('get_running_game_paths');
+}
+
+export async function getDetectedBnetPath(): Promise<string | null> {
+    try {
+        return await invoke('get_detected_bnet_path');
+    } catch {
+        return null;
+    }
+}
+
+export async function getDetectedD2rPath(): Promise<string | null> {
+    try {
+        return await invoke('get_detected_d2r_path');
+    } catch {
+        return null;
+    }
+}
+
+export async function getSystemEnvDiagnostics(): Promise<DiagnosticResult[]> {
+    return await invoke('get_system_env_diagnostics');
+}
+
+export async function getGamePathDiagnostics(gamePath: string): Promise<DiagnosticResult[]> {
+    return await invoke('get_game_path_diagnostics', { gamePath });
+}
+
+export async function openPathDialog(): Promise<string | null> {
+    const selected = await open({
+        multiple: false,
+        directory: false,
+        filters: [{
+            name: 'D2R.exe',
+            extensions: ['exe']
+        }]
+    });
+    return selected as string | null;
+}
+
+export async function saveSequencePreset(index: number, preset: SequencePreset): Promise<void> {
+    await invoke("save_sequence_preset", { index, preset });
+}
+
+export async function validateSequence(accountIds: string[]): Promise<string[]> {
+    return await invoke("validate_sequence", { accountIds });
+}
+
+export async function startSequence(presetIndex: number): Promise<void> {
+    await invoke("start_sequence", { presetIndex });
+}
+
+export async function nextSequenceStep(): Promise<boolean> {
+    return await invoke("next_sequence_step");
+}
+
+export async function interruptSequence(): Promise<void> {
+    await invoke("interrupt_sequence");
+}
+export async function requestSequenceSync(): Promise<ActiveSequenceState | null> {
+    return await invoke("request_sequence_sync");
+}

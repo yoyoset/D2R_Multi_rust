@@ -54,3 +54,13 @@ dummy.zip
 .wrangler/
 .worktrees/
 
+# Industrial Privacy & Local State
+config.json
+config.json.tmp
+config.json.bak
+snapshots/
+userData/
+secret.bin
+auth.json
+d2r-multiplay.log*
+

@@ -4,17 +4,17 @@ use sysinfo::{ProcessRefreshKind, ProcessesToUpdate};
 use super::launcher::get_d2r_path;
 use crate::modules::logger;
 
-pub async fn maintain_account_statuses(app: AppHandle) {
+pub async fn maintain_account_statuses(app: AppHandle, mut shutdown_rx: tokio::sync::broadcast::Receiver<()>) {
     let check_interval = Duration::from_secs(5);
     
     loop {
+        if shutdown_rx.try_recv().is_ok() {
+            break;
+        }
+        
         tokio::time::sleep(check_interval).await;
 
         let state = app.state::<crate::state::AppState>();
-        if state.is_quitting.load(std::sync::atomic::Ordering::SeqCst) {
-            break;
-        }
-
         let usernames = {
             let config = state.config_lock();
             config.accounts.iter().map(|a| a.win_user.clone()).collect::<Vec<String>>()
@@ -82,12 +82,10 @@ pub fn get_running_game_paths(app: AppHandle) -> Result<(), String> {
                     detected_paths.insert(user_name, path_str);
                 },
                 (None, _) => {
-                    logger::log_localized(Some(&app), "warn", "logs.status.no_user_info", Some(serde_json::json!({ "pid": pid })),
-                        &format!("探测到 D2R.exe (PID={})，但无法获取用户信息 (权限不足？)", pid));
+                    logger::log_localized(Some(&app), "warn", "logs.status.no_user_info", Some(serde_json::json!({ "pid": pid.as_u32() })), "logs.status.no_user_info");
                 },
                 (_, None) => {
-                    logger::log_localized(Some(&app), "warn", "logs.status.no_path", Some(serde_json::json!({ "pid": pid })),
-                        &format!("探测到 D2R.exe (PID={})，但无法获取执行路径", pid));
+                    logger::log_localized(Some(&app), "warn", "logs.status.no_path", Some(serde_json::json!({ "pid": pid.as_u32() })), "logs.status.no_path");
                 }
             }
         }
@@ -125,7 +123,7 @@ pub fn get_running_game_paths(app: AppHandle) -> Result<(), String> {
     }
 
     if changed {
-        logger::log_localized(Some(&app), "success", "logs.status.refresh_success", None, "路径刷新/补全成功");
+        logger::log_localized(Some(&app), "success", "logs.status.refresh_success", None, "logs.status.refresh_success");
     }
 
     Ok(())

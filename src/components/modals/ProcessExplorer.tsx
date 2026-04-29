@@ -16,7 +16,8 @@ import {
     XCircle,
     RefreshCw,
     Filter,
-    ShieldAlert
+    ShieldAlert,
+    Terminal
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -42,7 +43,6 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
             const list = await getProcessList();
             setProcesses(list);
 
-            // Auto-select first d2r process if search is d2r
             if (procSearch.toLowerCase() === 'd2r') {
                 const d2r = list.find(p => p.name.toLowerCase().includes('d2r'));
                 if (d2r && !selectedPid) {
@@ -91,7 +91,6 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
             p.pid.toString().includes(s) ||
             p.user.toLowerCase().includes(s)
         ).sort((a, b) => {
-            // Priority to exact d2r.exe
             if (a.name.toLowerCase() === 'd2r.exe') return -1;
             if (b.name.toLowerCase() === 'd2r.exe') return 1;
             return 0;
@@ -118,141 +117,151 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
         }
     };
 
-    if (!isOpen) return null;
-
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalContent className="max-w-4xl h-[85vh] flex flex-col">
+            <ModalContent className="max-w-5xl h-[85vh] flex flex-col border-white/10 bg-zinc-950 p-0 overflow-hidden shadow-2xl">
                 <ModalHeader onClose={onClose}>
-                    <Cpu size={16} />
+                    <Cpu size={14} className="text-blue-500" />
                     {t('process_explorer_title')}
                 </ModalHeader>
 
-                <ModalBody className="flex-1 overflow-hidden flex flex-row gap-4 p-4">
+                <ModalBody className="flex-1 overflow-hidden flex flex-row gap-0 p-0">
                     {/* Left Panel: Process Selection */}
-                    <div className="w-1/3 flex flex-col gap-3 border-r border-white/5 pr-4">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={14} />
-                            <input
-                                className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-zinc-300 focus:border-primary/50 outline-none transition-all"
-                                placeholder={t('search_process_placeholder')}
-                                value={procSearch}
-                                onChange={e => setProcSearch(e.target.value)}
-                            />
+                    <div className="w-[30%] flex flex-col border-r border-white/5 bg-zinc-900/10">
+                        <div className="p-3 bg-zinc-950/40 border-b border-white/5 space-y-3">
+                             <div className="flex items-center justify-between mb-1">
+                                 <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">{t('processes')}</span>
+                                <Button 
+                                    variant="ghost" 
+                                    className="h-5 px-2 text-[8px] font-black uppercase tracking-widest gap-1.5 opacity-60 hover:opacity-100 rounded-sm"
+                                    onClick={refreshProcesses}
+                                    disabled={isLoadingProcs}
+                                >
+                                    <RefreshCw size={8} className={isLoadingProcs ? "animate-spin" : ""} />
+                                    {t('refresh')}
+                                </Button>
+                             </div>
+                            <div className="relative group">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-700" size={12} />
+                                 <input
+                                    className="w-full bg-black/50 border border-white/5 rounded-sm pl-9 pr-3 h-8 text-[11px] text-zinc-300 focus:border-blue-500/30 outline-none transition-all placeholder:text-zinc-800 font-mono"
+                                    placeholder={t('search_process_placeholder')}
+                                    value={procSearch}
+                                    onChange={e => setProcSearch(e.target.value)}
+                                />
+                            </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto space-y-1 pr-1 scrollbar-thin scrollbar-thumb-zinc-800">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar">
                             {filteredProcesses.map(p => (
                                 <div
                                     key={p.pid}
                                     onClick={() => setSelectedPid(p.pid)}
                                     className={cn(
-                                        "p-2.5 rounded-xl cursor-context-menu transition-all border",
+                                        "px-4 py-2.5 cursor-context-menu border-b border-white/[0.02] transition-all",
                                         selectedPid === p.pid
-                                            ? "bg-primary/20 border-primary/30 text-primary-light"
-                                            : "hover:bg-white/5 border-transparent text-zinc-400"
+                                            ? "bg-blue-500/10 border-l-2 border-l-blue-500"
+                                            : "hover:bg-white/[0.02] border-l-2 border-l-transparent"
                                     )}
                                 >
                                     <div className="flex justify-between items-center mb-0.5">
-                                        <span className="text-xs font-bold truncate max-w-[120px]">{p.name}</span>
-                                        <span className="text-[10px] opacity-40 font-mono">PID: {p.pid}</span>
+                                        <span className={cn(
+                                            "text-[10px] font-black uppercase tracking-tight truncate",
+                                            selectedPid === p.pid ? "text-blue-400" : "text-zinc-400"
+                                        )}>{p.name}</span>
+                                        <span className="text-[9px] opacity-30 font-mono text-zinc-500">PID:{p.pid}</span>
                                     </div>
-                                    <div className="text-[10px] opacity-40 truncate">{p.user}</div>
+                                    <div className="text-[8px] text-zinc-600 font-mono uppercase truncate opacity-60 tracking-tighter">{p.user}</div>
                                 </div>
                             ))}
-                            {filteredProcesses.length === 0 && !isLoadingProcs && (
-                                <div className="text-center py-10 text-[10px] text-zinc-600 italic">
-                                    {t('no_process_found')}
-                                </div>
-                            )}
                         </div>
-
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[10px] text-zinc-500"
-                            onClick={refreshProcesses}
-                            isLoading={isLoadingProcs}
-                        >
-                            <RefreshCw size={12} className="mr-2" /> {t('refresh_list')}
-                        </Button>
                     </div>
 
                     {/* Right Panel: Handle List */}
-                    <div className="flex-1 flex flex-col gap-3 overflow-hidden">
-                        <div className="flex gap-2">
-                            <div className="relative flex-1">
-                                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={14} />
-                                <input
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-zinc-300 focus:border-primary/50 outline-none transition-all"
-                                    placeholder={t('search_handle_placeholder')}
-                                    value={handleSearch}
-                                    onChange={e => setHandleSearch(e.target.value)}
-                                />
+                    <div className="flex-1 flex flex-col overflow-hidden bg-zinc-950/40">
+                        <div className="p-3 bg-zinc-950/80 border-b border-white/5 flex gap-4 items-end">
+                            <div className="flex-1 space-y-2">
+                                 <label className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1.5">{t('logic_pattern_matcher')}</label>
+                                <div className="relative group">
+                                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-700" size={12} />
+                                     <input
+                                         className="w-full bg-black/50 border border-white/5 rounded-sm pl-9 pr-3 h-8 text-[11px] text-zinc-300 focus:border-emerald-500/30 outline-none transition-all placeholder:text-zinc-800 font-mono"
+                                         placeholder={t('search_handle_placeholder')}
+                                        value={handleSearch}
+                                        onChange={e => setHandleSearch(e.target.value)}
+                                    />
+                                </div>
                             </div>
                             <Button
                                 variant="outline"
-                                size="sm"
-                                className="px-3"
+                                className="h-8 px-3 rounded-sm border-white/10 hover:bg-white/5"
                                 onClick={() => selectedPid && refreshHandles(selectedPid)}
-                                isLoading={isLoadingHandles}
+                                disabled={isLoadingHandles || !selectedPid}
                             >
-                                <RefreshCw size={14} />
+                                <RefreshCw size={12} className={isLoadingHandles ? "animate-spin" : ""} />
                             </Button>
                         </div>
 
-                        <div className="flex-1 border border-white/5 rounded-xl bg-black/20 overflow-hidden flex flex-col transition-all">
+                        <div className="flex-1 flex flex-col overflow-hidden">
                             {/* Table Header */}
-                            <div className="grid grid-cols-[1fr,150px,80px] px-4 py-2 bg-zinc-900/50 border-b border-white/5 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                                <span>{t('handle_name')}</span>
-                                <span>{t('handle_type')}</span>
-                                <span className="text-right">{t('actions')}</span>
+                            <div className="grid grid-cols-[1fr,120px,80px] px-4 py-2 bg-zinc-900/50 border-b border-white/5 text-[9px] font-black text-zinc-600 uppercase tracking-widest">
+                                <div className="flex items-center gap-2">
+                                    <Terminal size={10} className="opacity-50" />
+                                    <span>{t('handle_name')}</span>
+                                </div>
+                                <span className="border-l border-white/5 pl-4">{t('type')}</span>
+                                <span className="text-right">{t('ops')}</span>
                             </div>
 
                             {/* Table Body */}
-                            <div className="flex-1 overflow-y-auto p-1 scrollbar-thin scrollbar-thumb-zinc-800">
+                            <div className="flex-1 overflow-y-auto custom-scrollbar">
                                 {filteredHandles.map(h => {
                                     const isD2RMatch = h.name.includes('DiabloII') || h.name.includes('Check For Other Instances');
                                     return (
                                         <div
                                             key={`${h.handle_value}-${h.name}`}
                                             className={cn(
-                                                "grid grid-cols-[1fr,150px,80px] px-3 py-2 rounded-lg items-center text-[11px] group transition-colors",
-                                                isD2RMatch ? "bg-rose-500/10 hover:bg-rose-500/20" : "hover:bg-white/5"
+                                                "grid grid-cols-[1fr,120px,80px] px-4 py-1.5 border-b border-white/[0.02] items-center text-[10px] group transition-all",
+                                                isD2RMatch ? "bg-rose-500/5 hover:bg-rose-500/10" : "hover:bg-white/[0.01]"
                                             )}
                                         >
-                                            <div className="flex items-center gap-2 truncate">
-                                                <Key size={12} className={cn(isD2RMatch ? "text-rose-400" : "text-zinc-600")} />
-                                                <span className={cn("truncate font-mono", isD2RMatch ? "text-rose-300 font-bold" : "text-zinc-400")}>
-                                                    {h.name || `<${t('unnamed_object')}>`}
+                                            <div className="flex items-center gap-3 truncate">
+                                                <Key size={10} className={cn(isD2RMatch ? "text-rose-500/70" : "text-zinc-700")} />
+                                                <span className={cn(
+                                                    "truncate font-mono tracking-tight", 
+                                                    isD2RMatch ? "text-rose-400 font-black" : "text-zinc-500"
+                                                )}>
+                                                    {h.name || `<NULL_OBJECT>`}
                                                 </span>
                                             </div>
-                                            <span className="text-zinc-500 italic opacity-60 text-[10px]">{h.type_name}</span>
+                                            <span className="text-zinc-600 text-[9px] font-black uppercase tracking-tighter opacity-70 border-l border-white/5 pl-4">
+                                                {h.type_name}
+                                            </span>
                                             <div className="text-right">
                                                 <button
                                                     onClick={() => handleCloseHandle(h.handle_value)}
-                                                    className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/20 opacity-0 group-hover:opacity-100 transition-all"
+                                                    className="inline-flex items-center justify-center p-1.5 rounded-sm text-rose-500 hover:bg-rose-w-500/20 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all border border-transparent hover:border-rose-500/20"
                                                     title={t('force_close_handle')}
                                                 >
-                                                    <XCircle size={14} />
+                                                    <XCircle size={12} />
                                                 </button>
                                             </div>
                                         </div>
                                     );
                                 })}
                                 {filteredHandles.length === 0 && !isLoadingHandles && (
-                                    <div className="flex flex-col items-center justify-center h-full text-zinc-700 py-20">
-                                        <Filter size={32} className="opacity-10 mb-4" />
-                                        <p className="text-xs italic">{selectedPid ? t('no_handles_matching') : t('select_process_hint')}</p>
+                                    <div className="flex flex-col items-center justify-center h-full text-zinc-800 py-20 italic">
+                                        <Terminal size={32} className="opacity-5 mb-4" />
+                                        <p className="text-[9px] font-black uppercase tracking-widest">{selectedPid ? 'No matching handles stream' : 'Awaiting process selection...'}</p>
                                     </div>
                                 )}
                             </div>
                         </div>
 
                         {selectedPid && (
-                            <div className="flex items-center gap-3 p-3 rounded-xl bg-orange-500/5 border border-orange-500/10">
-                                <ShieldAlert size={16} className="text-orange-500 shrink-0" />
-                                <p className="text-[10px] text-orange-400/80 leading-relaxed italic">
+                            <div className="m-3 p-3 rounded-sm bg-orange-500/5 border border-orange-500/10 flex items-start gap-3">
+                                <ShieldAlert size={14} className="text-orange-500 shrink-0 mt-0.5" />
+                                <p className="text-[9px] text-orange-400/80 leading-relaxed italic font-black uppercase tracking-tighter">
                                     {t('manual_explorer_safety_hint')}
                                 </p>
                             </div>
@@ -260,13 +269,23 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                     </div>
                 </ModalBody>
 
-                <ModalFooter className="bg-zinc-950/50">
-                    <div className="flex-1 flex items-center gap-2 text-[10px] text-zinc-600">
-                        <span className="font-bold text-zinc-500 uppercase tracking-widest">{t('shortcuts')}:</span>
-                        <span>{t('filter_d2r_hint')}</span>
+                <ModalFooter className="p-3 border-t border-white/5 bg-zinc-950 flex justify-between items-center shrink-0">
+                    <div className="flex items-center gap-4 text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] px-2 italic">
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                            <span>{t('process_monitor')}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                             <span>{t('io_subsystem')}</span>
+                        </div>
                     </div>
-                    <Button variant="ghost" className="text-zinc-500 hover:text-white" onClick={onClose}>
-                        {t('close')}
+                    <Button 
+                        variant="ghost" 
+                        className="h-8 px-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-100 rounded-sm border border-white/5 hover:bg-white/5" 
+                        onClick={onClose}
+                    >
+                        {t('terminate_scan') || 'CLOSE'}
                     </Button>
                 </ModalFooter>
             </ModalContent>

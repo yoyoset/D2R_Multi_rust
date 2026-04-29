@@ -70,9 +70,10 @@ export default {
     "account_sanctum": "账号营地",
     "setting_close_to_tray": "最小化到系统托盘",
     "setting_close_to_tray_desc": "点击关闭按钮时隐藏到系统托盘而不是真正退出",
-    "setting_multi_account_mode": "多账户管理模式",
-    "setting_multi_account_mode_desc": "开启后提供针对多暴雪账户优化的双按钮启动界面",
-    "launch_full": "一键启动",
+    "setting_advanced_launch_mode": "高级启动控制",
+    "setting_advanced_launch_mode_desc": "开启后将在仪表盘提供双按钮选择：D2R玩家启动（包含逻辑判定与存档）和仅战网启动（跳过判定，直接杀进程运行）。",
+    "launch_managed": "一键启动 (D2R玩家)",
+    "launch_advanced": "高级启动 (仅战网)",
     "full_preparation": "全流程准备",
     "launch_bnet_only": "仅开战网",
     "identity_only": "仅环境切换",
@@ -124,16 +125,20 @@ export default {
     "use_existing_user": "使用已有用户",
     "create_new_win_user": "创建新 Windows 用户",
     "edit_account": "编辑账号",
+    "bnet_account": "战网账号",
+    "captured_game_path": "捕获的游戏路径",
+    "note": "备注",
     "win_user_binding": "Windows 用户绑定",
     "win_username": "Windows 用户名",
     "win_password": "Windows 密码",
+    "credential_stored_hint": "当前已通过保险库加密保存",
+    "blank_password_hint": "当前密码为空 (如果您没有设置 Windows 密码，保持此状态即可)",
     "win_create_warning": "* 将创建标准本地用户。需要管理员权限执行。",
     "apply_password_policy": "管理系统密码策略",
-    "apply_password_policy_hint": "开启后，保存时将同步 Windows 账户密码并设为“密码永不过期”。",
+    "apply_password_policy_hint": "保存时同步系统密码并设为永不过期",
     "unmanaged_user_warning": "该账户不受管理 (如域账户或微软账号)",
     "unmanaged_user_hint": "非当前登录的域账户无法通过 API 修改密码。建议【不开启】策略管理，仅在本地保存。",
     "note_placeholder": "例如：主力法师, 仓库号...",
-    "bnet_account": "Bnet 备注/账号 (选填)",
     "bnet_id_placeholder": "Bnet ID...",
     "scan_users": "扫描用户",
     "select_win_user": "选择 Windows 用户 (仅列出本地)",
@@ -178,12 +183,13 @@ export default {
     "ai_screenshot_active": "功能开启",
     "recording": "正在录制...",
     "ai_ask": "问 AI",
-    "donate": "赞助支持",
+    "donate": "请我喝杯咖啡",
     "donate_title": "赞助开发者",
-    "donate_blessing": "赞助有礼，好运加持！祝您神装满地，发发入魂。",
+    "support_dev_subtitle": "支持与开发",
     "donate_alipay": "支付宝",
     "donate_wechat": "微信支付",
     "donate_paypal": "PayPal",
+    "industrial_status_footer": "工业版 • 运行状态: 稳定",
     "admin_mode": "管理员模式",
     "user_mode": "普通用户",
     "avatar": "头像选择",
@@ -208,7 +214,27 @@ export default {
     "game_path_flex_desc": "与战网程序不同，你的暗黑2游戏文件可以存放在任何地方（例如 D 盘或 E 盘）。你只需要在设置中正确指定其路径即可。",
     "reinstall_hint_title": "如何修复？",
     "reinstall_hint_desc": "如果你的战网已经安装在其他位置，请先卸载，然后重新下载战网安装程序，并保持默认设置安装。这不会影响你已经下载好的游戏内容。",
+    "donate_blessing": "感谢大家的支持与厚爱。您的慷慨是我前进的动力，更是圣休亚瑞最温暖的火光。在此衷心祝福：开卷即欧皇，鉴定必满变，乔贝罗接连不断。愿每一道从天而降的光柱，都是您梦寐以求的神级极品！",
     "got_it": "我知道了",
+    "guide_launch_modes_title": "启动模式详细说明",
+    "guide_launch_managed_title": "D2R 玩家启动 (Standard)",
+    "guide_launch_managed_desc": "针对暗黑 2 深度优化的标准模式。包含环境扫描、自动快照备份以及内核互斥锁清理。推荐作为日常使用的首选模式。",
+    "guide_launch_advanced_title": "仅战网启动 (Direct)",
+    "guide_launch_advanced_desc": "跳过所有逻辑判断与文件审计，直接杀掉残留进程并拉起战网。主要用于极速多开或手动调试，建议了解后果的高级用户使用。",
+    "guide_bnet_path_desc": "必须安装在默认路径",
+    "guide_bnet_install_all_users_desc": "安装战网时，必须勾选“为所有使用这台电脑的用户安装”。",
+    "guide_bnet_path_reason_desc": "为了避免底层多用户环境下的权限混乱，战网程序本身不允许安装在非系统盘或其他自定义目录。",
+    "migration_security_infra": "安全基础设施升级",
+    "migration_vault_title": "Vault 重构迁移",
+    "migration_vault_desc": "正在将您的账号凭据迁移至加密隔离仓 (Vault)。此操作确保您的敏感信息从此物理脱离配置文件，解决保存冲突并提升安全性。",
+    "migration_encryption_progress": "加密进度",
+    "migration_initializing": "正在初始化子系统...",
+    "migration_waiting_telemetry": "正在等待后端指令流...",
+    "migration_success": "Vault 迁移已成功完成",
+    "migration_footer_note": "仅限原子操作 • 电源损耗保护已激活 • v2.0 架构",
+    "status_pass": "通过",
+    "status_fail": "失败",
+    "status_warning": "警告",
     "label_initial_password": "设置初始密码",
     "label_verify_password": "验证系统密码",
     "btn_create_now": "立即同步并创建",
@@ -310,6 +336,12 @@ export default {
     "skip_config_sync": "手动模式 (跳过同步)",
     "skip_config_sync_hint": "开启后启动该账号将跳过对 Battle.net 配置 (product.db) 的自动同步。",
     "skip_config_sync_active": "手动配置模式已激活",
+    "manual_snapshot_label": "手动备份快照文档",
+    "manual_snapshot_desc": "启用后，系统不会在启动序列中自动备份快照。快照完全由您手动点击备份处理。",
+    "manual_snapshot_desc_short": "跳过启动时的自动备份",
+    "manual_snapshot_mode_active_hint": "手动备份已开启：更改设置后，请记得手动保存快照。",
+    "manual_snapshot_mode": "手动快照模式",
+    "manual_snapshot_badge": "手动快照",
     "save_snapshot_hint": "备份当前环境配置到该账号快照",
     "footer_session": "会话 (Session)",
     "footer_status_stable": "稳定 (STABLE)",
@@ -318,6 +350,7 @@ export default {
     "footer_access_superuser": "超级用户 (SUPERUSER)",
     "footer_access_standard": "普通用户 (STANDARD)",
     "footer_version_industrial": "工业版 (INDUSTRIAL)",
+    "footer_build": "构建版本",
     "footer_runtime": "运行环境",
     "footer_runtime_ready": "已就绪 (READY)",
     "footer_entities_total": "注册实体总数",
@@ -336,6 +369,15 @@ export default {
     "toggle_console": "显示/隐藏诊断控制台",
     "diagnostic_console": "诊断台",
     "waiting_for_diagnostics": "正在等待诊断输出",
+    "percent_complete": "{{percent}}% 完成",
+    "preview": "预览",
+    "char_ama": "亚马逊",
+    "char_sor": "法师",
+    "char_nec": "死灵法师",
+    "char_pal": "圣骑士",
+    "char_bar": "野蛮人",
+    "char_dru": "德鲁伊",
+    "char_ass": "刺客",
     "sequence_presets": "序列预设",
     "start_sequence": "启动序列",
     "edit_preset": "编辑",
@@ -359,15 +401,6 @@ export default {
     "verify_file_lock": "正在验证文件访问权限 (原子锁)...",
     "waiting_file_lock": "等待系统释放文件句柄...",
     "file_locked_error": "安全拦截: 战网配置文件仍被占用。",
-    "percent_complete": "{{percent}}% 完成",
-    "preview": "预览",
-    "char_ama": "亚马逊",
-    "char_sor": "法师",
-    "char_nec": "死灵法师",
-    "char_pal": "圣骑士",
-    "char_bar": "野蛮人",
-    "char_dru": "德鲁伊",
-    "char_ass": "刺客",
     "logs": {
         "launcher": {
             "scanning_env": "正在扫描运行环境 (锚点校验)...",
@@ -407,6 +440,9 @@ export default {
             "no_path": "探测到 D2R.exe (PID={{pid}})，但无法获取执行路径",
             "refresh_success": "路径刷新/补全成功"
         },
+        "system": {
+            "atomic_save": "原子配置持久化脉冲: 正常"
+        },
         "sequence": {
             "interrupted": "序列自动化已由用户手动中断",
             "advancing": "序列推进: 正在启动账号 {{user}} ({{current}}/{{total}})",
@@ -414,6 +450,132 @@ export default {
         },
         "inspector": {
             "debug_priv_failed": "无法启用调试权限，句柄枚举可能不完整"
+        },
+        "file_swap": {
+            "cleaned_count": "已清理 {{count}} 个缓存档案"
+        },
+        "mirror": {
+            "create_success": "成功创建目录镜像: {{path}}"
+        },
+        "game": {
+            "mutex_killed": "成功关除 {{count}} 个内核互斥体",
+            "process_killed": "成功终止 {{count}} 个残留进程",
+            "launch_done": "战网拉起成功 (PID: {{pid}})",
+            "bnet_stop_done": "已强制停止 {{count}} 个战网后台进程",
+            "permission_fix_start": "正在修复目录权限: {{path}}",
+            "permission_fix_done": "目录权限修复完成: {{path}}",
+            "permission_fix_error": "目录权限修复失败: {{path}}",
+            "icacls_summary": "权限处理摘要: {{msg}}",
+            "icacls_busy": "处理中: {{path}}"
+        },
+        "config": {
+            "migration_success": "快照迁移成功 (首次升级保护)，共自动找回 {{count}} 个账号的登录状态",
+            "migration_encrypting": "正在加密账号凭据 ({{idx}}/{{total}}): {{id}}",
+            "rescue_success": "从旧目录搜救成功: {{user}} ({{id}})",
+            "save_retry": "配置文件保存失败 (尝试 {{attempt}}): {{error}}。正在重试...",
+            "temp_write_retry": "写临时配置文件失败 (尝试 {{attempt}}): {{error}}。正在重试..."
         }
-    }
+    },
+    "errors": {
+        "auth": {
+            "locked_out": "Windows 账户已由于尝试次数过多被锁定 (Error 1909)。",
+            "system_error": "系统身份验证错误: {{code}}"
+        },
+        "mirror": {
+            "source_invalid": "源路径不存在或不是一个目录",
+            "target_exists": "目标路径已存在: {{path}}",
+            "mkdir_parent_fail": "创建父目录失败: {{error}}",
+            "mkdir_fail": "无法创建目录: {{error}}",
+            "canonicalize_fail": "无法规范化源路径: {{error}}",
+            "handle_fail": "无法获取目录句柄: {{error}}",
+            "device_io_fail": "系统底层重解析点设置失败"
+        },
+        "file_swap": {
+            "deletion_failed": "无法清理档案: {{0}} (请确保战网已彻底关闭)",
+            "env_error": "系统环境错误: 未找到 ProgramData 路径",
+            "permission_denied": "权限不足: 无法访问 {{0}}。请尝试管理员身份运行。",
+            "file_in_use": "文件已被占用: {{0}}。请确保相关程序已退出。",
+            "io": "IO 错误: {{0}}"
+        },
+        "os": {
+            "vault_failure": "加密仓提取失败: {{error}}。请重新保存密码。"
+        },
+        "game": {
+            "not_found": "未找到游戏程序 (D2R.exe)",
+            "bnet_not_found": "未找到战网程序",
+            "path_invalid": "指定的路径无效或不存在",
+            "invalid_path": "未找到 Battle.net 安装路径",
+            "user_uninitialized": "Windows 账户环境初始化未完成",
+            "icacls_spawn_fail": "无法解压或启动 icacls 修复工具: {{error}}",
+            "stdout_fail": "无法读取修复工具输出流",
+            "stderr_fail": "无法读取修复工具错误流",
+            "icacls_wait_fail": "等待修复工具结束时出现系统错误: {{error}}"
+        },
+        "config": {
+            "save_failed": "由于文件被占用，在多次尝试后仍无法保存配置文件。请关闭可能占用该文件的程序。"
+        }
+    },
+    "app_name_part1": "D2R",
+    "app_name_part2": "Multi",
+    "app_name_short": "D2R MULTI",
+    "status_unknown": "未知",
+    "status_system": "系统层",
+    "logic_stream_output": "逻辑流输出",
+    "syncing_caps": "同步状态中...",
+    "example_game_path": "D:\\Games\\Diablo II Resurrected\\D2R.exe",
+    "example_mirror_source": "C:\\Games\\Diablo II Resurrected",
+    "example_mirror_dest": "D:\\Mirrors",
+    "example_mirror_name": "D2R_Client_1",
+    "diag": {
+        "category": {
+            "permission": "权限",
+            "service": "系统服务",
+            "sys_component": "系统组件",
+            "security_policy": "安全策略",
+            "filesystem": "文件系统",
+            "env": "环境"
+        },
+        "name": {
+            "admin_rights": "管理员权限",
+            "seclogon": "Secondary Logon 服务",
+            "sam": "本地用户管理 (SAM)",
+            "interactive_logon": "交互式登录权限",
+            "junction": "目录镜像 (Junction)",
+            "game_exe": "游戏程序检测",
+            "users_acl": "Users 组访问权限"
+        },
+        "msg": {
+            "admin_ok": "当前进程以管理员身份运行，可执行用户创建与跨会话进程管理。",
+            "admin_fail": "未以管理员运行。无法创建用户、清理互斥锁或以其他用户身份启动进程。",
+            "seclogon_running": "seclogon 服务运行中，支持以其他用户身份启动进程。",
+            "seclogon_stopped": "seclogon 服务已停止！这将导致无法以子账号身份启动战网。请在 services.msc 中启动 'Secondary Logon' 服务。",
+            "seclogon_not_found": "未找到 seclogon 服务。您的 Windows 可能是精简版，缺少多用户登录组件。",
+            "seclogon_unknown": "无法查询 seclogon 服务状态，请手动检查 services.msc。",
+            "sam_ok": "SAM 数据库可访问，支持枚举和创建本地用户。",
+            "sam_fail": "无法访问本地 SAM 数据库。可能原因：域控策略禁止本地用户管理，或精简版 Windows 移除了 SAM 组件。",
+            "logon_ok": "本机支持本地交互式登录 (LOGON32_LOGON_INTERACTIVE)，子账号可正常验证。",
+            "logon_domain": "检测到域控环境。域策略可能限制本地用户的交互式登录权限，如启动失败请联系域管理员放行。",
+            "logon_unknown": "无法确定登录策略状态，建议创建测试账号验证。",
+            "junction_ok": "NTFS Junction 创建成功，目录镜像功能可用。",
+            "junction_fail": "无法创建 Junction 链接。镜像管理功能可能不可用，但不影响核心多开。",
+            "game_exe_ok": "找到 D2R.exe 核心文件。",
+            "game_exe_fail": "未在指定位置找到 D2R.exe，请确保路径配置正确。",
+            "acl_full": "Users 组拥有完全控制权限 (F)，子账号可正常读写游戏文件。",
+            "acl_readonly": "Users 组仅有只读权限。子账号可能无法写入配置或更新文件。建议点击「修复目录权限」按钮授权。",
+            "acl_none": "Users 组无任何访问权限！子账号将无法启动游戏。请使用「修复目录权限」功能授权。"
+        }
+    },
+    "system_evolution_desc": "D2R Multi 辅助工具版本迭代",
+    "logic_pattern_matcher": "逻辑模式匹配引擎",
+    "process_monitor": "进程监视器",
+    "io_subsystem": "I/O 核心子系统",
+    "no_diagnostics_data": "暂无可用诊断数据",
+    "msg": {
+        "auth": {
+            "reauth_required": "由于系统安全升级，该账户的凭据需要重新验证。请点击“编辑”并重新输入密码以完成加固。",
+            "reauth_title": "需要重新验证凭据"
+        }
+    },
+    "btn_edit_reauth": "去修复凭据",
+    "status_ready": "状态: 就绪"
 };

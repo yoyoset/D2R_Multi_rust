@@ -28,7 +28,7 @@ export const ToastContainer = () => {
                 <div
                     key={n.id}
                     className={cn(
-                        "pointer-events-auto min-w-[280px] max-w-md p-4 rounded-xl border backdrop-blur-md shadow-2xl animate-in slide-in-from-right-10 duration-300 flex items-start gap-3",
+                        "pointer-events-auto min-w-[280px] max-w-md p-4 rounded-sm border-white/10 bg-zinc-900/90 backdrop-blur-md shadow-2xl animate-in slide-in-from-right-10 duration-300 flex items-start gap-3",
                         BORDER_MAP[n.type]
                     )}
                 >

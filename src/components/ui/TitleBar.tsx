@@ -41,7 +41,7 @@ const TitleBar: React.FC = () => {
             {/* Left Content (also draggable) */}
             <div className="flex items-center h-full pl-3 gap-2 pointer-events-none">
                 <img src="/app-icon.png" alt="logo" className="w-4 h-4" />
-                <span className="text-[10px] font-bold text-zinc-600 tracking-wider uppercase">D2R MULTI</span>
+                <span className="text-[10px] font-bold text-zinc-600 tracking-wider uppercase">{t('app_name_short')}</span>
             </div>
 
             {/* Right Controls (Non-draggable) */}
