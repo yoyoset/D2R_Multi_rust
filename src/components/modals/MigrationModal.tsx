@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Modal, ModalContent, ModalHeader, ModalBody } from '../ui/Modal';
 import { ShieldCheck, Loader2, Gauge, Zap } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
@@ -55,17 +55,17 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
             <ModalContent className="max-w-md border-primary/30 bg-black/95 shadow-[0_0_50px_-12px_rgba(var(--primary-rgb),0.2)]">
                 <ModalHeader className="border-b border-white/5 bg-zinc-900/50">
                     <ShieldCheck size={16} className="text-primary mr-2" />
-                    <span className="font-black text-[11px] uppercase tracking-[0.2em]">{t('migration_security_infra')}</span>
+                    <span className="font-black text-[10px] uppercase tracking-[0.2em]">{t('migration_security_infra')}</span>
                 </ModalHeader>
                 
                 <ModalBody className="p-4 space-y-4">
                     {/* Header Info */}
                     <div className="space-y-2">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Zap size={18} className="text-yellow-500 fill-yellow-500/20" />
+                        <h2 className="text-[14px] font-bold text-white flex items-center gap-2">
+                            <Zap size={16} className="text-yellow-500 fill-yellow-500/20" />
                             {t('migration_vault_title')}
                         </h2>
-                        <p className="text-xs text-zinc-500 leading-relaxed">
+                        <p className="text-[10px] text-zinc-500 leading-relaxed">
                             {t('migration_vault_desc')}
                         </p>
                     </div>
@@ -77,7 +77,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                                 <Gauge size={12} className="text-primary/60" />
                                 <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">{t('migration_encryption_progress')}</span>
                             </div>
-                            <span className="text-lg font-mono text-primary font-bold">{progress}%</span>
+                            <span className="text-[14px] font-mono text-primary font-bold">{progress}%</span>
                         </div>
                         
                         <div className="relative h-6 bg-zinc-900 border border-white/10 p-0.5 overflow-hidden">
@@ -105,7 +105,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                             ) : (
                                 <Loader2 size={14} className="text-primary animate-spin" />
                             )}
-                            <span className="text-xs font-mono text-zinc-300 truncate tracking-tight uppercase">
+                            <span className="text-[10px] font-mono text-zinc-300 truncate tracking-tight uppercase">
                                 {currentStatus || t('migration_initializing')}
                             </span>
                         </div>

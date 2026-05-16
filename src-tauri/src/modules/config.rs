@@ -1,7 +1,7 @@
 use crate::modules::account::Account;
 use std::fs::{self, File};
 use std::path::PathBuf;
-use tauri::{AppHandle, Manager, Emitter};
+use tauri::{AppHandle, Emitter};
 use fd_lock::RwLock;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Default)]
@@ -64,11 +64,7 @@ impl AppConfig {
     }
 
     fn get_config_path(app: &AppHandle) -> Option<PathBuf> {
-        // Resolve app data dir: e.g. %APPDATA%/com.d2rmultiplay.ui/config.json
-        app.path()
-            .app_data_dir()
-            .ok()
-            .map(|p| p.join("config.json"))
+        Some(crate::modules::data_root::get_data_root(app).join("config.json"))
     }
 
     pub fn load(app: &AppHandle) -> Result<Self, ConfigError> {
@@ -190,7 +186,7 @@ impl AppConfig {
     }
 
     pub fn generate_mapping_readme(app: &AppHandle, config: &AppConfig) -> Result<(), ConfigError> {
-        let snapshot_dir = app.path().app_data_dir().map_err(|_| ConfigError::Path)?.join("snapshots");
+        let snapshot_dir = crate::modules::data_root::get_data_root(app).join("snapshots");
         if !snapshot_dir.exists() {
             let _ = fs::create_dir_all(&snapshot_dir);
         }
@@ -224,7 +220,7 @@ impl AppConfig {
 
     /// Automated Snapshot Rescue Engine: Uses .bak files to recover snapshots lost due to ID changes
     pub fn run_snapshot_migration(app: &AppHandle, config: &AppConfig) -> Result<usize, String> {
-        let app_data = app.path().app_data_dir().map_err(|e| e.to_string())?;
+        let app_data = crate::modules::data_root::get_data_root(app);
         let bak_path = app_data.join("config.json.bak");
         
         if !bak_path.exists() {

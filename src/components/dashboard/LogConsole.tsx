@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -21,7 +21,7 @@ export const LogConsole: React.FC<LogConsoleProps> = ({ logs, onClear }) => {
                     onClick={() => setIsExpanded(!isExpanded)}
                 >
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                        {isExpanded ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
+                        {isExpanded ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
                         {t('atomic_logs')}
                     </span>
                     <button
@@ -35,7 +35,7 @@ export const LogConsole: React.FC<LogConsoleProps> = ({ logs, onClear }) => {
                     </button>
                 </div>
                 <div className={cn(
-                    "overflow-y-auto font-mono text-[11px] space-y-1 scrollbar-thin scrollbar-thumb-zinc-800 transition-all duration-300 ease-in-out",
+                    "overflow-y-auto font-mono text-[10px] space-y-1 scrollbar-thin scrollbar-thumb-zinc-800 transition-all duration-300 ease-in-out",
                     isExpanded ? "max-h-32 p-3 opacity-100" : "max-h-0 p-0 opacity-0 border-none"
                 )}>
                     {logs.length === 0 ? (
@@ -49,7 +49,7 @@ export const LogConsole: React.FC<LogConsoleProps> = ({ logs, onClear }) => {
                         )}>
                             <span className="opacity-30 flex-shrink-0">{log.time}</span>
                             <span className="flex-1">
-                                {log.level === 'error' ? '✖ ' : log.level === 'success' ? '✔ ' : '> '}
+                                {log.level === 'error' ? '? ' : log.level === 'success' ? '? ' : '> '}
                                 {log.key ? (log.args ? t(log.key, log.args) : t(log.key)) : log.message}
                             </span>
                         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fixGamePermissions } from '../../lib/api';
 import { Button } from '../ui/Button';
@@ -67,12 +67,12 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
         try {
             onLog(t('logs.permissions.fixing_start', { path: targetPath }), 'info');
             const res = await fixGamePermissions(targetPath);
-            onLog(`✔ ${res}`, 'success');
+            onLog(`? ${res}`, 'success');
             setIsDone(true);
         } catch (e) {
             const errorMsg = t('logs.permissions.error_prefix', { error: String(e) });
-            onLog(`✖ ${errorMsg}`, 'error');
-            setLogs(prev => [...prev, `✖ ${errorMsg}`]);
+            onLog(`? ${errorMsg}`, 'error');
+            setLogs(prev => [...prev, `? ${errorMsg}`]);
         } finally {
             setIsFixing(false);
         }
@@ -82,7 +82,7 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
         <Modal isOpen={isOpen} onClose={isFixing ? () => { } : onClose}>
             <ModalContent className="max-w-xl border-white/10 bg-zinc-950 p-0 overflow-hidden shadow-2xl">
                 <ModalHeader onClose={isFixing ? undefined : onClose}>
-                    <ShieldAlert size={14} className="text-blue-500" />
+                    <ShieldAlert size={16} className="text-blue-500" />
                     {t('fix_permissions')}
                 </ModalHeader>
 
@@ -94,19 +94,19 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
 
                         {!isFixing && !isDone && (
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">{t('game_path')}</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">{t('game_path')}</label>
                                 <div className="flex gap-2">
                                     <div className="flex-1 flex gap-2 items-center bg-black/50 border border-white/5 rounded-sm px-3 h-8 transition-all group focus-within:border-blue-500/30">
-                                        <HardDrive size={12} className="text-zinc-700 group-focus-within:text-blue-500/50" />
+                                        <HardDrive size={16} className="text-zinc-700 group-focus-within:text-blue-500/50" />
                                         <input
-                                            className="flex-1 bg-transparent border-none text-[11px] text-zinc-300 outline-none placeholder:text-zinc-800 font-mono"
+                                            className="flex-1 bg-transparent border-none text-[10px] text-zinc-300 outline-none placeholder:text-zinc-800 font-mono"
                                             value={targetPath}
                                             onChange={e => setTargetPath(e.target.value)}
                                             placeholder={t('example_game_path')}
                                         />
                                     </div>
                                     <Button variant="outline" size="sm" className="px-3 rounded-sm border-white/10 hover:bg-white/5" onClick={selectFolder}>
-                                        <FolderSearch size={14} />
+                                        <FolderSearch size={16} />
                                     </Button>
                                 </div>
                             </div>
@@ -115,18 +115,18 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
                         {(isFixing || logs.length > 0) && (
                             <div className="relative group border border-white/5 rounded-sm overflow-hidden bg-zinc-900/40">
                                 <div className="flex items-center justify-between px-3 py-1 bg-zinc-900 border-b border-white/5">
-                                    <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">{t('logic_stream_output')}</span>
+                                    <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{t('logic_stream_output')}</span>
                                     <div className="flex gap-1">
                                         <div className="w-1.5 h-1.5 rounded-full bg-rose-500/30"></div>
                                         <div className="w-1.5 h-1.5 rounded-full bg-amber-500/30"></div>
                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/30"></div>
                                     </div>
                                 </div>
-                                <div className="h-48 overflow-y-auto p-3 font-mono text-[9px] scrollbar-thin scrollbar-thumb-white/5 scrollbar-track-transparent">
+                                <div className="h-48 overflow-y-auto p-3 font-mono text-[10px] scrollbar-thin scrollbar-thumb-white/5 scrollbar-track-transparent">
                                     {logs.map((log, i) => (
                                         <div key={i} className={cn(
                                             "flex gap-3 leading-tight",
-                                            log.includes('ERR:') || log.includes('✖') ? 'text-rose-400' : 'text-zinc-500'
+                                            log.includes('ERR:') || log.includes('?') ? 'text-rose-400' : 'text-zinc-500'
                                         )}>
                                             <span className="text-zinc-800 shrink-0 select-none">{i.toString().padStart(3, '0')}</span>
                                             <span className="truncate">{log}</span>
@@ -171,7 +171,7 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
                             className="h-8 px-12 bg-emerald-600/10 border border-emerald-600/30 text-emerald-500 hover:bg-emerald-600/20 font-black text-[10px] uppercase tracking-[0.2em] rounded-sm"
                             onClick={onClose}
                         >
-                            <Check size={12} className="mr-2" />
+                            <Check size={16} className="mr-2" />
                             {t('confirm')}
                         </Button>
                     )}

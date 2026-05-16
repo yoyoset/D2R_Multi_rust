@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/Button";
 import { Switch } from "../ui/Switch";
-import { AppConfig, saveConfig, invoke } from "../../lib/api";
+import { AppConfig, saveConfig, getDataLocationInfo, relocateData, openPath, openFolderDialog, setDataRoot, DataLocationInfo } from "../../lib/api";
 import { useLogs } from "../../store/useLogs";
 import { useNotification } from "../../store/useNotification";
 import { useTranslation } from "react-i18next";
-import { Check, Palette, Settings as SettingsIcon, Trash2, FileText, Github, RefreshCw } from "lucide-react";
+import { Check, Palette, Settings as SettingsIcon, Settings2, Trash2, FileText, Github, RefreshCw, FolderOpen, HardDrive, AlertTriangle } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { applyThemeColor } from "../../lib/utils/color";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
@@ -45,10 +45,58 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
 
     const [version, setVersion] = useState("0.1.0");
     const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+    const [locationInfo, setLocationInfo] = useState<DataLocationInfo | null>(null);
+    const [isRelocating, setIsRelocating] = useState(false);
+    const [isRestartRequired, setIsRestartRequired] = useState(false);
+    const [restartReason, setRestartReason] = useState<'relocate' | 'load'>('relocate');
 
     useEffect(() => {
         getVersion().then(setVersion).catch(console.error);
-    }, []);
+        if (isOpen) {
+            refreshLocation();
+        }
+    }, [isOpen]);
+
+    const refreshLocation = async () => {
+        try {
+            const info = await getDataLocationInfo();
+            setLocationInfo(info);
+        } catch (e) {
+            console.error("Failed to get location info:", e);
+        }
+    };
+
+    const handleRelocate = async () => {
+        const newPath = await openFolderDialog();
+        if (!newPath) return;
+
+        setIsRelocating(true);
+        try {
+            await relocateData(newPath);
+            setRestartReason('relocate');
+            setIsRestartRequired(true);
+            await refreshLocation();
+        } catch (e) {
+            addNotification('error', `Relocation failed: ${e}`);
+        } finally {
+            setIsRelocating(false);
+        }
+    };
+
+    const handleLoadConfig = async () => {
+        const newPath = await openFolderDialog();
+        if (!newPath) return;
+
+        try {
+            // Check if config.json exists in the selected folder
+            // (We could do this in backend but for now just set it and restart)
+            await setDataRoot(newPath);
+            setRestartReason('load');
+            setIsRestartRequired(true);
+        } catch (e) {
+            addNotification('error', `Load failed: ${e}`);
+        }
+    };
 
     const [pendingUpdate, setPendingUpdate] = useState<any>(null); // Store update object
 
@@ -143,18 +191,18 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
             <ModalContent className="max-w-[500px]">
                 <ModalHeader onClose={onClose}>
                     <div className="flex items-center gap-2">
-                        <SettingsIcon size={14} className="text-primary" />
-                        <span className="text-[11px] font-black uppercase tracking-[0.2em]">{t('settings')}</span>
+                        <SettingsIcon size={16} className="text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('settings')}</span>
                     </div>
                 </ModalHeader>
 
                 <ModalBody className="p-0">
-                    <div className="divide-y divide-white/5">
+                    <div className="divide-y divide-white/5 max-h-[60vh] overflow-y-auto custom-scrollbar">
                         {/* Appearance Section */}
                         <div className="p-4 space-y-3">
                             <div className="flex items-center gap-2">
-                                <Palette size={10} className="text-zinc-500" />
-                                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{t('appearance')}</span>
+                                <Palette size={16} className="text-zinc-500" />
+                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t('appearance')}</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {THEMES.map((theme) => (
@@ -167,7 +215,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                         )}
                                         style={{ backgroundColor: theme.color }}
                                     >
-                                        {themeColor === theme.color && <Check size={12} className="text-white" />}
+                                        {themeColor === theme.color && <Check size={16} className="text-white" />}
                                     </button>
                                 ))}
                             </div>
@@ -196,11 +244,53 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                             />
                         </div>
 
-                        {/* Window Management Section */}
+                        {/* Data Management Section */}
                         <div className="p-4 space-y-3">
                             <div className="flex items-center gap-2">
-                                <SettingsIcon size={10} className="text-zinc-500" />
-                                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{t('independent_launch')}</span>
+                                <HardDrive size={16} className="text-zinc-500" />
+                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t('data_management') || "數據管理"}</span>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="p-3 rounded-sm bg-black/20 border border-white/5 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <FolderOpen size={16} className="text-primary/60" />
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t('setting_current_path')}</span>
+                                                <span className="text-[10px] font-mono text-zinc-300 truncate max-w-[240px]">{locationInfo?.path || "Loading..."}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] bg-white/5" onClick={() => locationInfo && openPath(locationInfo.path)}>
+                                                {t('setting_open_data_dir')}
+                                            </Button>
+                                            <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] bg-white/5" onClick={handleLoadConfig}>
+                                                {t('load_config')}
+                                            </Button>
+                                            <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] bg-primary/10 text-primary border border-primary/20" onClick={handleRelocate} isLoading={isRelocating}>
+                                                {t('setting_change_location')}
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {locationInfo?.exe_on_c_drive && (
+                                        <div className="flex items-start gap-2 p-2 rounded-sm bg-amber-500/5 border border-amber-500/10">
+                                            <AlertTriangle size={16} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                                            <span className="text-[10px] text-amber-500/80 leading-relaxed uppercase tracking-wider">
+                                                {t('setting_exe_on_c_drive_warning')}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Window Management Section */}
+                        <div className="p-4 space-y-3">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Settings2 size={16} className="text-zinc-400" />
+                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t('window_tag_settings')}</span>
                             </div>
                             
                             {/* Enable Window Rename */}
@@ -213,7 +303,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
 
                             {enableWindowRename && (
                                 <div className="space-y-1.5 pt-1 border-t border-white/5">
-                                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{t('setting_window_rename_format')}</span>
+                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t('setting_window_rename_format')}</span>
                                     <div className="grid grid-cols-2 gap-2">
                                         {[
                                             { id: 'note', label: t('rename_format_note') },
@@ -231,7 +321,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                                         : "bg-black/20 border-white/5 text-zinc-500 hover:border-white/10"
                                                 )}
                                             >
-                                                <div className="text-[8px] font-black uppercase tracking-tighter">{opt.label}</div>
+                                                <div className="text-[10px] font-black uppercase tracking-tighter">{opt.label}</div>
                                             </button>
                                         ))}
                                     </div>
@@ -245,20 +335,20 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                 size="sm"
                                 variant="ghost"
                                 onClick={async () => {
-                                    try { await invoke('open_log_file'); } catch (e) { addNotification('error', `${t('error')}: ${e}`); }
+                                    try { await openPath(locationInfo?.path || ""); } catch (e) { addNotification('error', `${t('error')}: ${e}`); }
                                 }}
-                                className="flex-1 h-8 text-[9px] bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/5"
+                                className="flex-1 h-8 text-[10px] bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/5"
                             >
-                                <FileText size={10} className="mr-2 opacity-60" />
-                                {t('view_logs')}
+                                <FileText size={16} className="mr-2 opacity-60" />
+                                {t('view_logs') || "查看日誌"}
                             </Button>
                             <Button
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => { clearLogs(); addNotification('info', t('logs_cleared')); }}
-                                className="flex-1 h-8 text-[9px] bg-rose-500/5 hover:bg-rose-500/10 text-rose-400/80 hover:text-rose-400 rounded-sm border border-rose-500/10"
+                                className="flex-1 h-8 text-[10px] bg-rose-500/5 hover:bg-rose-500/10 text-rose-400/80 hover:text-rose-400 rounded-sm border border-rose-500/10"
                             >
-                                <Trash2 size={10} className="mr-2 opacity-60" />
+                                <Trash2 size={16} className="mr-2 opacity-60" />
                                 {t('clear_all_logs')}
                             </Button>
                         </div>
@@ -268,15 +358,15 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                             <div className="flex justify-between items-center">
                                 <div className="flex flex-col">
                                     <div className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">{APP_METADATA.name}</div>
-                                    <div className="text-[8px] text-zinc-500 uppercase tracking-tighter font-mono">STABLE RELEASE v{version}</div>
+                                    <div className="text-[10px] text-zinc-500 uppercase tracking-tighter font-mono">STABLE RELEASE v{version}</div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button size="sm" variant="ghost" onClick={handleCheckUpdate} isLoading={isCheckingUpdate} className="h-6 px-2 text-[8px] bg-white/5 hover:bg-white/10">
-                                        <RefreshCw size={8} className={cn("mr-1.5", isCheckingUpdate && "animate-spin")} />
+                                    <Button size="sm" variant="ghost" onClick={handleCheckUpdate} isLoading={isCheckingUpdate} className="h-6 px-2 text-[10px] bg-white/5 hover:bg-white/10">
+                                        <RefreshCw size={16} className={cn("mr-1.5", isCheckingUpdate && "animate-spin")} />
                                         {t('check_update')}
                                     </Button>
-                                    <Button size="sm" variant="ghost" onClick={onOpenWhatsNew} className="h-6 px-2 text-[8px] bg-white/5 hover:bg-white/10">
-                                        <FileText size={8} className="mr-1.5" />
+                                    <Button size="sm" variant="ghost" onClick={onOpenWhatsNew} className="h-6 px-2 text-[10px] bg-white/5 hover:bg-white/10">
+                                        <FileText size={16} className="mr-1.5" />
                                         {t('detailed_changelog')}
                                     </Button>
                                 </div>
@@ -284,22 +374,22 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                             
                             {pendingUpdate && (
                                 <div className="p-2 rounded-sm bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-between gap-3 animate-in fade-in">
-                                    <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">{t('update_available_title', { version: pendingUpdate.version })}</span>
+                                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">{t('update_available_title', { version: pendingUpdate.version })}</span>
                                     <div className="flex gap-1.5">
-                                        <button onClick={handleAutoUpdate} className="px-2 py-0.5 bg-emerald-600 text-white text-[8px] rounded-sm font-black uppercase">{t('update_auto')}</button>
-                                        <button onClick={handleManualUpdate} className="px-2 py-0.5 bg-white/5 text-zinc-400 text-[8px] rounded-sm font-black uppercase">{t('update_manual')}</button>
+                                        <button onClick={handleAutoUpdate} className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] rounded-sm font-black uppercase">{t('update_auto')}</button>
+                                        <button onClick={handleManualUpdate} className="px-2 py-0.5 bg-white/5 text-zinc-400 text-[10px] rounded-sm font-black uppercase">{t('update_manual')}</button>
                                     </div>
                                 </div>
                             )}
 
                             <div className="flex gap-4 border-t border-white/5 pt-3">
                                 <button onClick={() => openUrl(APP_METADATA.github)} className="flex items-center gap-1.5 text-zinc-600 hover:text-zinc-300 transition-colors">
-                                    <Github size={10} />
-                                    <span className="text-[8px] font-black uppercase tracking-widest">{t('github_repo')}</span>
+                                    <Github size={16} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">{t('github_repo')}</span>
                                 </button>
                                 <button onClick={() => openUrl(APP_METADATA.blog)} className="flex items-center gap-1.5 text-zinc-600 hover:text-zinc-300 transition-colors">
-                                    <FileText size={10} />
-                                    <span className="text-[8px] font-black uppercase tracking-widest">{t('blog')}</span>
+                                    <FileText size={16} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">{t('blog')}</span>
                                 </button>
                             </div>
                         </div>
@@ -315,6 +405,30 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                     </Button>
                 </ModalFooter>
             </ModalContent>
+
+            {/* Restart Required Modal */}
+            <Modal isOpen={isRestartRequired} onClose={() => setIsRestartRequired(false)}>
+                <ModalContent className="max-w-[300px]">
+                    <ModalHeader>
+                        <div className="flex items-center gap-2">
+                            <AlertTriangle size={16} className={cn(restartReason === 'relocate' ? "text-amber-500" : "text-emerald-500")} />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                                {restartReason === 'relocate' ? t('setting_relocate_restart') : t('setting_load_restart')}
+                            </span>
+                        </div>
+                    </ModalHeader>
+                    <ModalBody>
+                        <p className="text-[10px] text-zinc-400 leading-relaxed uppercase tracking-wider">
+                            {restartReason === 'relocate' ? t('setting_relocate_success') : t('setting_load_success')}
+                        </p>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button variant="solid" className="w-full h-8 bg-emerald-600 font-black text-[10px] uppercase tracking-widest" onClick={() => window.location.reload()}>
+                            {t('understand')}
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
         </Modal >
     );
 };

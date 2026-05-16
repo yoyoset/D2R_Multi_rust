@@ -10,9 +10,22 @@ export interface Account {
     bnet_account: string;     // Display only
     avatar?: string;          // Base64 encoded image or library icon ID
     note?: string;            // Role remarks
-    auto_fix_password?: boolean; // 自动刷新密码策略 (0x80070532 修复)
+    auto_fix_password?: boolean; // 自动刷新密码策略 (修复 0x80070532)
     game_path?: string;       // 自定义路径
     skip_config_sync?: boolean;  // 跳过 product.db 同步
+}
+
+export interface DataLocationInfo {
+    path: string;
+    is_custom: boolean;
+    exe_on_c_drive: boolean;
+    free_space_mb: number;
+}
+
+export interface VaultIssue {
+    id: string;
+    win_user: string;
+    reason: string;
 }
 
 export interface DiagnosticResult {
@@ -256,6 +269,43 @@ export async function nextSequenceStep(): Promise<boolean> {
 export async function interruptSequence(): Promise<void> {
     await invoke("interrupt_sequence");
 }
+
 export async function requestSequenceSync(): Promise<ActiveSequenceState | null> {
     return await invoke("request_sequence_sync");
+}
+
+export async function openLogFile(): Promise<void> {
+    await invoke('open_log_file');
+}
+
+export async function openPath(path: string): Promise<void> {
+    await invoke('open_path', { path });
+}
+
+export async function getDataLocationInfo(): Promise<DataLocationInfo> {
+    return await invoke('get_data_location_info');
+}
+
+export async function relocateData(newPath: string): Promise<string> {
+    return await invoke('relocate_data', { newPath });
+}
+
+export async function checkConfigExists(): Promise<boolean> {
+    return await invoke('check_config_exists');
+}
+
+export async function setDataRoot(newPath: string): Promise<void> {
+    await invoke('set_data_root', { newPath });
+}
+
+export async function validateAllVaultEntries(): Promise<VaultIssue[]> {
+    return await invoke('validate_all_vault_entries');
+}
+
+export async function openFolderDialog(): Promise<string | null> {
+    const selected = await open({
+        multiple: false,
+        directory: true,
+    });
+    return selected as string | null;
 }

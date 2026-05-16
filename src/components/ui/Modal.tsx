@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { X } from "lucide-react";
 import { cn } from "../../lib/utils";
 
@@ -42,12 +42,12 @@ export const ModalContent = ({ children, className }: { children: React.ReactNod
 export const ModalHeader = ({ children, onClose, className }: { children: React.ReactNode; onClose?: () => void; className?: string }) => {
     return (
         <div className={cn("flex items-center justify-between px-3 py-1.5 border-b border-white/5 bg-zinc-900/50 shrink-0", className)}>
-            <div className="flex items-center gap-2 text-zinc-400 font-black uppercase tracking-widest text-[9px] truncate">
+            <div className="flex items-center gap-2 text-zinc-400 font-black uppercase tracking-widest text-[10px] truncate">
                 {children}
             </div>
             {onClose && (
                 <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-sm">
-                    <X size={14} />
+                    <X size={16} />
                 </button>
             )}
         </div>

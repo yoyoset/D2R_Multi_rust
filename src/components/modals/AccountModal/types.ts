@@ -1,4 +1,4 @@
-import { Account, AppConfig } from "../../../lib/api";
+﻿import { Account, AppConfig } from "../../../lib/api";
 
 export interface AccountModalProps {
     isOpen: boolean;

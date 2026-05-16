@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     getProcessList,
@@ -121,7 +121,7 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalContent className="max-w-5xl h-[85vh] flex flex-col border-white/10 bg-zinc-950 p-0 overflow-hidden shadow-2xl">
                 <ModalHeader onClose={onClose}>
-                    <Cpu size={14} className="text-blue-500" />
+                    <Cpu size={16} className="text-blue-500" />
                     {t('process_explorer_title')}
                 </ModalHeader>
 
@@ -130,21 +130,21 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                     <div className="w-[30%] flex flex-col border-r border-white/5 bg-zinc-900/10">
                         <div className="p-3 bg-zinc-950/40 border-b border-white/5 space-y-3">
                              <div className="flex items-center justify-between mb-1">
-                                 <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">{t('processes')}</span>
+                                 <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">{t('processes')}</span>
                                 <Button 
                                     variant="ghost" 
-                                    className="h-5 px-2 text-[8px] font-black uppercase tracking-widest gap-1.5 opacity-60 hover:opacity-100 rounded-sm"
+                                    className="h-5 px-2 text-[10px] font-black uppercase tracking-widest gap-1.5 opacity-60 hover:opacity-100 rounded-sm"
                                     onClick={refreshProcesses}
                                     disabled={isLoadingProcs}
                                 >
-                                    <RefreshCw size={8} className={isLoadingProcs ? "animate-spin" : ""} />
+                                    <RefreshCw size={16} className={isLoadingProcs ? "animate-spin" : ""} />
                                     {t('refresh')}
                                 </Button>
                              </div>
                             <div className="relative group">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-700" size={12} />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-700" size={16} />
                                  <input
-                                    className="w-full bg-black/50 border border-white/5 rounded-sm pl-9 pr-3 h-8 text-[11px] text-zinc-300 focus:border-blue-500/30 outline-none transition-all placeholder:text-zinc-800 font-mono"
+                                    className="w-full bg-black/50 border border-white/5 rounded-sm pl-9 pr-3 h-8 text-[10px] text-zinc-300 focus:border-blue-500/30 outline-none transition-all placeholder:text-zinc-800 font-mono"
                                     placeholder={t('search_process_placeholder')}
                                     value={procSearch}
                                     onChange={e => setProcSearch(e.target.value)}
@@ -169,9 +169,9 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                                             "text-[10px] font-black uppercase tracking-tight truncate",
                                             selectedPid === p.pid ? "text-blue-400" : "text-zinc-400"
                                         )}>{p.name}</span>
-                                        <span className="text-[9px] opacity-30 font-mono text-zinc-500">PID:{p.pid}</span>
+                                        <span className="text-[10px] opacity-30 font-mono text-zinc-500">PID:{p.pid}</span>
                                     </div>
-                                    <div className="text-[8px] text-zinc-600 font-mono uppercase truncate opacity-60 tracking-tighter">{p.user}</div>
+                                    <div className="text-[10px] text-zinc-600 font-mono uppercase truncate opacity-60 tracking-tighter">{p.user}</div>
                                 </div>
                             ))}
                         </div>
@@ -181,11 +181,11 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                     <div className="flex-1 flex flex-col overflow-hidden bg-zinc-950/40">
                         <div className="p-3 bg-zinc-950/80 border-b border-white/5 flex gap-4 items-end">
                             <div className="flex-1 space-y-2">
-                                 <label className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1.5">{t('logic_pattern_matcher')}</label>
+                                 <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1.5">{t('logic_pattern_matcher')}</label>
                                 <div className="relative group">
-                                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-700" size={12} />
+                                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-700" size={16} />
                                      <input
-                                         className="w-full bg-black/50 border border-white/5 rounded-sm pl-9 pr-3 h-8 text-[11px] text-zinc-300 focus:border-emerald-500/30 outline-none transition-all placeholder:text-zinc-800 font-mono"
+                                         className="w-full bg-black/50 border border-white/5 rounded-sm pl-9 pr-3 h-8 text-[10px] text-zinc-300 focus:border-emerald-500/30 outline-none transition-all placeholder:text-zinc-800 font-mono"
                                          placeholder={t('search_handle_placeholder')}
                                         value={handleSearch}
                                         onChange={e => setHandleSearch(e.target.value)}
@@ -198,15 +198,15 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                                 onClick={() => selectedPid && refreshHandles(selectedPid)}
                                 disabled={isLoadingHandles || !selectedPid}
                             >
-                                <RefreshCw size={12} className={isLoadingHandles ? "animate-spin" : ""} />
+                                <RefreshCw size={16} className={isLoadingHandles ? "animate-spin" : ""} />
                             </Button>
                         </div>
 
                         <div className="flex-1 flex flex-col overflow-hidden">
                             {/* Table Header */}
-                            <div className="grid grid-cols-[1fr,120px,80px] px-4 py-2 bg-zinc-900/50 border-b border-white/5 text-[9px] font-black text-zinc-600 uppercase tracking-widest">
+                            <div className="grid grid-cols-[1fr,120px,80px] px-4 py-2 bg-zinc-900/50 border-b border-white/5 text-[10px] font-black text-zinc-600 uppercase tracking-widest">
                                 <div className="flex items-center gap-2">
-                                    <Terminal size={10} className="opacity-50" />
+                                    <Terminal size={16} className="opacity-50" />
                                     <span>{t('handle_name')}</span>
                                 </div>
                                 <span className="border-l border-white/5 pl-4">{t('type')}</span>
@@ -226,7 +226,7 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                                             )}
                                         >
                                             <div className="flex items-center gap-3 truncate">
-                                                <Key size={10} className={cn(isD2RMatch ? "text-rose-500/70" : "text-zinc-700")} />
+                                                <Key size={16} className={cn(isD2RMatch ? "text-rose-500/70" : "text-zinc-700")} />
                                                 <span className={cn(
                                                     "truncate font-mono tracking-tight", 
                                                     isD2RMatch ? "text-rose-400 font-black" : "text-zinc-500"
@@ -234,7 +234,7 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                                                     {h.name || `<NULL_OBJECT>`}
                                                 </span>
                                             </div>
-                                            <span className="text-zinc-600 text-[9px] font-black uppercase tracking-tighter opacity-70 border-l border-white/5 pl-4">
+                                            <span className="text-zinc-600 text-[10px] font-black uppercase tracking-tighter opacity-70 border-l border-white/5 pl-4">
                                                 {h.type_name}
                                             </span>
                                             <div className="text-right">
@@ -243,7 +243,7 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                                                     className="inline-flex items-center justify-center p-1.5 rounded-sm text-rose-500 hover:bg-rose-w-500/20 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all border border-transparent hover:border-rose-500/20"
                                                     title={t('force_close_handle')}
                                                 >
-                                                    <XCircle size={12} />
+                                                    <XCircle size={16} />
                                                 </button>
                                             </div>
                                         </div>
@@ -252,7 +252,7 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                                 {filteredHandles.length === 0 && !isLoadingHandles && (
                                     <div className="flex flex-col items-center justify-center h-full text-zinc-800 py-20 italic">
                                         <Terminal size={32} className="opacity-5 mb-4" />
-                                        <p className="text-[9px] font-black uppercase tracking-widest">{selectedPid ? 'No matching handles stream' : 'Awaiting process selection...'}</p>
+                                        <p className="text-[10px] font-black uppercase tracking-widest">{selectedPid ? 'No matching handles stream' : 'Awaiting process selection...'}</p>
                                     </div>
                                 )}
                             </div>
@@ -260,8 +260,8 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
 
                         {selectedPid && (
                             <div className="m-3 p-3 rounded-sm bg-orange-500/5 border border-orange-500/10 flex items-start gap-3">
-                                <ShieldAlert size={14} className="text-orange-500 shrink-0 mt-0.5" />
-                                <p className="text-[9px] text-orange-400/80 leading-relaxed italic font-black uppercase tracking-tighter">
+                                <ShieldAlert size={16} className="text-orange-500 shrink-0 mt-0.5" />
+                                <p className="text-[10px] text-orange-400/80 leading-relaxed italic font-black uppercase tracking-tighter">
                                     {t('manual_explorer_safety_hint')}
                                 </p>
                             </div>
@@ -270,7 +270,7 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                 </ModalBody>
 
                 <ModalFooter className="p-3 border-t border-white/5 bg-zinc-950 flex justify-between items-center shrink-0">
-                    <div className="flex items-center gap-4 text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] px-2 italic">
+                    <div className="flex items-center gap-4 text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em] px-2 italic">
                         <div className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                             <span>{t('process_monitor')}</span>

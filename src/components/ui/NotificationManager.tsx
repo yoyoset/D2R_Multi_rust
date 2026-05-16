@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from './Modal';
 import { Button } from "./Button";
 import { AlertTriangle, Info, CheckCircle2, XCircle } from "lucide-react";
@@ -7,10 +7,10 @@ import { useBlockingNotification } from "../../store/useBlockingNotification";
 import { cn } from "../../lib/utils";
 
 const ICON_MAP = {
-    info: <Info size={14} className="text-blue-400" />,
-    warning: <AlertTriangle size={14} className="text-amber-400" />,
-    error: <XCircle size={14} className="text-rose-400" />,
-    success: <CheckCircle2 size={14} className="text-emerald-400" />,
+    info: <Info size={16} className="text-blue-400" />,
+    warning: <AlertTriangle size={16} className="text-amber-400" />,
+    error: <XCircle size={16} className="text-rose-400" />,
+    success: <CheckCircle2 size={16} className="text-emerald-400" />,
 };
 
 export function NotificationManager() {
@@ -34,12 +34,12 @@ export function NotificationManager() {
                 <ModalHeader onClose={close}>
                     <div className="flex items-center gap-3">
                         {ICON_MAP[type]}
-                        <span className="text-[12px] font-black uppercase tracking-widest">{title}</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">{title}</span>
                     </div>
                 </ModalHeader>
                 <ModalBody>
                     <div className="space-y-4">
-                        <div className="text-zinc-400 leading-relaxed whitespace-pre-wrap text-[11px] font-mono uppercase italic">
+                        <div className="text-zinc-400 leading-relaxed whitespace-pre-wrap text-[10px] font-mono uppercase italic">
                             {message.split(/(!!.*?!!)/g).map((part, i) => {
                                 if (part.startsWith('!!') && part.endsWith('!!')) {
                                     return (
@@ -63,7 +63,7 @@ export function NotificationManager() {
                                     value={safetyInput}
                                     onChange={(e) => setSafetyInput(e.target.value)}
                                     placeholder={t('confirm_authorize_placeholder', { text: confirmText })}
-                                    className="w-full bg-black/60 border border-white/10 rounded-sm px-3 py-2 text-sm text-white placeholder:text-zinc-700 outline-none focus:border-rose-500/50 transition-all font-mono"
+                                    className="w-full bg-black/60 border border-white/10 rounded-sm px-3 py-2 text-[14px] text-white placeholder:text-zinc-700 outline-none focus:border-rose-500/50 transition-all font-mono"
                                 />
                             </div>
                         )}
@@ -92,7 +92,7 @@ export function NotificationManager() {
                                     variant={btnVariant as any}
                                     size="sm"
                                     disabled={isDisabled}
-                                    className={cn("rounded-sm font-black uppercase tracking-widest text-[9px]")}
+                                    className={cn("rounded-sm font-black uppercase tracking-widest text-[10px]")}
                                     onClick={async () => {
                                         try {
                                             await action.onClick();

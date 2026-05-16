@@ -39,6 +39,9 @@ pub fn init_translations() {
     en.insert("logs.launcher.anchor_found".into(), "Account {user} active, anchor path: {path}".into());
     en.insert("logs.launcher.path_captured".into(), "Captured latest game path for {user}: {path}".into());
     en.insert("logs.launcher.backing_up".into(), "Account {user} double-online detected, backing up snapshot...".into());
+    en.insert("logs.config.relocate_start".into(), "Starting data relocation to {path}...".into());
+    en.insert("logs.config.relocate_success".into(), "Data relocated successfully to {path}".into());
+    en.insert("logs.config.relocate_failed".into(), "Data relocation failed: {error}".into());
     
     en.insert("logs.mutex.none_found".into(), "System-wide scan complete, no D2R mutexes hit (Checked {count} handles)".into());
     en.insert("logs.mutex.global_scan".into(), "Performing global system logic lock scan (Cross-Session)...".into());
@@ -112,6 +115,9 @@ pub fn init_translations() {
     zh.insert("logs.launcher.anchor_found".into(), "账号 {user} 在位，锚点路径：{path}".into());
     zh.insert("logs.launcher.path_captured".into(), "已捕获 {user} 的最新游戏路径：{path}".into());
     zh.insert("logs.launcher.backing_up".into(), "检测到账号 {user} 双在位，正在备份快照...".into());
+    zh.insert("logs.config.relocate_start".into(), "正在将数据迁移至 {path}...".into());
+    zh.insert("logs.config.relocate_success".into(), "数据成功迁移至 {path}".into());
+    zh.insert("logs.config.relocate_failed".into(), "数据迁移失败: {error}".into());
 
     zh.insert("logs.mutex.none_found".into(), "全量扫描完成，未命中任何 D2R 互斥锁（已检查 {count} 个句柄）".into());
     zh.insert("logs.mutex.global_scan".into(), "正在执行全系统逻辑锁扫描 (Cross-Session)...".into());
@@ -185,6 +191,9 @@ pub fn init_translations() {
     tw.insert("logs.launcher.anchor_found".into(), "帳號 {user} 在位，錨點路徑：{path}".into());
     tw.insert("logs.launcher.path_captured".into(), "已捕獲 {user} 的最新遊戲路徑：{path}".into());
     tw.insert("logs.launcher.backing_up".into(), "檢測到帳號 {user} 雙在位，正在備份快照...".into());
+    tw.insert("logs.config.relocate_start".into(), "正在將資料遷移至 {path}...".into());
+    tw.insert("logs.config.relocate_success".into(), "資料成功遷移至 {path}".into());
+    tw.insert("logs.config.relocate_failed".into(), "資料遷移失敗: {error}".into());
 
     tw.insert("logs.mutex.none_found".into(), "全量掃描完成，未命中任何 D2R 互斥鎖（已檢查 {count} 個句柄）".into());
     tw.insert("logs.mutex.global_scan".into(), "正在執行全系統邏輯鎖掃描 (Cross-Session)...".into());
@@ -258,6 +267,9 @@ pub fn init_translations() {
     ja.insert("logs.launcher.anchor_found".into(), "アカウント {user} がアクティブです。アンカーパス：{path}".into());
     ja.insert("logs.launcher.path_captured".into(), "{user} の最新のゲームパスをキャプチャしました：{path}".into());
     ja.insert("logs.launcher.backing_up".into(), "アカウント {user} の二重オンラインを検出しました。スナップショットをバックアップしています...".into());
+    ja.insert("logs.config.relocate_start".into(), "データを {path} に移行しています...".into());
+    ja.insert("logs.config.relocate_success".into(), "データが {path} に正常に移行されました".into());
+    ja.insert("logs.config.relocate_failed".into(), "データの移行に失敗しました: {error}".into());
 
     ja.insert("logs.mutex.none_found".into(), "システム全域のスキャンが完了しました。D2Rミューテックスは見つかりませんでした（{count}個のハンドルを確認）".into());
     ja.insert("logs.mutex.global_scan".into(), "グローバルシステムロジックロックスキャンを実行しています (Cross-Session)...".into());
@@ -333,6 +345,9 @@ pub fn init_translations() {
     ko.insert("error.diag.icacls_failed".into(), "icacls 권한 확인 실패: {error}".into());
     ko.insert("logs.launcher.path_captured".into(), "{user}의 최신 게임 경로를 캡처했습니다: {path}".into());
     ko.insert("logs.launcher.backing_up".into(), "계정 {user} 이중 온라인 감지됨, 스냅샷 백업 중...".into());
+    ko.insert("logs.config.relocate_start".into(), "데이터를 {path}로 마이그레이션 중...".into());
+    ko.insert("logs.config.relocate_success".into(), "데이터가 {path}로 성공적으로 마이그레이션되었습니다".into());
+    ko.insert("logs.config.relocate_failed".into(), "데이터 마이그레이션 실패: {error}".into());
 
     ko.insert("logs.mutex.none_found".into(), "시스템 전체 스캔 완료, D2R 뮤텍스가 발견되지 않았습니다 ({count}개 핸들 확인됨)".into());
     ko.insert("logs.mutex.global_scan".into(), "글로벌 시스템 로직 잠금 스캔 수행 중 (Cross-Session)...".into());

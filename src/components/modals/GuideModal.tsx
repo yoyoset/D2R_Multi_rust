@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -27,7 +27,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                     <div className="bg-rose-500/5 border border-rose-500/10 rounded-lg p-5 space-y-3">
                         <div className="flex items-center gap-2 text-rose-400">
                             <AlertCircle size={14} />
-                            <h3 className="font-bold text-[11px] uppercase tracking-widest">{t('bnet_requirement_title')}</h3>
+                            <h3 className="font-bold text-[10px] uppercase tracking-widest">{t('bnet_requirement_title')}</h3>
                         </div>
                         <p className="text-[13px] leading-relaxed text-zinc-400">
                             {t('bnet_requirement_desc')}
@@ -35,7 +35,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                         <div className="space-y-2.5 pt-1">
                             <div className="flex gap-2.5 text-[13px]">
                                 <span className="text-rose-300/80 font-bold whitespace-nowrap">{t('bnet_path_fixed')}：</span>
-                                <span className="text-zinc-400">{t('guide_bnet_path_desc')} <code className="bg-black/40 px-1.5 py-0.5 rounded text-rose-300 font-mono text-[11px]">C:\Program Files (x86)\Battle.net</code></span>
+                                <span className="text-zinc-400">{t('guide_bnet_path_desc')} <code className="bg-black/40 px-1.5 py-0.5 rounded text-rose-300 font-mono text-[10px]">C:\Program Files (x86)\Battle.net</code></span>
                             </div>
                             <div className="flex gap-2.5 text-[13px]">
                                 <span className="text-rose-300/80 font-bold whitespace-nowrap">{t('bnet_all_users')}：</span>
@@ -52,7 +52,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                     <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-5 space-y-2">
                         <div className="flex items-center gap-2 text-emerald-400">
                             <CheckCircle2 size={14} />
-                            <h3 className="font-bold text-[11px] uppercase tracking-widest">{t('game_path_flex_title')}</h3>
+                            <h3 className="font-bold text-[10px] uppercase tracking-widest">{t('game_path_flex_title')}</h3>
                         </div>
                         <p className="text-[13px] leading-relaxed text-zinc-400">
                             {t('game_path_flex_desc')}
@@ -63,15 +63,15 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                     <div className="bg-blue-500/5 border border-blue-500/10 rounded-lg p-5 space-y-4">
                         <div className="flex items-center gap-2 text-blue-400">
                             <AlertCircle size={14} />
-                            <h3 className="font-bold text-[11px] uppercase tracking-widest">{t('guide_launch_modes_title')}</h3>
+                            <h3 className="font-bold text-[10px] uppercase tracking-widest">{t('guide_launch_modes_title')}</h3>
                         </div>
                         <div className="grid grid-cols-1 gap-4">
                             <div className="space-y-1.5">
-                                <h4 className="text-[12px] font-bold text-blue-300/90">{t('guide_launch_managed_title')}</h4>
+                                <h4 className="text-[10px] font-bold text-blue-300/90">{t('guide_launch_managed_title')}</h4>
                                 <p className="text-[13px] text-zinc-400 leading-relaxed font-light">{t('guide_launch_managed_desc')}</p>
                             </div>
                             <div className="space-y-1.5">
-                                <h4 className="text-[12px] font-bold text-blue-300/90">{t('guide_launch_advanced_title')}</h4>
+                                <h4 className="text-[10px] font-bold text-blue-300/90">{t('guide_launch_advanced_title')}</h4>
                                 <p className="text-[13px] text-zinc-400 leading-relaxed font-light">{t('guide_launch_advanced_desc')}</p>
                             </div>
                         </div>
@@ -81,7 +81,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                     <div className="bg-zinc-900/50 border border-white/5 rounded-lg p-5 space-y-2">
                         <div className="flex items-center gap-2 text-zinc-300">
                             <Download size={14} />
-                            <h3 className="font-bold text-[11px] uppercase tracking-widest">{t('reinstall_hint_title')}</h3>
+                            <h3 className="font-bold text-[10px] uppercase tracking-widest">{t('reinstall_hint_title')}</h3>
                         </div>
                         <p className="text-[13px] leading-relaxed text-zinc-500">
                             {t('reinstall_hint_desc')}
@@ -104,7 +104,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                                 </svg>
                             )}
                         </div>
-                        <span className="text-[12px] text-zinc-500 group-hover:text-zinc-400 transition-colors">
+                        <span className="text-[10px] text-zinc-500 group-hover:text-zinc-400 transition-colors">
                             {t('dont_show_again')}
                         </span>
                     </div>

@@ -49,6 +49,8 @@ function App() {
                 setIsEditSequenceModalOpen={core.setIsEditSequenceModalOpen}
                 currentPresetIndex={core.currentPresetIndex}
                 missingCredentialIds={core.missingCredentialIds}
+                isInitSetupOpen={core.isInitSetupOpen}
+                setIsInitSetupOpen={core.setIsInitSetupOpen}
                 onMigrationComplete={async () => {
                     core.setIsMigrationModalOpen(false);
                     const cfg = await getConfig();
@@ -84,6 +86,7 @@ function App() {
                         viewMode={core.config.dashboard_view_mode || 'card'}
                         onViewModeChange={core.handleViewModeChange}
                         onRefreshPaths={core.handleRefreshPaths}
+                        onAuditVault={core.validateVault}
                         onSaveSnapshot={core.handleSaveSnapshot}
                         onEditSequencePreset={(index) => {
                             core.setCurrentPresetIndex(index);
@@ -112,8 +115,8 @@ function App() {
 
             <AppFooter 
                 isAdmin={core.isAdmin}
-                accountCount={core.config.accounts.length}
                 version={__APP_VERSION__}
+                vaultHealthIssues={core.vaultHealthIssues}
             />
 
             <ToastContainer />

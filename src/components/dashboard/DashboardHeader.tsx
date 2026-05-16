@@ -18,6 +18,7 @@ interface DashboardHeaderProps {
     onRefresh: () => void;
     isRefreshing: boolean;
     onRefreshPaths?: () => void;
+    onAuditVault?: () => void;
     onEditSequencePreset: (index: number) => void;
 }
 
@@ -33,6 +34,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     onRefresh,
     isRefreshing,
     onRefreshPaths,
+    onAuditVault,
     onEditSequencePreset,
 }) => {
     const { t } = useTranslation();
@@ -44,7 +46,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 <div className="flex flex-col gap-1 min-w-0 flex-1">
                     {/* Row 1: Title & Status Refresh */}
                     <div className="flex items-center gap-1.5 flex-nowrap overflow-hidden">
-                        <h2 className="text-xs font-black text-white uppercase tracking-tighter flex items-center gap-1.5 shrink-0">
+                        <h2 className="text-[14px] font-black text-white uppercase tracking-tighter flex items-center gap-1.5 shrink-0">
                             <div className="w-1 h-3 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--color-primary),0.4)]"></div>
                             {t('account_sanctum')}
                         </h2>
@@ -56,13 +58,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                     onRefresh();
                                 }}
                                 className={cn(
-                                    "flex items-center gap-1 px-2 py-0.5 rounded-sm border border-white/5 bg-zinc-900 text-[9px] font-black uppercase tracking-tight transition-all shrink-0",
+                                    "flex items-center gap-1 px-2 py-0.5 rounded-sm border border-white/5 bg-zinc-900 text-[10px] font-black uppercase tracking-tight transition-all shrink-0",
                                     "hover:bg-primary/10 hover:border-primary/30 hover:text-primary",
                                     isRefreshing ? "text-primary bg-primary/10 border-primary/20 cursor-default" : "text-zinc-600"
                                 )}
                                 disabled={isRefreshing}
                             >
-                                <RefreshCw size={10} className={cn(isRefreshing && "animate-spin")} />
+                                <RefreshCw size={16} className={cn(isRefreshing && "animate-spin")} />
                                 <span>{isRefreshing ? t('refreshing') : t('refresh_status')}</span>
                             </button>
                             
@@ -72,12 +74,26 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                     if (onRefreshPaths) onRefreshPaths();
                                 }}
                                 className={cn(
-                                    "flex items-center gap-1 px-2 py-0.5 rounded-sm border border-white/5 bg-zinc-900 text-[9px] font-black uppercase tracking-tight transition-all shrink-0",
+                                    "flex items-center gap-1 px-2 py-0.5 rounded-sm border border-white/5 bg-zinc-900 text-[10px] font-black uppercase tracking-tight transition-all shrink-0",
                                     "hover:bg-primary/10 hover:border-primary/30 hover:text-white text-zinc-500 outline-none"
                                 )}
                             >
-                                <RefreshCw size={10} />
+                                <RefreshCw size={16} />
                                 <span>{t('refresh_paths')}</span>
+                            </button>
+
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onAuditVault) onAuditVault();
+                                }}
+                                className={cn(
+                                    "flex items-center gap-1 px-2 py-0.5 rounded-sm border border-white/5 bg-zinc-900 text-[10px] font-black uppercase tracking-tight transition-all shrink-0",
+                                    "hover:bg-primary/10 hover:border-primary/30 hover:text-white text-zinc-500 outline-none"
+                                )}
+                            >
+                                <RefreshCw size={16} />
+                                <span>{t('audit_vault')}</span>
                             </button>
                         </div>
                     </div>
@@ -95,13 +111,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         onClick={() => onViewModeChange('card')}
                         className={cn("p-1 rounded-sm transition-all", viewMode === 'card' ? "bg-zinc-800 text-primary" : "text-zinc-600 hover:text-zinc-400")}
                     >
-                        <LayoutGrid size={12} />
+                        <LayoutGrid size={16} />
                     </button>
                     <button
                         onClick={() => onViewModeChange('list')}
                         className={cn("p-1 rounded-sm transition-all", viewMode === 'list' ? "bg-zinc-800 text-primary" : "text-zinc-600 hover:text-zinc-400")}
                     >
-                        <List size={12} />
+                        <List size={16} />
                     </button>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { Account, AccountStatus, getAccountsProcessStatus } from '../lib/api';
 
 export function useAccountStatus(accounts: Account[]) {

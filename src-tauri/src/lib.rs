@@ -33,6 +33,7 @@ pub fn run() {
             commands::os::check_user_initialization,
             commands::os::check_microsoft_account,
             commands::os::set_password_full_policy,
+            commands::os::open_path,
             // Game Commands
             commands::game::kill_mutexes,
             commands::game::kill_processes,
@@ -46,10 +47,15 @@ pub fn run() {
             // Config Commands
             commands::config::get_config,
             commands::config::save_config,
+            commands::config::check_config_exists,
+            commands::config::set_data_root,
             commands::config::run_migration,
             commands::config::get_account_password,
             commands::config::update_tray_language,
             commands::config::check_vault_integrity,
+            commands::config::get_data_location_info,
+            commands::config::relocate_data,
+            commands::config::validate_all_vault_entries,
             // Maintenance Commands
             commands::maintenance::clear_logs,
             commands::maintenance::nuke_reset,
@@ -140,10 +146,6 @@ pub fn run() {
                 modules::os::windows::maintenance::maintain_memory_footprint(handle3, rx3).await;
             });
 
-            // 保存 shutdown_tx 以便在退出时使用
-            // 由于无法直接存储在 AppState 中，我们需要通过其他方式处理
-            // 这里使用一个简单的方案：通过 tauri 的 manage 存储共享的 Arc
-            
             Ok(())
         })
         .on_window_event(|window, event| match event {

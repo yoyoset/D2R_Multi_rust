@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+﻿import { useTranslation } from 'react-i18next';
 import { CheckCircle2 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
@@ -22,14 +22,14 @@ export function LogConsole({ logs, onClear, className = "" }: LogConsoleProps) {
         <div className={cn("flex flex-col bg-black/40 overflow-hidden", className)}>
             <div className="px-3 py-1 bg-zinc-900/60 border-b border-white/5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <CheckCircle2 size={10} className="text-emerald-500/40" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">
+                    <CheckCircle2 size={16} className="text-emerald-500/40" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
                         {t('operation_logs')}
                     </span>
                 </div>
                 <button 
                     onClick={onClear}
-                    className="text-[8px] font-black text-zinc-600 hover:text-zinc-400 uppercase tracking-tighter"
+                    className="text-[10px] font-black text-zinc-600 hover:text-zinc-400 uppercase tracking-tighter"
                 >
                     {t('clear_logs_btn')}
                 </button>

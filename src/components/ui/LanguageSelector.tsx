@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe, ChevronDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -39,9 +39,9 @@ export const LanguageSelector: React.FC = () => {
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/5 transition-all text-zinc-400 hover:text-zinc-200"
             >
-                <Globe size={14} />
-                <span className="text-xs font-medium uppercase">{currentLang.short}</span>
-                <ChevronDown size={12} className={cn("transition-transform duration-200", isOpen && "rotate-180")} />
+                <Globe size={16} />
+                <span className="text-[10px] font-medium uppercase">{currentLang.short}</span>
+                <ChevronDown size={16} className={cn("transition-transform duration-200", isOpen && "rotate-180")} />
             </button>
 
             {isOpen && (
@@ -51,7 +51,7 @@ export const LanguageSelector: React.FC = () => {
                             key={lang.code}
                             onClick={() => handleSelect(lang.code)}
                             className={cn(
-                                "w-full text-left px-3 py-2 text-xs transition-colors",
+                                "w-full text-left px-3 py-2 text-[10px] transition-colors",
                                 i18n.language === lang.code
                                     ? "bg-primary/20 text-primary font-bold"
                                     : "text-zinc-400 hover:bg-white/5 hover:text-zinc-100"

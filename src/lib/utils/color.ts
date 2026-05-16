@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Utility for handling theme colors and CSS variable injection
  */
 

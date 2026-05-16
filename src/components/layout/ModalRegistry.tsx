@@ -5,6 +5,7 @@ import { GuideModal } from "../modals/GuideModal";
 import { MigrationModal } from "../modals/MigrationModal";
 import { WhatsNewModal } from "../modals/WhatsNewModal";
 import { EditSequenceModal } from "../modals/EditSequenceModal";
+import { InitSetupModal } from "../modals/InitSetupModal";
 import { NotificationManager } from "../ui/NotificationManager";
 import { AppConfig, Account } from "../../lib/api";
 
@@ -33,6 +34,9 @@ interface ModalRegistryProps {
     isMigrationModalOpen: boolean;
     onMigrationComplete: () => Promise<void>;
     missingCredentialIds: Set<string>;
+    // Init Setup
+    isInitSetupOpen: boolean;
+    setIsInitSetupOpen: (val: boolean) => void;
 }
 
 export function ModalRegistry({
@@ -54,7 +58,9 @@ export function ModalRegistry({
     currentPresetIndex,
     isMigrationModalOpen,
     onMigrationComplete,
-    missingCredentialIds
+    missingCredentialIds,
+    isInitSetupOpen,
+    setIsInitSetupOpen
 }: ModalRegistryProps) {
     return (
         <>
@@ -95,6 +101,13 @@ export function ModalRegistry({
                 config={config}
                 presetIndex={currentPresetIndex}
                 onSave={setConfig}
+            />
+            <InitSetupModal 
+                isOpen={isInitSetupOpen}
+                onComplete={(cfg) => {
+                    setConfig(cfg);
+                    setIsInitSetupOpen(false);
+                }}
             />
             <NotificationManager />
         </>

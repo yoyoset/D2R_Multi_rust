@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Search, Plus, Trash2, ChevronUp, ChevronDown, Save, AlertCircle } from 'lucide-react';
 import { AppConfig, SequencePreset, saveSequencePreset } from '../../lib/api';
@@ -80,7 +80,7 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                 <div className="flex items-center justify-between p-4 border-b border-white/5 bg-zinc-900/50">
                     <div className="flex items-center gap-3">
                         <Save size={16} className="text-primary" />
-                        <h2 className="text-sm font-black uppercase tracking-tight text-white">
+                        <h2 className="text-[14px] font-black uppercase tracking-tight text-white">
                             {t('edit_sequence_preset')}: {config.sequence_presets[presetIndex]?.name || `Preset ${presetIndex + 1}`}
                         </h2>
                     </div>
@@ -95,13 +95,13 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                     <div className="flex-1 border-r border-white/5 flex flex-col">
                         <div className="p-3 border-b border-white/5 bg-zinc-900/20">
                             <div className="relative">
-                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
+                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
                                 <input 
                                     type="text"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder={t('search_accounts_placeholder')}
-                                    className="w-full bg-zinc-900 border border-white/5 rounded-sm pl-9 pr-3 py-1.5 text-[11px] focus:outline-none focus:border-primary/50 transition-colors"
+                                    className="w-full bg-zinc-900 border border-white/5 rounded-sm pl-9 pr-3 py-1.5 text-[10px] focus:outline-none focus:border-primary/50 transition-colors"
                                 />
                             </div>
                         </div>
@@ -118,17 +118,17 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                                     >
                                         <div className="flex-1 flex items-center gap-3 overflow-hidden mr-2">
                                             <span className="text-[10px] font-bold text-zinc-200 shrink-0">{account.win_user}</span>
-                                            <span className="text-[9px] text-zinc-500 font-mono tracking-tighter truncate max-w-[120px]">{account.bnet_account}</span>
+                                            <span className="text-[10px] text-zinc-500 font-mono tracking-tighter truncate max-w-[120px]">{account.bnet_account}</span>
                                             {account.note && (
-                                                <span className="text-[9px] text-zinc-600 truncate italic">({account.note})</span>
+                                                <span className="text-[10px] text-zinc-600 truncate italic">({account.note})</span>
                                             )}
                                         </div>
                                         {!isAdded && (
                                             <button 
                                                 onClick={() => handleAdd(account.id)}
-                                                className="p-1 px-2 rounded-sm bg-primary/10 text-primary hover:bg-primary/20 transition-all text-[8px] font-black uppercase"
+                                                className="p-1 px-2 rounded-sm bg-primary/10 text-primary hover:bg-primary/20 transition-all text-[10px] font-black uppercase"
                                             >
-                                                <Plus size={10} />
+                                                <Plus size={16} />
                                             </button>
                                         )}
                                     </div>
@@ -168,11 +168,11 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                                             <div className="flex-1 min-w-0 flex items-center gap-2">
                                                 {isInvalid ? (
                                                     <>
-                                                        <AlertCircle size={10} className="text-rose-500 shrink-0" />
+                                                        <AlertCircle size={16} className="text-rose-500 shrink-0" />
                                                         <p className="text-[10px] font-bold text-rose-500 truncate italic">
                                                             {t('invalid_account_sequence')}
                                                         </p>
-                                                        <span className="text-[8px] text-rose-500/40 font-mono">ID:{id.slice(0, 8)}</span>
+                                                        <span className="text-[10px] text-rose-500/40 font-mono">ID:{id.slice(0, 8)}</span>
                                                     </>
                                                 ) : (
                                                     <p className="text-[10px] font-bold text-zinc-200 truncate">{account.win_user}</p>
@@ -180,13 +180,13 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                                             </div>
                                             <div className="flex items-center gap-0.5">
                                                 <button onClick={() => handleMove(index, 'up')} disabled={index === 0} className="p-1 text-zinc-600 hover:text-zinc-300 disabled:opacity-0 transition-colors">
-                                                    <ChevronUp size={12} />
+                                                    <ChevronUp size={16} />
                                                 </button>
                                                 <button onClick={() => handleMove(index, 'down')} disabled={index === selectedIds.length - 1} className="p-1 text-zinc-600 hover:text-zinc-300 disabled:opacity-0 transition-colors">
-                                                    <ChevronDown size={12} />
+                                                    <ChevronDown size={16} />
                                                 </button>
                                                 <button onClick={() => handleRemove(id)} className="p-1 text-zinc-600 hover:text-red-400 transition-colors ml-1">
-                                                    <Trash2 size={12} />
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </div>

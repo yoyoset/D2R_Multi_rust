@@ -86,15 +86,24 @@ pub fn get_latest_changelog() -> Result<String, String> {
     let first_version_section = entries[1];
     Ok(format!("## [{}", first_version_section))
 }
-use tauri_plugin_opener::OpenerExt;
 
 #[tauri::command]
-pub fn open_log_file(app: tauri::AppHandle) -> Result<(), String> {
+pub fn open_log_file(_app: tauri::AppHandle) -> Result<(), String> {
     if let Some(log_path) = modules::logger::get_log_path() {
         if log_path.exists() {
-            app.opener()
-                .open_path(log_path.to_string_lossy().to_string(), None::<String>)
-                .map_err(|e| e.to_string())?;
+            #[cfg(target_os = "windows")]
+            {
+                std::process::Command::new("explorer")
+                    .arg("/select,")
+                    .arg(log_path.to_string_lossy().to_string())
+                    .spawn()
+                    .map_err(|e| e.to_string())?;
+            }
+            #[cfg(not(target_os = "windows"))]
+            {
+                // Fallback for other OS if ever supported
+                return Err("Unsupported OS".to_string());
+            }
         } else {
             return Err("Log file does not exist yet.".to_string());
         }

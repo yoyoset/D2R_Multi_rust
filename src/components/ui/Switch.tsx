@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { cn } from '../../lib/utils';
 
 interface SwitchProps {
@@ -29,7 +29,7 @@ export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, descri
                         </span>
                     )}
                     {description && (
-                        <span className="text-[8px] text-zinc-600 uppercase tracking-tighter leading-tight italic">
+                        <span className="text-[10px] text-zinc-600 uppercase tracking-tighter leading-tight italic">
                             {description}
                         </span>
                     )}

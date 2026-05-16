@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Play, Edit2, Layers, AlertCircle } from 'lucide-react';
 import { AppConfig, startSequence } from '../../lib/api';
@@ -92,8 +92,8 @@ export const SequencePresetControls: React.FC<SequencePresetControlsProps> = ({
     return (
         <div className="flex items-center gap-1 shrink-0">
             <div className="flex items-center gap-1 mr-1">
-                <Layers size={10} className="text-zinc-600" />
-                <span className="text-[9px] font-black uppercase tracking-tighter text-zinc-500 whitespace-nowrap">
+                <Layers size={16} className="text-zinc-600" />
+                <span className="text-[10px] font-black uppercase tracking-tighter text-zinc-500 whitespace-nowrap">
                     {t('sequence_presets')}
                 </span>
             </div>
@@ -126,12 +126,12 @@ export const SequencePresetControls: React.FC<SequencePresetControlsProps> = ({
                                 title={hasAccounts ? t('start_sequence') : t('no_accounts_in_preset')}
                             >
                                 <Play 
-                                    size={9} 
+                                    size={11} 
                                     className={cn(hasAccounts ? (hasMissing ? "text-rose-500" : "text-primary") : "text-zinc-600")}
                                     fill={hasAccounts ? "currentColor" : "none"} 
                                 />
                                 <span className={hasAccounts ? (hasMissing ? "text-rose-400" : "text-zinc-200") : "text-zinc-600"}>P{index + 1}</span>
-                                {hasMissing && <AlertCircle size={8} className="text-rose-500 ml-0.5" />}
+                                {hasMissing && <AlertCircle size={16} className="text-rose-500 ml-0.5" />}
                             </button>
                             
                             <button
@@ -139,7 +139,7 @@ export const SequencePresetControls: React.FC<SequencePresetControlsProps> = ({
                                 className="px-1 py-1 text-zinc-600 hover:text-zinc-300 transition-colors border-l border-white/5 ml-0.5 flex items-center justify-center"
                                 title={t('edit_preset')}
                             >
-                                <Edit2 size={8} />
+                                <Edit2 size={16} />
                             </button>
                         </div>
                     );

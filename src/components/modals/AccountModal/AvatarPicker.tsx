@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+﻿import { Sparkles } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { ClassAvatar, CLASS_AVATARS } from "./ClassAvatar";
 import { useTranslation } from "react-i18next";
@@ -28,7 +28,7 @@ export const AvatarPicker = ({ avatar, onSelect, previewAvatar, setPreviewAvatar
 
     return (
         <div className="space-y-3">
-            <label className="text-sm font-medium text-zinc-300">
+            <label className="text-[14px] font-medium text-zinc-300">
                 {t('avatar')}
             </label>
             <div className="flex flex-wrap gap-2 relative">
@@ -56,7 +56,7 @@ export const AvatarPicker = ({ avatar, onSelect, previewAvatar, setPreviewAvatar
                     )}
                 >
                     <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                    <Sparkles size={12} />
+                    <Sparkles size={16} />
                 </label>
 
                 {/* Preview Popup */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GripVertical, X, CheckCircle2, Loader2, PlayCircle, ChevronDown, ChevronUp, Circle, Flag } from 'lucide-react';
 import { getConfig, AppConfig, ActiveSequenceState, requestSequenceSync, interruptSequence, nextSequenceStep } from '../../lib/api';
@@ -143,20 +143,20 @@ const SequencerMini: React.FC = () => {
                 <div className="flex-1 flex items-center px-3 min-w-0 gap-3" data-tauri-drag-region>
                     {isFinished ? (
                         <div className="flex items-center gap-2 text-emerald-500">
-                            <CheckCircle2 size={14} />
-                            <span className="text-[11px] font-black uppercase tracking-tight">{t('all_done')}</span>
+                            <CheckCircle2 size={16} />
+                            <span className="text-[10px] font-black uppercase tracking-tight">{t('all_done')}</span>
                         </div>
                     ) : (
                         <div className="flex items-center gap-2 min-w-0" data-tauri-drag-region>
                             <div className="p-1 bg-primary/10 rounded-sm">
-                                <Flag size={12} className="text-primary" />
+                                <Flag size={16} className="text-primary" />
                             </div>
                             <div className="flex flex-col min-w-0" data-tauri-drag-region>
-                                <span className="text-[9px] text-zinc-500 font-mono leading-none tracking-tighter uppercase truncate opacity-70">
-                                    {state ? `${state.preset_name} • ${state.current_index + 1}/${state.queue.length}` : t('syncing_caps')}
+                                <span className="text-[10px] text-zinc-500 font-mono leading-none tracking-tighter uppercase truncate opacity-70">
+                                    {state ? `${state.preset_name} ? ${state.current_index + 1}/${state.queue.length}` : t('syncing_caps')}
                                 </span>
                                 <span className={cn(
-                                    "text-[13px] font-black truncate leading-tight tracking-tight drop-shadow-sm",
+                                    "text-[10px] font-black truncate leading-tight tracking-tight drop-shadow-sm",
                                     isProcessing ? "text-primary animate-pulse" : "text-white"
                                 )}>
                                     {isProcessing ? t('launching') : mainLabel}
@@ -208,7 +208,7 @@ const SequencerMini: React.FC = () => {
                         onClick={isFinished ? handleClose : handleInterrupt}
                         className="p-2 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-sm border-l border-white/5 ml-1"
                     >
-                        <X size={18} />
+                        <X size={16} />
                     </button>
                 </div>
             </div>
@@ -228,15 +228,15 @@ const SequencerMini: React.FC = () => {
                                     ? "bg-primary/5 border-primary/30 shadow-[inset_0_0_10px_rgba(var(--primary-rgb),0.05)]" 
                                     : isDone ? "opacity-30 border-transparent" : "bg-white/2 border-white/5"
                             )}>
-                                {isDone ? <CheckCircle2 size={13} className="text-emerald-500" /> : 
+                                {isDone ? <CheckCircle2 size={11} className="text-emerald-500" /> : 
                                  isCurrent ? <div className="w-3 h-3 rounded-full border-2 border-primary animate-pulse" /> : 
-                                 <Circle size={13} className="text-zinc-800" />}
+                                 <Circle size={11} className="text-zinc-800" />}
                                 <div className="flex flex-col min-w-0 flex-1">
-                                    <span className={cn("text-[11px] font-bold truncate", isCurrent ? "text-primary" : "text-zinc-200")}>
+                                    <span className={cn("text-[10px] font-bold truncate", isCurrent ? "text-primary" : "text-zinc-200")}>
                                         {acc?.bnet_account || acc?.note || acc?.win_user}
                                     </span>
                                 </div>
-                                <span className="text-[9px] font-mono text-zinc-700">#{index + 1}</span>
+                                <span className="text-[10px] font-mono text-zinc-700">#{index + 1}</span>
                             </div>
                         );
                     }) : (

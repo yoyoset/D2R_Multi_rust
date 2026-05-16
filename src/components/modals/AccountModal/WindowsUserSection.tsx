@@ -1,4 +1,4 @@
-import { Sparkles, ChevronLeft, UserRound, EyeOff, Eye, Loader2, AlertCircle, Check, CloudOff } from "lucide-react";
+﻿import { Sparkles, ChevronLeft, UserRound, EyeOff, Eye, Loader2, AlertCircle, Check, CloudOff } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { Button } from "../../ui/Button";
 import { useTranslation } from "react-i18next";
@@ -94,7 +94,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                         {!isManualInput && isCreatingNew && (
                             <button
                                 onClick={() => { setIsManualInput(false); setIsCreatingNew(false); }}
-                                className="text-xs text-zinc-500 hover:text-white transition-colors flex items-center gap-1"
+                                className="text-[10px] text-zinc-500 hover:text-white transition-colors flex items-center gap-1"
                             >
                                 <ChevronLeft size={10} /> {t('back_to_list')}
                             </button>
@@ -129,7 +129,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                             type="text"
                             value={winUser}
                             onChange={(e) => setWinUser(e.target.value)}
-                            className="flex-1 bg-black/50 border border-white/5 rounded-sm px-3 h-8 text-[11px] text-zinc-200 focus:border-primary/50 focus:outline-none transition-all font-mono"
+                            className="flex-1 bg-black/50 border border-white/5 rounded-sm px-3 h-8 text-[10px] text-zinc-200 focus:border-primary/50 focus:outline-none transition-all font-mono"
                             placeholder={t('win_username')}
                         />
                     </div>
@@ -144,7 +144,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                                 onChange={(e) => { setWinPass(e.target.value); setPasswordError(null); }}
                                 onBlur={(e) => verifyWindowsPassword(e.target.value)}
                                 className={cn(
-                                    "w-full bg-black/50 border rounded-sm pl-3 pr-10 h-8 text-[11px] text-zinc-200 focus:outline-none transition-all font-mono",
+                                    "w-full bg-black/50 border rounded-sm pl-3 pr-10 h-8 text-[10px] text-zinc-200 focus:outline-none transition-all font-mono",
                                     passwordError ? "border-rose-500/30 focus:border-rose-500/50" : "border-white/10 focus:border-primary/50"
                                 )}
                                 placeholder={t('win_password')}
@@ -181,7 +181,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                                 <select
                                     value={winUser}
                                     onChange={(e) => setWinUser(e.target.value)}
-                                    className="w-full h-8 bg-black/50 border border-white/5 rounded-sm pl-9 pr-3 text-[11px] text-zinc-200 focus:border-primary/50 focus:outline-none appearance-none cursor-pointer transition-all uppercase font-bold tracking-tight"
+                                    className="w-full h-8 bg-black/50 border border-white/5 rounded-sm pl-9 pr-3 text-[10px] text-zinc-200 focus:border-primary/50 focus:outline-none appearance-none cursor-pointer transition-all uppercase font-bold tracking-tight"
                                 >
                                     <option value="" disabled>{t('select_win_user')}</option>
                                     {osUsers.map(u => (
@@ -196,7 +196,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                                 variant="ghost"
                                 onClick={() => handleDiscovery()}
                                 isLoading={isScanning}
-                                className="h-8 px-3 border border-zinc-700/50 bg-black/20 hover:bg-black/40 text-xs"
+                                className="h-8 px-3 border border-zinc-700/50 bg-black/20 hover:bg-black/40 text-[10px]"
                             >
                                 <Sparkles size={11} className="mr-1.5 text-zinc-400" />
                                 {t('scan_users')}
@@ -252,7 +252,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                                                 onChange={(e) => { setWinPass(e.target.value); setPasswordError(null); }}
                                                 onBlur={(e) => verifyWindowsPassword(e.target.value)}
                                                 className={cn(
-                                                    "w-full bg-zinc-900 border rounded-sm pl-3 pr-10 py-1.5 text-[11px] text-zinc-200 focus:outline-none transition-all font-mono",
+                                                    "w-full bg-zinc-900 border rounded-sm pl-3 pr-10 py-1.5 text-[10px] text-zinc-200 focus:outline-none transition-all font-mono",
                                                     passwordError ? "border-rose-500/30 focus:border-rose-500/50" : "border-white/10 focus:border-primary/50"
                                                 )}
                                                 placeholder={t('win_password')}
@@ -286,7 +286,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                                             {passNeverExpires && <Check size={10} className="text-black stroke-[4px]" />}
                                         </div>
                                         <div className="flex flex-col text-left">
-                                            <span className="text-[11px] font-bold text-zinc-300 uppercase tracking-tight group-hover/check:text-white transition-colors">
+                                            <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-tight group-hover/check:text-white transition-colors">
                                                 {t('win_pass_never_expires')}
                                             </span>
                                             <span className="text-[9px] text-zinc-600 font-bold uppercase tracking-tighter">

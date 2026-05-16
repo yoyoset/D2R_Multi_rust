@@ -1,6 +1,6 @@
 use crate::modules;
 use crate::modules::vault::Vault;
-use tauri::{Emitter, Manager};
+use tauri::Emitter;
 
 #[tauri::command]
 pub fn get_config(
@@ -78,7 +78,7 @@ pub async fn run_migration(
     logger::info_key(Some(&app), "logs.config.migration_start", None);
 
     // 1. Force load the RAW config without skipping serialize (to catch old passwords)
-    let path = app.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?.join("config.json");
+    let path = crate::modules::data_root::get_data_root(&app).join("config.json");
     if !path.exists() { return Ok(()); }
 
     let content = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
@@ -112,7 +112,7 @@ pub async fn run_migration(
 
     // 2. Write back sanitized config.json
     let cleaned_content = serde_json::to_string_pretty(&root).map_err(|e| e.to_string())?;
-    std::fs::write(app.path().app_data_dir().map_err(|e: tauri::Error| e.to_string())?.join("config.json"), cleaned_content).map_err(|e| e.to_string())?;
+    std::fs::write(crate::modules::data_root::get_data_root(&app).join("config.json"), cleaned_content).map_err(|e| e.to_string())?;
 
     // 3. Refresh memory cache
     let new_config = modules::config::AppConfig::load(&app).map_err(|e| e.to_string())?;
@@ -150,4 +150,139 @@ pub fn check_vault_integrity(
     }
 
     missing
+}
+
+#[tauri::command]
+pub fn get_data_location_info(
+    app: tauri::AppHandle,
+) -> crate::modules::data_root::DataLocationInfo {
+    crate::modules::data_root::get_location_info(&app)
+}
+
+#[tauri::command]
+pub async fn relocate_data(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, crate::state::AppState>,
+    new_path: String,
+) -> Result<String, String> {
+    use crate::modules::{data_root, vault::Vault, logger};
+
+    // 1. Validate
+    data_root::validate_target_path(&new_path)?;
+
+    let old_root = data_root::get_data_root(&app);
+    let new_root = std::path::PathBuf::from(&new_path);
+
+    if old_root == new_root {
+        return Err("Target path is same as current".to_string());
+    }
+
+    let _ = std::fs::create_dir_all(&new_root);
+
+    // 2. Copy config.json
+    let old_config = old_root.join("config.json");
+    if old_config.exists() {
+        std::fs::copy(&old_config, new_root.join("config.json")).map_err(|e| e.to_string())?;
+    }
+    let old_bak = old_root.join("config.json.bak");
+    if old_bak.exists() {
+        let _ = std::fs::copy(&old_bak, new_root.join("config.json.bak"));
+    }
+
+    // 3. Copy snapshots
+    let old_snapshots = old_root.join("snapshots");
+    if old_snapshots.exists() {
+        let new_snapshots = new_root.join("snapshots");
+        let _ = std::fs::create_dir_all(&new_snapshots);
+        if let Ok(entries) = std::fs::read_dir(&old_snapshots) {
+            for entry in entries.flatten() {
+                let dest = new_snapshots.join(entry.file_name());
+                let _ = std::fs::copy(entry.path(), dest);
+            }
+        }
+    }
+
+    // 4. Re-encrypt vault data (DPAPI decrypt → re-encrypt at new location)
+    let config = state.config_lock().clone();
+    let mut migrated = 0u32;
+    let mut failed = 0u32;
+    let new_accounts = new_root.join("accounts");
+    let _ = std::fs::create_dir_all(&new_accounts);
+
+    for account in &config.accounts {
+        match Vault::load_password(&app, &account.id) {
+            Ok(password) => {
+                // Re-encrypt at new location
+                let acct_dir = new_accounts.join(&account.id);
+                let _ = std::fs::create_dir_all(&acct_dir);
+                let encrypted = Vault::encrypt_dpapi_public(password.as_bytes());
+                match encrypted {
+                    Ok(data) => {
+                        if std::fs::write(acct_dir.join("secret.bin"), data).is_ok() {
+                            migrated += 1;
+                        } else { failed += 1; }
+                    }
+                    Err(_) => { failed += 1; }
+                }
+            }
+            Err(_) => { failed += 1; }
+        }
+    }
+
+    // 5. Write data_path.txt
+    data_root::set_data_path(&new_path)?;
+
+    // Industrial Hardening: Reload config immediately into memory state
+    let config = crate::modules::config::AppConfig::load(&app).map_err(|e| e.to_string())?;
+    let mut cached = state.config_lock();
+    *cached = config;
+
+    logger::info_key(Some(&app), "logs.config.relocate_success", Some(serde_json::json!({
+        "path": new_path, "migrated": migrated, "failed": failed
+    })));
+
+    Ok(format!("Migrated: {}, Failed: {}", migrated, failed))
+}
+
+#[tauri::command]
+pub fn validate_all_vault_entries(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, crate::state::AppState>,
+) -> Vec<serde_json::Value> {
+    let config = state.config_lock().clone();
+    let mut issues = Vec::new();
+
+    for account in &config.accounts {
+        match crate::modules::vault::Vault::load_password(&app, &account.id) {
+            Ok(_) => {} // Decrypt succeeded
+            Err(e) => {
+                issues.push(serde_json::json!({
+                    "id": account.id,
+                    "win_user": account.win_user,
+                    "reason": format!("{}", e)
+                }));
+            }
+        }
+    }
+    issues
+}
+
+#[tauri::command]
+pub fn check_config_exists(app: tauri::AppHandle) -> bool {
+    let path = crate::modules::data_root::get_data_root(&app).join("config.json");
+    path.exists()
+}
+
+#[tauri::command]
+pub fn set_data_root(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, crate::state::AppState>,
+    new_path: String
+) -> Result<(), String> {
+    crate::modules::data_root::set_data_path(&new_path)?;
+    // Industrial Hardening: Reload config immediately into memory state
+    let config = crate::modules::config::AppConfig::load(&app).map_err(|e| e.to_string())?;
+    let mut cached = state.config_lock();
+    *cached = config;
+    Ok(())
 }

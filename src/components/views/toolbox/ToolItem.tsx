@@ -1,4 +1,4 @@
-import { cn } from '../../../lib/utils';
+﻿import { cn } from '../../../lib/utils';
 
 interface ToolItemProps {
     icon: React.ReactNode;
@@ -30,7 +30,7 @@ export const ToolItem: React.FC<ToolItemProps> = ({ icon, title, onClick, color 
             )}>
                 {icon}
             </div>
-            <span className="text-[11px] font-bold text-zinc-500 tracking-tight group-hover:text-zinc-200 transition-colors uppercase truncate">
+            <span className="text-[10px] font-bold text-zinc-500 tracking-tight group-hover:text-zinc-200 transition-colors uppercase truncate">
                 {title}
             </span>
             <div className={cn(

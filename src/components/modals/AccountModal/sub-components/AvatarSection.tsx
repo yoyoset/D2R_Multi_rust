@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+﻿import { Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "../../../../lib/utils";
 
@@ -60,7 +60,7 @@ export function AvatarSection({ avatar, setAvatar, previewAvatar, setPreviewAvat
 
     return (
         <div className="space-y-2">
-            <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">
                 {t('avatar')}
             </label>
             <div className="flex flex-wrap gap-2.5 relative">
@@ -99,7 +99,7 @@ export function AvatarSection({ avatar, setAvatar, previewAvatar, setPreviewAvat
                             reader.readAsDataURL(file);
                         }
                     }} />
-                    <Sparkles size={12} />
+                    <Sparkles size={16} />
                 </label>
 
                 {previewAvatar && (

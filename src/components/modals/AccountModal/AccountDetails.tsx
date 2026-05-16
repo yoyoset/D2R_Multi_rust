@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+﻿import { useTranslation } from "react-i18next";
 
 interface AccountDetailsProps {
     bnetAccount: string;
@@ -21,7 +21,7 @@ export const AccountDetails = ({ bnetAccount, setBnetAccount, note, setNote }: A
                         type="text"
                         value={bnetAccount}
                         onChange={(e) => setBnetAccount(e.target.value)}
-                        className="w-full bg-zinc-900 border border-white/10 rounded-sm px-3 py-1.5 text-[11px] text-zinc-200 focus:border-primary/50 focus:outline-none transition-all font-mono"
+                        className="w-full bg-zinc-900 border border-white/10 rounded-sm px-3 py-1.5 text-[10px] text-zinc-200 focus:border-primary/50 focus:outline-none transition-all font-mono"
                         placeholder={t('bnet_id_placeholder')}
                     />
                 </div>
@@ -33,7 +33,7 @@ export const AccountDetails = ({ bnetAccount, setBnetAccount, note, setNote }: A
                         type="text"
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        className="w-full bg-zinc-900 border border-white/10 rounded-sm px-3 py-1.5 text-[11px] text-zinc-200 focus:border-primary/50 focus:outline-none transition-all font-mono"
+                        className="w-full bg-zinc-900 border border-white/10 rounded-sm px-3 py-1.5 text-[10px] text-zinc-200 focus:border-primary/50 focus:outline-none transition-all font-mono"
                         placeholder={t('note_placeholder')}
                     />
                 </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
     Play, 
@@ -89,18 +89,18 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts = [], selectedAccoun
                 <div className="flex items-center gap-1">
                     <Button 
                         variant="ghost" size="sm" 
-                        className="h-6 px-2 text-[9px] font-black tracking-widest uppercase hover:bg-white/5 gap-2 rounded-sm"
+                        className="h-6 px-2 text-[10px] font-black tracking-widest uppercase hover:bg-white/5 gap-2 rounded-sm"
                         onClick={runSystemDiag} disabled={isDiagnosing}
                     >
-                        <MonitorSmartphone size={10} className="text-blue-500" />
+                        <MonitorSmartphone size={16} className="text-blue-500" />
                         {t('diag_check_users')}
                     </Button>
                     <Button 
                         variant="ghost" size="sm" 
-                        className="h-6 px-2 text-[9px] font-black tracking-widest uppercase hover:bg-white/5 gap-2 rounded-sm"
+                        className="h-6 px-2 text-[10px] font-black tracking-widest uppercase hover:bg-white/5 gap-2 rounded-sm"
                         onClick={runGameDiag} disabled={isDiagnosing}
                     >
-                        <ShieldAlert size={10} className="text-zinc-500" />
+                        <ShieldAlert size={16} className="text-zinc-500" />
                         {t('diag_check_permissions')}
                     </Button>
                 </div>
@@ -110,12 +110,12 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts = [], selectedAccoun
             <div className="flex-none min-h-0 overflow-y-auto border-b border-white/5 scrollbar-thin scrollbar-thumb-zinc-700/50">
                 <div className="grid grid-cols-3 divide-x divide-white/5">
                     {/* Launch Section */}
-                    <ToolSection icon={<Play size={10} />} title={t('independent_launch')} color="emerald">
+                    <ToolSection icon={<Play size={16} />} title={t('independent_launch')} color="emerald">
                         <div className="p-4 space-y-4">
                             {!selectedAccountId ? (
                                 <div className="p-4 border border-dashed border-white/5 rounded-sm bg-zinc-900/20 text-center space-y-2 opacity-60">
                                     <AlertTriangle size={16} className="mx-auto text-zinc-700" />
-                                    <p className="text-[9px] font-mono uppercase tracking-widest text-zinc-600">{t('no_account_selected')}</p>
+                                    <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-600">{t('no_account_selected')}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -129,49 +129,49 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts = [], selectedAccoun
                                         )}
                                     >
                                         <div className="flex items-center gap-2">
-                                            <Play size={10} fill="currentColor" />
+                                            <Play size={16} fill="currentColor" />
                                             <span className="text-[10px] font-black uppercase tracking-widest">
                                                 {isClash ? t('force_launch') : t('separate_launch')}
                                             </span>
                                         </div>
-                                        <span className="text-[8px] font-mono opacity-50 truncate max-w-full px-2">
+                                        <span className="text-[10px] font-mono opacity-50 truncate max-w-full px-2">
                                             {selectedAccount?.win_user}
                                         </span>
                                     </Button>
                                     
                                     {isClash && (
                                         <div className="flex items-start gap-2 p-2 bg-amber-500/5 border border-amber-500/10 rounded-sm">
-                                            <AlertTriangle size={10} className="text-amber-500 shrink-0 mt-0.5" />
-                                            <p className="text-[9px] text-amber-500/80 leading-relaxed italic">{t('game_running_prevent_launch')}</p>
+                                            <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                                            <p className="text-[10px] text-amber-500/80 leading-relaxed italic">{t('game_running_prevent_launch')}</p>
                                         </div>
                                     )}
                                 </div>
                             )}
 
                             <div className="space-y-0.5">
-                                <ToolEntry icon={<RefreshCw size={12} />} title={t('mirror_manager')} onClick={() => setIsMirrorOpen(true)} />
-                                <ToolEntry icon={<Settings2 size={12} />} title={t('nuke_concise')} onClick={resetSettings} color="rose" />
+                                <ToolEntry icon={<RefreshCw size={16} />} title={t('mirror_manager')} onClick={() => setIsMirrorOpen(true)} />
+                                <ToolEntry icon={<Settings2 size={16} />} title={t('nuke_concise')} onClick={resetSettings} color="rose" />
                             </div>
                         </div>
                     </ToolSection>
 
                     {/* Cleanup Section */}
-                    <ToolSection icon={<Shield size={10} />} title={t('env_cleanup')} color="rose">
+                    <ToolSection icon={<Shield size={16} />} title={t('env_cleanup')} color="rose">
                         <div className="p-2 space-y-0.5">
-                            <ToolEntry icon={<Shield size={12} />} title={t('cleanup_handles')} onClick={cleanupHandles} />
-                            <ToolEntry icon={<Search size={12} />} title={t('manual_repair_btn')} onClick={() => setIsProcessExplorerOpen(true)} />
-                            <ToolEntry icon={<Trash2 size={12} />} title={t('cleanup_archives')} onClick={cleanupArchives} />
-                            <ToolEntry icon={<StopCircle size={12} />} title={t('stop_bnet_processes')} onClick={forceKill} color="rose" />
+                            <ToolEntry icon={<Shield size={16} />} title={t('cleanup_handles')} onClick={cleanupHandles} />
+                            <ToolEntry icon={<Search size={16} />} title={t('manual_repair_btn')} onClick={() => setIsProcessExplorerOpen(true)} />
+                            <ToolEntry icon={<Trash2 size={16} />} title={t('cleanup_archives')} onClick={cleanupArchives} />
+                            <ToolEntry icon={<StopCircle size={16} />} title={t('stop_bnet_processes')} onClick={forceKill} color="rose" />
                         </div>
                     </ToolSection>
 
                     {/* Utils Section */}
-                    <ToolSection icon={<MonitorSmartphone size={10} />} title={t('system_utils')} color="blue">
+                    <ToolSection icon={<MonitorSmartphone size={16} />} title={t('system_utils')} color="blue">
                         <div className="p-2 space-y-0.5">
-                            <ToolEntry icon={<Users size={12} />} title={t('open_local_users')} onClick={() => API.openLusrmgr()} />
-                            <ToolEntry icon={<ShieldAlert size={12} />} title={t('open_adv_users')} onClick={() => API.openNetplwiz()} />
-                            <ToolEntry icon={<RefreshCw size={12} />} title={t('open_user_switch')} onClick={() => API.openUserSwitch()} />
-                            <ToolEntry icon={<Shield size={12} />} title={t('fix_permissions')} onClick={() => setIsPermissionsOpen(true)} color="emerald" />
+                            <ToolEntry icon={<Users size={16} />} title={t('open_local_users')} onClick={() => API.openLusrmgr()} />
+                            <ToolEntry icon={<ShieldAlert size={16} />} title={t('open_adv_users')} onClick={() => API.openNetplwiz()} />
+                            <ToolEntry icon={<RefreshCw size={16} />} title={t('open_user_switch')} onClick={() => API.openUserSwitch()} />
+                            <ToolEntry icon={<Shield size={16} />} title={t('fix_permissions')} onClick={() => setIsPermissionsOpen(true)} color="emerald" />
                         </div>
                     </ToolSection>
                 </div>

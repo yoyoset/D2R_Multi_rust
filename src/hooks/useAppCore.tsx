@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getConfig, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers, getRunningGamePaths, checkVaultIntegrity } from "../lib/api";
+import { getConfig, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers, getRunningGamePaths, checkVaultIntegrity, VaultIssue, validateAllVaultEntries } from "../lib/api";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -22,6 +22,7 @@ export function useAppCore() {
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [currentView, setCurrentView] = useState<View>('dashboard');
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+    const [vaultHealthIssues, setVaultHealthIssues] = useState<VaultIssue[]>([]);
 
     // Modal States
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -31,6 +32,7 @@ export function useAppCore() {
     const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
     const [isEditSequenceModalOpen, setIsEditSequenceModalOpen] = useState(false);
     const [isMigrationModalOpen, setIsMigrationModalOpen] = useState(false);
+    const [isInitSetupOpen, setIsInitSetupOpen] = useState(false);
     const [currentPresetIndex, setCurrentPresetIndex] = useState(0);
     const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined);
 
@@ -62,7 +64,7 @@ export function useAppCore() {
                         {
                             label: (
                                 <div className="flex flex-col items-center py-1">
-                                    <span className="text-sm font-bold">{t('update_manual')}</span>
+                                    <span className="text-[10px] font-bold">{t('update_manual')}</span>
                                     <span className="text-[10px] opacity-60 font-normal">{t('update_manual_sub')}</span>
                                 </div>
                             ) as any,
@@ -72,7 +74,7 @@ export function useAppCore() {
                         {
                             label: (
                                 <div className="flex flex-col items-center py-1">
-                                    <span className="text-sm font-bold">{t('update_auto')}</span>
+                                    <span className="text-[10px] font-bold">{t('update_auto')}</span>
                                     <span className="text-[10px] opacity-100 font-normal">{t('update_auto_sub')}</span>
                                 </div>
                             ) as any,
@@ -144,8 +146,10 @@ export function useAppCore() {
     const validateVault = useCallback(async () => {
         try {
             const missing = await checkVaultIntegrity();
-            console.log("[Vault] Integrity Check Results:", missing);
             setMissingCredentialIds(new Set(missing));
+            
+            const issues = await validateAllVaultEntries();
+            setVaultHealthIssues(issues);
         } catch (e) {
             console.error("Failed to check vault integrity:", e);
         }
@@ -242,6 +246,11 @@ export function useAppCore() {
 
     useEffect(() => {
         const init = async () => {
+            const exists = await invoke<boolean>('check_config_exists');
+            if (!exists) {
+                setIsInitSetupOpen(true);
+            }
+
             const cfg = await getConfig();
             setConfig(cfg);
             checkAdminStatus();
@@ -277,8 +286,6 @@ export function useAppCore() {
                         label: t('resume_now'),
                         variant: 'primary',
                         onClick: async () => {
-                             // Backend handles resumption, trigger if active index found
-                             // In App.tsx this was just trigger start_sequence
                              await invoke("start_sequence", { presetIndex: config.active_sequence?.preset_index ?? 0 });
                         }
                     }
@@ -309,12 +316,12 @@ export function useAppCore() {
     return {
         // State
         windowLabel, config, setConfig, invalidAccountIds, missingCredentialIds, isAdmin, currentView, setCurrentView,
-        selectedAccountId, setSelectedAccountId, isLaunching, launchLogs,
+        selectedAccountId, setSelectedAccountId, isLaunching, launchLogs, vaultHealthIssues,
         // Modal States
         isSettingsOpen, setIsSettingsOpen, isAccountModalOpen, setIsAccountModalOpen,
         isGuideOpen, setIsGuideOpen, isDonateOpen, setIsDonateOpen,
         isWhatsNewOpen, setIsWhatsNewOpen, isEditSequenceModalOpen, setIsEditSequenceModalOpen,
-        isMigrationModalOpen, setIsMigrationModalOpen, currentPresetIndex, setCurrentPresetIndex,
+        isMigrationModalOpen, setIsMigrationModalOpen, isInitSetupOpen, setIsInitSetupOpen, currentPresetIndex, setCurrentPresetIndex,
         editingAccount: editingAccount as any,
         // Handlers
         handleLaunch, handleAddAccount, handleEditAccount, handleDeleteAccount,

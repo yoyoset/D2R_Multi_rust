@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 use anyhow::{Result, anyhow};
 use windows::Win32::Security::Cryptography::{
     CryptProtectData, CryptUnprotectData, CRYPT_INTEGER_BLOB, CRYPTPROTECT_UI_FORBIDDEN,
@@ -14,7 +14,7 @@ pub struct Vault;
 impl Vault {
     /// Get account-specific storage path: %APPDATA%/userData/accounts/{id}/
     pub fn get_account_dir(app: &AppHandle, account_id: &str) -> Result<PathBuf> {
-        let path = app.path().app_data_dir()?
+        let path = crate::modules::data_root::get_data_root(app)
             .join("accounts")
             .join(account_id);
         
@@ -60,6 +60,11 @@ impl Vault {
             fs::remove_dir_all(path)?;
         }
         Ok(())
+    }
+
+    /// Public wrapper for re-encryption during data relocation
+    pub fn encrypt_dpapi_public(data: &[u8]) -> Result<Vec<u8>> {
+        Self::encrypt_dpapi(data)
     }
 
     /// Windows DPAPI Encryption (Data bound to current Windows user)

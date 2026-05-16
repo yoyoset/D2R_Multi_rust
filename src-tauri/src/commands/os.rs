@@ -135,3 +135,20 @@ pub fn check_user_initialization(username: String) -> bool {
 pub fn check_microsoft_account(username: String) -> bool {
     modules::os::windows::user::is_microsoft_account(&username)
 }
+
+#[tauri::command]
+pub fn open_path(path: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        // Fallback for other OS if needed, but this app is Windows-centric
+        return Err("Unsupported OS".to_string());
+    }
+    Ok(())
+}

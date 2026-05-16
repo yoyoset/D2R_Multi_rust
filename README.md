@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.6.0-orange)
+![Version](https://img.shields.io/badge/version-0.6.1-orange)
 ![Backend](https://img.shields.io/badge/backend-Rust-red)
 ![Framework](https://img.shields.io/badge/framework-Tauri_v2-blue)
 
@@ -105,6 +105,19 @@ The automated launch sequence handles the vast majority of scenarios. However, i
 | **Switch User** | Triggers `tsdiscon` — fast-switch to another Windows session for account initialization |
 
 > These tools are designed so that any edge case the automation cannot handle can be resolved manually, with zero technical barrier.
+
+---
+
+### 5. Data Persistence & Redirection — Solving C-Drive Reset Issues
+
+In some high-control environments (like cybercafés or certain managed PCs), the C-drive (System) resets on reboot, causing loss of configurations, account snapshots, and Vault credentials.
+
+**This tool provides an industrial-grade solution:**
+
+1.  **Data Root Redirection**: Supports creating a `data_path.txt` next to the executable to point to a non-system drive (e.g., D: drive), or migrating directly via the Settings panel.
+2.  **Bootstrap Priority**: On launch, the system automatically locates the data source using a priority of `Side-by-side data_path.txt > AppData`.
+3.  **Credential Migration Engine**: Since Windows DPAPI encryption is bound to the User SID, simple file copying cannot migrate passwords. This tool features an atomic re-encryption engine that ensures all account passwords remain secure and usable when moving across drives.
+4.  **Vault Health Monitoring**: The dashboard provides real-time monitoring of credential integrity. If environment changes invalidate the credentials, the system immediately alerts the user.
 
 ---
 

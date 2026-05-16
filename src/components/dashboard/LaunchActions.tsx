@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Play } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -51,8 +51,8 @@ export const LaunchActions: React.FC<LaunchActionsProps> = ({
                         )}
                     >
                         <div className="flex items-center justify-center gap-2 relative z-10">
-                            <Play size={12} className={cn("transition-all fill-current", isLaunching && "animate-pulse")} />
-                            <span className="text-[11px]">
+                            <Play size={16} className={cn("transition-all fill-current", isLaunching && "animate-pulse")} />
+                            <span className="text-[10px]">
                                 {isLaunching ? t('launching') : t('launch_managed')}
                             </span>
                         </div>
@@ -68,8 +68,8 @@ export const LaunchActions: React.FC<LaunchActionsProps> = ({
                         )}
                     >
                         <div className="flex items-center justify-center gap-2 relative z-10">
-                            <Play size={12} className={cn("transition-all fill-current", isLaunching && "animate-pulse")} />
-                            <span className="text-[11px]">
+                            <Play size={16} className={cn("transition-all fill-current", isLaunching && "animate-pulse")} />
+                            <span className="text-[10px]">
                                 {isLaunching ? t('launching') : t('launch_advanced')}
                             </span>
                         </div>
@@ -85,8 +85,8 @@ export const LaunchActions: React.FC<LaunchActionsProps> = ({
                     )}
                 >
                     <div className="flex items-center justify-center gap-3 relative z-10">
-                        <Play size={14} className={cn("transition-transform fill-current", isLaunching && "animate-pulse")} />
-                        <span className="text-xs">
+                        <Play size={16} className={cn("transition-transform fill-current", isLaunching && "animate-pulse")} />
+                        <span className="text-[14px]">
                             {isLaunching ? t('launching') : (selectedAccountStatus?.d2r_active || selectedAccountStatus?.bnet_active ? t('force_launch') : t('launch_game'))}
                         </span>
                     </div>

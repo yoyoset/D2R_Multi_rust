@@ -9,3 +9,5 @@ pub mod process_killer;
 pub mod win32_safe;
 pub mod win_admin;
 pub mod vault;
+pub mod data_root;
+

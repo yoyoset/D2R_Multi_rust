@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.6.0-orange)
+![Version](https://img.shields.io/badge/version-0.6.1-orange)
 ![Backend](https://img.shields.io/badge/backend-Rust-red)
 ![Framework](https://img.shields.io/badge/framework-Tauri_v2-blue)
 
@@ -105,6 +105,19 @@ D2R 启动时会创建一个名为 `DiabloII Check For Other Instances` 的系�
 | **切换用户** | 触发 `tsdiscon` — 快速切换到另一个 Windows 会话，用于新账户初始化 |
 
 > 设计原则：自动化无法处理的任何边际情况，都可以通过这些工具手动解决，零门槛。
+
+---
+
+### 5. 数据持久化与重定向 — 解决 C 盘重置问题
+
+在某些网吧或高度管控的环境中，C 盘（系统盘）在重启后会自动还原，导致所有配置、账号快照和 Vault 凭据丢失。
+
+**本工具提供了工业级的解决方案：**
+
+1.  **数据根目录重定向**：支持在非系统盘（如 D 盘）创建 `data_path.txt` 指向数据存储目录，或通过设置面板直接迁移。
+2.  **引导优先级**：程序启动时按 `程序同级 data_path.txt > AppData` 的优先级自动定位数据源。
+3.  **凭据迁移引擎**：由于 Windows DPAPI 加密与用户 SID 绑定，单纯的文件复制无法迁移密码。本工具内置了原子级的重加密迁移引擎，确保在跨盘符迁移时，所有账号密码依然安全且可用。
+4.  **Vault 健康监控**：仪表盘实时监控凭据的解密状态，一旦检测到环境变化导致凭据失效，会立即发出预警。
 
 ---
 

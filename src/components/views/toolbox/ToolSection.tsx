@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { cn } from '../../../lib/utils';
 
 interface ToolSectionProps {
@@ -21,7 +21,7 @@ export const ToolSection: React.FC<ToolSectionProps> = ({ icon, title, color = '
                 )}>
                     {icon}
                 </span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 truncate">
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 truncate">
                     {title}
                 </span>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useTranslation } from 'react-i18next';
 import { Minus, Square, X, Copy } from 'lucide-react';
@@ -51,14 +51,14 @@ const TitleBar: React.FC = () => {
                     className="flex items-center justify-center w-11 h-full hover:bg-white/5 transition-colors text-zinc-500 hover:text-zinc-200"
                     title={t('minimize')}
                 >
-                    <Minus size={14} />
+                    <Minus size={16} />
                 </button>
                 <button
                     onClick={handleMaximize}
                     className="flex items-center justify-center w-11 h-full hover:bg-white/5 transition-colors text-zinc-500 hover:text-zinc-200"
                     title={isMaximized ? t('restore') : t('maximize')}
                 >
-                    {isMaximized ? <Copy size={12} className="rotate-180" /> : <Square size={12} />}
+                    {isMaximized ? <Copy size={16} className="rotate-180" /> : <Square size={16} />}
                 </button>
                 <button
                     onClick={handleClose}

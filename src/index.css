@@ -27,7 +27,7 @@ body {
 }
 
 .text-technical {
-  @apply font-mono text-[11px] tracking-tight;
+  @apply font-mono text-[10px] tracking-tight;
 }
 
 /* Force Industrial Radius & Border for existing utility usage */

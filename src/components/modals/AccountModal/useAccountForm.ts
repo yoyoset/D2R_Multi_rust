@@ -43,6 +43,25 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
     const [isValidatingPass, setIsValidatingPass] = useState(false);
     const [isUnmanagedUser, setIsUnmanagedUser] = useState(false);
 
+    // Custom toggle to handle password fetching
+    const handleSetShowPass = async (val: boolean) => {
+        if (val && winPass === "********" && editingAccount) {
+            setIsValidatingPass(true);
+            try {
+                const realPass = await invoke('get_account_password', { id: editingAccount.id }) as string;
+                setWinPass(realPass);
+                setShowPass(true);
+            } catch (e) {
+                console.error("Failed to fetch password from vault", e);
+                addNotification('error', t('vault_decrypt_failed'));
+            } finally {
+                setIsValidatingPass(false);
+            }
+        } else {
+            setShowPass(val);
+        }
+    };
+
     const handleDiscovery = useCallback(async (deep: boolean = false) => {
         setIsScanning(true);
         try {
@@ -81,7 +100,7 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
         if (isOpen) {
             if (editingAccount) {
                 setWinUser(editingAccount.win_user);
-                // 🛡️ INTELLIGENT INITIALIZATION:
+                // 馃洝锔?INTELLIGENT INITIALIZATION:
                 // Show placeholder if vault has a credential, otherwise keep empty. 
                 // This prevents the empty-string reset bug when the user just wants to "keep existing".
                 const hasCredential = !missingCredentialIds.has(editingAccount.id);
@@ -226,7 +245,7 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
                     timeoutPromise
                 ]);
             } else if (applyPasswordPolicy && winPass !== "********") {
-                // 🛡️ SECURITY HARDENING: Only sync to OS if password actually changed.
+                // 馃洝锔?SECURITY HARDENING: Only sync to OS if password actually changed.
                 // If it's a placeholder "********", we skip policy/pass reset to prevent corruption.
                 // If it's empty "" and was placeholder previously, it IS a change (request to clear).
                 addLog({ message: t('log_syncing_policy', { name: winUser }), level: 'info' });
@@ -317,7 +336,7 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
         hasScannedDeep,
         currentUser,
         previewAvatar, setPreviewAvatar,
-        showPass, setShowPass,
+        showPass, setShowPass: handleSetShowPass,
         passwordError,
         isValidatingPass,
         isUnmanagedUser,

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { cn } from '../../../lib/utils';
 
 interface ToolEntryProps {
@@ -40,7 +40,7 @@ export const ToolEntry: React.FC<ToolEntryProps> = ({ icon, title, onClick, colo
                     {title}
                 </span>
             </div>
-            <ChevronRight size={8} className="text-zinc-800 group-hover:text-zinc-600 transition-colors" />
+            <ChevronRight size={16} className="text-zinc-800 group-hover:text-zinc-600 transition-colors" />
         </button>
     );
 };

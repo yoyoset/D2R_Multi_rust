@@ -107,10 +107,10 @@ export function AccountModal(props: AccountModalProps) {
                         onClick={() => form.handleSave(false)} 
                         size="sm" 
                         isLoading={form.isSaving} 
-                        variant="solid" 
+                        variant={form.passwordError ? "danger" : "solid"} 
                         className="px-6"
                     >
-                        {t('save')}
+                        {form.passwordError ? t('confirm_and_sync') : t('save')}
                     </Button>
                 </ModalFooter>
             </ModalContent>

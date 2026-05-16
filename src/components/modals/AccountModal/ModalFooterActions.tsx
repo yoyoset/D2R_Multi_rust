@@ -1,4 +1,4 @@
-import { Save, Zap } from "lucide-react";
+﻿import { Save, Zap } from "lucide-react";
 import { Button } from "../../ui/Button";
 import { useTranslation } from "react-i18next";
 import { ModalFooter } from "../../ui/Modal";
@@ -40,7 +40,7 @@ export const ModalFooterActions = ({ onClose, handleSave, isSaving, isEdit, isCr
                 )}
             >
                 <div className="flex items-center gap-2 relative z-10">
-                    {isCreatingNew ? <Zap size={12} className="animate-pulse" /> : <Save size={12} />}
+                    {isCreatingNew ? <Zap size={16} className="animate-pulse" /> : <Save size={16} />}
                     {isCreatingNew ? t('btn_create_now') : (isEdit ? t('save') : t('btn_save_config'))}
                 </div>
                 {/* Technical Scanline effect for primary button */}

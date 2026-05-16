@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -34,7 +34,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
                     <div className="flex items-center gap-3">
                         <Sparkles className="text-primary" size={14} />
                         <div className="flex flex-col">
-                            <h2 className="text-[12px] font-black text-white uppercase tracking-widest">{t('whats_new_title')}</h2>
+                            <h2 className="text-[10px] font-black text-white uppercase tracking-widest">{t('whats_new_title')}</h2>
                             <p className="text-[8px] text-zinc-600 font-mono uppercase tracking-tighter mt-0.5">{t('system_evolution_desc')}</p>
                         </div>
                     </div>
@@ -54,7 +54,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
                             </div>
                         ) : (
                             <div className="prose prose-invert prose-xs max-w-none">
-                                <div className="whitespace-pre-wrap text-zinc-400 font-mono leading-relaxed text-[11px] bg-black/50 p-4 rounded-sm border border-white/5 max-h-60 overflow-y-auto custom-scrollbar italic">
+                                <div className="whitespace-pre-wrap text-zinc-400 font-mono leading-relaxed text-[10px] bg-black/50 p-4 rounded-sm border border-white/5 max-h-60 overflow-y-auto custom-scrollbar italic">
                                     {changelog}
                                 </div>
                             </div>

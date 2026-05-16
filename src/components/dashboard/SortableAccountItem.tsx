@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+﻿import { useTranslation } from 'react-i18next';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { User, GripVertical, Edit2, Ghost, Lock, Save, AlertTriangle } from 'lucide-react';
@@ -76,7 +76,7 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                             title={t('edit')}
                             className="p-1 text-zinc-500 hover:text-primary transition-colors rounded-sm"
                         >
-                            <Edit2 size={10} />
+                            <Edit2 size={16} />
                         </button>
                         {onSaveSnapshot && (
                             <button
@@ -87,11 +87,11 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                                 title={t('save_snapshot')}
                                 className="p-1 text-zinc-500 hover:text-emerald-500 transition-colors rounded-sm border-l border-white/5"
                             >
-                                <Save size={10} />
+                                <Save size={16} />
                             </button>
                         )}
                         <div {...attributes} {...listeners} className="p-1 text-zinc-500 hover:text-white cursor-grab border-l border-white/5">
-                            <GripVertical size={10} />
+                            <GripVertical size={16} />
                         </div>
                     </div>
 
@@ -103,7 +103,7 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                         )}>
                             {isInvalid && (
                                 <div className="absolute inset-0 bg-rose-950/60 flex items-center justify-center z-20 animate-pulse backdrop-blur-[1px]">
-                                    <Ghost size={12} className="text-rose-500" />
+                                    <Ghost size={16} className="text-rose-500" />
                                 </div>
                             )}
                             {account.avatar ? (
@@ -122,20 +122,20 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                         <div className="flex-1 flex flex-col justify-center min-w-0 pr-4">
                             <div className="flex items-center gap-1.5 overflow-hidden">
                                 <span className={cn(
-                                    "text-[9px] uppercase font-mono tracking-wider transition-colors truncate",
+                                    "text-[10px] uppercase font-mono tracking-wider transition-colors truncate",
                                     selectedAccountId === account.id ? "text-primary/90" : "text-zinc-500 group-hover:text-zinc-400"
                                 )}>
                                     {account.win_user}
                                 </span>
                             </div>
                             <span className={cn(
-                                "text-[12px] font-black truncate leading-tight transition-colors tracking-tight",
+                                "text-[10px] font-black truncate leading-tight transition-colors tracking-tight",
                                 selectedAccountId === account.id ? "text-white" : "text-zinc-200 group-hover:text-white"
                             )}>
                                 {account.bnet_account || "---"}
                                 {isMissingCredentials && (
                                     <div title={t('msg.auth.reauth_required')} className="flex items-center text-amber-500 animate-pulse shrink-0 ml-1">
-                                        <AlertTriangle size={12} />
+                                        <AlertTriangle size={16} />
                                     </div>
                                 )}
                             </span>
@@ -143,7 +143,7 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
 
                         {/* Status Dots moved to bottom right absolute for better layout stability */}
                         <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 z-10 p-0.5 rounded-sm bg-zinc-950/20">
-                             {account.skip_config_sync && <Lock size={10} className="text-amber-500 mr-1" />}
+                             {account.skip_config_sync && <Lock size={16} className="text-amber-500 mr-1" />}
                              <div className={cn("w-1.5 h-1.5 rounded-full ring-1 ring-zinc-950/30", status?.bnet_active ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "bg-zinc-800")}></div>
                              <div className={cn("w-1.5 h-1.5 rounded-full ring-1 ring-zinc-950/30", status?.d2r_active ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)]" : "bg-zinc-800")}></div>
                         </div>
@@ -152,7 +152,7 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                     <div className="flex flex-col gap-0.5 mt-2 overflow-hidden">
                         {account.game_path && (
                             <span 
-                                className="text-[9px] font-mono text-primary/60 truncate bg-primary/5 py-0.5 px-1.5 rounded-sm border border-primary/10 w-fit max-w-full transition-colors group-hover:border-primary/20 group-hover:bg-primary/10" 
+                                className="text-[10px] font-mono text-primary/60 truncate bg-primary/5 py-0.5 px-1.5 rounded-sm border border-primary/10 w-fit max-w-full transition-colors group-hover:border-primary/20 group-hover:bg-primary/10" 
                                 title={account.game_path}
                             >
                                 {account.game_path}
@@ -160,7 +160,7 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                         )}
                         
                         <div className="flex items-center justify-between gap-1 mt-0.5 min-h-[12px]">
-                            <p className="text-[9px] font-medium text-zinc-500 truncate italic flex-1 group-hover:text-zinc-400">
+                            <p className="text-[10px] font-medium text-zinc-500 truncate italic flex-1 group-hover:text-zinc-400">
                                 {account.note || "---"}
                             </p>
                             <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -179,7 +179,7 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                     )}>
                         {isInvalid && (
                             <div className="absolute inset-0 bg-rose-950/40 flex items-center justify-center z-20">
-                                <Ghost size={12} className="text-rose-500" />
+                                <Ghost size={16} className="text-rose-500" />
                             </div>
                         )}
                         {account.avatar ? (
@@ -189,7 +189,7 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                                 <img src={account.avatar} alt="Avatar" className="w-full h-full object-cover" />
                             )
                         ) : (
-                            <User size={14} className={selectedAccountId === account.id ? "text-primary/60" : "text-zinc-700"} />
+                            <User size={16} className={selectedAccountId === account.id ? "text-primary/60" : "text-zinc-700"} />
                         )}
                     </div>
 
@@ -198,31 +198,31 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                     </span>
 
                     <span className={cn(
-                        "text-sm font-black flex-1 truncate tracking-tighter flex items-center gap-1.5",
+                        "text-[14px] font-black flex-1 truncate tracking-tighter flex items-center gap-1.5",
                         selectedAccountId === account.id ? "text-white" : "text-zinc-300"
                     )}>
                         {account.bnet_account || "---"}
                         {isMissingCredentials && (
                             <div title={t('msg.auth.reauth_required')} className="flex items-center text-amber-500 animate-pulse shrink-0">
-                                <AlertTriangle size={12} />
+                                <AlertTriangle size={16} />
                             </div>
                         )}
                     </span>
                     
                     {account.game_path ? (
-                        <span className="text-[9px] font-mono text-zinc-600 flex-1 truncate max-w-[200px]" title={account.game_path}>
+                        <span className="text-[10px] font-mono text-zinc-600 flex-1 truncate max-w-[200px]" title={account.game_path}>
                             {account.game_path}
                         </span>
                     ) : (
-                        <span className="text-[9px] font-mono text-zinc-800 flex-1 truncate opacity-30">---</span>
+                        <span className="text-[10px] font-mono text-zinc-800 flex-1 truncate opacity-30">---</span>
                     )}
 
-                    <span className="text-[11px] font-medium text-primary/60 italic flex-1 truncate text-right">
+                    <span className="text-[10px] font-medium text-primary/60 italic flex-1 truncate text-right">
                         {account.note || ""}
                     </span>
 
                     <div className="flex items-center gap-1.5 ml-4 flex-shrink-0 min-w-[40px] justify-end">
-                        {account.skip_config_sync && <Lock size={10} className="text-amber-500/80 mr-1" />}
+                        {account.skip_config_sync && <Lock size={16} className="text-amber-500/80 mr-1" />}
                         <div className={cn("w-1.5 h-1.5 rounded-full", status?.bnet_active ? "bg-blue-500 shadow-[0_0_4px_#3b82f6]" : "bg-zinc-800")}></div>
                         <div className={cn("w-1.5 h-1.5 rounded-full", status?.d2r_active ? "bg-emerald-500 shadow-[0_0_4px_#10b981]" : "bg-zinc-800")}></div>
                     </div>
@@ -237,7 +237,7 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                             title={t('edit')}
                             className="p-1 text-zinc-500 hover:text-primary transition-colors rounded-sm hover:bg-white/5"
                         >
-                            <Edit2 size={12} />
+                            <Edit2 size={16} />
                         </button>
                         {onSaveSnapshot && (
                             <button
@@ -248,7 +248,7 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                                 title={t('save_snapshot')}
                                 className="p-1 text-zinc-500 hover:text-emerald-500 transition-colors rounded-sm hover:bg-white/5"
                             >
-                                <Save size={12} />
+                                <Save size={16} />
                             </button>
                         )}
                         <div
@@ -257,7 +257,7 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
                             className="p-1 text-zinc-500 hover:text-white cursor-grab active:cursor-grabbing rounded-sm hover:bg-white/5"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <GripVertical size={12} />
+                            <GripVertical size={16} />
                         </div>
                     </div>
                 </div>

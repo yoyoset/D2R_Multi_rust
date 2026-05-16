@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+﻿import { useTranslation } from "react-i18next";
 import { Coffee } from "lucide-react";
 import { Modal, ModalContent, ModalHeader, ModalBody } from '../ui/Modal';
 import alipayImg from "../../assets/donate_alipay.png";
@@ -22,7 +22,7 @@ export function DonateModal({ isOpen, onClose }: DonateModalProps) {
                 <ModalHeader onClose={onClose}>
                     <Coffee size={14} className="text-primary" />
                     <div className="flex flex-col">
-                        <span className="leading-none text-[11px] font-black uppercase tracking-tighter">{t('donate_title')}</span>
+                        <span className="leading-none text-[10px] font-black uppercase tracking-tighter">{t('donate_title')}</span>
                         <span className="text-[8px] text-zinc-600 font-mono tracking-tighter mt-0.5 uppercase">{t('app_title')}</span>
                     </div>
                 </ModalHeader>
@@ -58,7 +58,7 @@ export function DonateModal({ isOpen, onClose }: DonateModalProps) {
                             <div className="relative p-1.5 rounded-sm bg-zinc-900 border border-white/10 group-hover:border-rose-400/50 transition-all shadow-2xl group-hover:shadow-rose-400/10">
                                 <img src={alipayImg} alt="Alipay" className="w-32 h-32 rounded-sm transition-all duration-300 group-hover:scale-[1.02]" />
                             </div>
-                            <span className="text-[11px] font-black text-zinc-500 uppercase tracking-tighter group-hover:text-rose-400 transition-colors">{t('donate_alipay')}</span>
+                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-tighter group-hover:text-rose-400 transition-colors">{t('donate_alipay')}</span>
                         </div>
 
                         {/* WeChat */}
@@ -66,7 +66,7 @@ export function DonateModal({ isOpen, onClose }: DonateModalProps) {
                             <div className="relative p-1.5 rounded-sm bg-zinc-900 border border-white/10 group-hover:border-emerald-500/50 transition-all shadow-2xl group-hover:shadow-emerald-500/10">
                                 <img src={wechatImg} alt="WeChat" className="w-32 h-32 rounded-sm transition-all duration-300 group-hover:scale-[1.02]" />
                             </div>
-                            <span className="text-[11px] font-black text-zinc-500 uppercase tracking-tighter group-hover:text-emerald-500 transition-colors">{t('donate_wechat')}</span>
+                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-tighter group-hover:text-emerald-500 transition-colors">{t('donate_wechat')}</span>
                         </div>
 
                         {/* PayPal */}
@@ -74,7 +74,7 @@ export function DonateModal({ isOpen, onClose }: DonateModalProps) {
                             <div className="relative p-1.5 rounded-sm bg-zinc-900 border border-white/10 group-hover:border-blue-500/50 transition-all shadow-2xl group-hover:shadow-blue-500/10">
                                 <img src={paypalImg} alt="PayPal" className="w-32 h-32 rounded-sm transition-all duration-300 group-hover:scale-[1.02]" />
                             </div>
-                            <span className="text-[11px] font-black text-zinc-500 uppercase tracking-tighter group-hover:text-blue-500 transition-colors">{t('donate_paypal')}</span>
+                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-tighter group-hover:text-blue-500 transition-colors">{t('donate_paypal')}</span>
                         </div>
                     </div>
                 </ModalBody>

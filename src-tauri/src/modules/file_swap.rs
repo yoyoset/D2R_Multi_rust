@@ -1,7 +1,7 @@
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
 #[derive(thiserror::Error, Debug)]
 pub enum FileSwapError {
@@ -64,10 +64,7 @@ fn get_bnet_config_path() -> Result<PathBuf, FileSwapError> {
 }
 
 fn get_snapshot_dir(app: &AppHandle) -> Result<PathBuf, FileSwapError> {
-    app.path()
-        .app_data_dir()
-        .map(|p| p.join("snapshots"))
-        .map_err(|e| FileSwapError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))
+    Ok(crate::modules::data_root::get_data_root(app).join("snapshots"))
 }
 
 fn get_snapshot_path(app: &AppHandle, account_id: &str) -> Result<PathBuf, FileSwapError> {
