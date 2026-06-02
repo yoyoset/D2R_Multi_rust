@@ -4,24 +4,24 @@ import { cn } from '../../../lib/utils';
 interface ToolSectionProps {
     icon: React.ReactNode;
     title: string;
-    color?: 'emerald' | 'rose' | 'blue' | 'zinc';
+    color?: 'player' | 'danger' | 'net' | 'default';
     children: React.ReactNode;
     className?: string;
 }
 
-export const ToolSection: React.FC<ToolSectionProps> = ({ icon, title, color = 'zinc', children, className }) => {
+export const ToolSection: React.FC<ToolSectionProps> = ({ icon, title, color = 'default', children, className }) => {
     return (
         <div className={cn("flex flex-col min-w-0 h-full", className)}>
-            <div className="px-3 py-1.5 bg-zinc-900/50 border-b border-white/5 flex items-center gap-2 flex-shrink-0">
+            <div className="px-3 py-1.5 bg-surface/50 border-b border-line flex items-center gap-2 flex-shrink-0">
                 <span className={cn(
                     "opacity-50",
-                    color === 'emerald' ? "text-emerald-500" : 
-                    color === 'rose' ? "text-rose-500" : 
-                    color === 'blue' ? "text-blue-500" : "text-zinc-500"
+                    color === 'player' ? "text-player" :
+                    color === 'danger' ? "text-danger" :
+                    color === 'net' ? "text-net" : "text-text-dim"
                 )}>
                     {icon}
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 truncate">
+                <span className="text-[10px] font-black uppercase tracking-widest text-text-dim truncate">
                     {title}
                 </span>
             </div>

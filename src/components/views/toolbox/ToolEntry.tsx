@@ -5,42 +5,42 @@ interface ToolEntryProps {
     icon: React.ReactNode;
     title: string;
     onClick: () => void;
-    color?: 'rose' | 'zinc' | 'emerald' | 'blue';
+    color?: 'danger' | 'default' | 'player' | 'net';
     disabled?: boolean;
 }
 
-export const ToolEntry: React.FC<ToolEntryProps> = ({ icon, title, onClick, color = 'zinc', disabled }) => {
+export const ToolEntry: React.FC<ToolEntryProps> = ({ icon, title, onClick, color = 'default', disabled }) => {
     return (
-        <button 
+        <button
             onClick={onClick}
             disabled={disabled}
             className={cn(
-                "w-full flex items-center justify-between px-3 py-1.5 rounded-sm border border-transparent transition-all hover:bg-white/5 hover:border-white/5 group",
-                color === 'rose' ? "hover:bg-rose-500/5 hover:border-rose-500/10" : 
-                color === 'emerald' ? "hover:bg-emerald-500/5 hover:border-emerald-500/10" : 
-                color === 'blue' ? "hover:bg-blue-500/5 hover:border-blue-500/10" : "",
+                "w-full flex items-center justify-between px-3 py-1.5 rounded-sm border border-transparent transition-all hover:bg-line/5 hover:border-line group",
+                color === 'danger' ? "hover:bg-danger/5 hover:border-danger/10" :
+                color === 'player' ? "hover:bg-player/5 hover:border-player/10" :
+                color === 'net' ? "hover:bg-net/5 hover:border-net/10" : "",
                 disabled && "opacity-30 cursor-not-allowed grayscale"
             )}
         >
             <div className="flex items-center gap-2.5">
                 <span className={cn(
                     "opacity-40 group-hover:opacity-100 transition-opacity",
-                    color === 'rose' ? "text-rose-500" : 
-                    color === 'emerald' ? "text-emerald-500" : 
-                    color === 'blue' ? "text-blue-500" : "text-zinc-500 group-hover:text-primary"
+                    color === 'danger' ? "text-danger" :
+                    color === 'player' ? "text-player" :
+                    color === 'net' ? "text-net" : "text-text-dim group-hover:text-gold"
                 )}>
                     {icon}
                 </span>
                 <span className={cn(
                     "text-[10px] font-bold uppercase tracking-tight",
-                    color === 'rose' ? "text-rose-500/80 group-hover:text-rose-500" : 
-                    color === 'emerald' ? "text-emerald-500/80 group-hover:text-emerald-500" : 
-                    color === 'blue' ? "text-blue-500/80 group-hover:text-blue-500" : "text-zinc-400 group-hover:text-zinc-200"
+                    color === 'danger' ? "text-danger/80 group-hover:text-danger" :
+                    color === 'player' ? "text-player/80 group-hover:text-player" :
+                    color === 'net' ? "text-net/80 group-hover:text-net" : "text-text-dim group-hover:text-text"
                 )}>
                     {title}
                 </span>
             </div>
-            <ChevronRight size={16} className="text-zinc-800 group-hover:text-zinc-600 transition-colors" />
+            <ChevronRight size={16} className="text-text-faint group-hover:text-text-dim transition-colors" />
         </button>
     );
 };
