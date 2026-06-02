@@ -191,7 +191,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
             <ModalContent className="max-w-[500px]">
                 <ModalHeader onClose={onClose}>
                     <div className="flex items-center gap-2">
-                        <SettingsIcon size={16} className="text-primary" />
+                        <SettingsIcon size={16} className="text-gold" />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('settings')}</span>
                     </div>
                 </ModalHeader>
@@ -201,8 +201,8 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                         {/* Appearance Section */}
                         <div className="p-4 space-y-3">
                             <div className="flex items-center gap-2">
-                                <Palette size={16} className="text-zinc-500" />
-                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t('appearance')}</span>
+                                <Palette size={16} className="text-text-dim" />
+                                <span className="text-[10px] font-black text-text-dim uppercase tracking-widest">{t('appearance')}</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {THEMES.map((theme) => (
@@ -210,12 +210,12 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                         key={theme.color}
                                         onClick={() => setThemeColor(theme.color)}
                                         className={cn(
-                                            "w-7 h-7 rounded-sm flex items-center justify-center transition-all border border-white/5",
+                                            "w-7 h-7 rounded-sm flex items-center justify-center transition-all border border-line",
                                             themeColor === theme.color ? "border-white ring-1 ring-white/20" : "opacity-60 hover:opacity-100"
                                         )}
                                         style={{ backgroundColor: theme.color }}
                                     >
-                                        {themeColor === theme.color && <Check size={16} className="text-white" />}
+                                        {themeColor === theme.color && <Check size={16} className="text-text" />}
                                     </button>
                                 ))}
                             </div>
@@ -247,17 +247,17 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                         {/* Data Management Section */}
                         <div className="p-4 space-y-3">
                             <div className="flex items-center gap-2">
-                                <HardDrive size={16} className="text-zinc-500" />
-                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t('data_management') || "數據管理"}</span>
+                                <HardDrive size={16} className="text-text-dim" />
+                                <span className="text-[10px] font-black text-text-dim uppercase tracking-widest">{t('data_management') || "數據管理"}</span>
                             </div>
 
                             <div className="space-y-3">
-                                <div className="p-3 rounded-sm bg-black/20 border border-white/5 space-y-2">
+                                <div className="p-3 rounded-sm bg-black/20 border border-line space-y-2">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <FolderOpen size={16} className="text-primary/60" />
+                                            <FolderOpen size={16} className="text-gold/60" />
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t('setting_current_path')}</span>
+                                                <span className="text-[10px] font-black text-text-dim uppercase tracking-widest">{t('setting_current_path')}</span>
                                                 <span className="text-[10px] font-mono text-zinc-300 truncate max-w-[240px]">{locationInfo?.path || "Loading..."}</span>
                                             </div>
                                         </div>
@@ -268,7 +268,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                             <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] bg-white/5" onClick={handleLoadConfig}>
                                                 {t('load_config')}
                                             </Button>
-                                            <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] bg-primary/10 text-primary border border-primary/20" onClick={handleRelocate} isLoading={isRelocating}>
+                                            <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] bg-gold/10 text-gold border border-gold/20" onClick={handleRelocate} isLoading={isRelocating}>
                                                 {t('setting_change_location')}
                                             </Button>
                                         </div>
@@ -290,7 +290,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                         <div className="p-4 space-y-3">
                             <div className="flex items-center gap-2 mb-4">
                                 <Settings2 size={16} className="text-zinc-400" />
-                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t('window_tag_settings')}</span>
+                                <span className="text-[10px] font-black text-text-dim uppercase tracking-widest">{t('window_tag_settings')}</span>
                             </div>
                             
                             {/* Enable Window Rename */}
@@ -302,8 +302,8 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                             />
 
                             {enableWindowRename && (
-                                <div className="space-y-1.5 pt-1 border-t border-white/5">
-                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t('setting_window_rename_format')}</span>
+                                <div className="space-y-1.5 pt-1 border-t border-line">
+                                    <span className="text-[10px] font-black text-text-dim uppercase tracking-widest">{t('setting_window_rename_format')}</span>
                                     <div className="grid grid-cols-2 gap-2">
                                         {[
                                             { id: 'note', label: t('rename_format_note') },
@@ -317,8 +317,8 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                                 className={cn(
                                                     "px-2 py-1.5 rounded-sm border text-left transition-all",
                                                     windowRenameFormat === opt.id 
-                                                        ? "bg-primary/10 border-primary/40 text-primary shadow-lg shadow-primary/5" 
-                                                        : "bg-black/20 border-white/5 text-zinc-500 hover:border-white/10"
+                                                        ? "bg-gold/10 border-gold/40 text-gold shadow-lg shadow-primary/5" 
+                                                        : "bg-black/20 border-line text-text-dim hover:border-line-2"
                                                 )}
                                             >
                                                 <div className="text-[10px] font-black uppercase tracking-tighter">{opt.label}</div>
@@ -337,7 +337,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                 onClick={async () => {
                                     try { await openPath(locationInfo?.path || ""); } catch (e) { addNotification('error', `${t('error')}: ${e}`); }
                                 }}
-                                className="flex-1 h-8 text-[10px] bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/5"
+                                className="flex-1 h-8 text-[10px] bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-text rounded-sm border border-line"
                             >
                                 <FileText size={16} className="mr-2 opacity-60" />
                                 {t('view_logs') || "查看日誌"}
@@ -346,7 +346,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => { clearLogs(); addNotification('info', t('logs_cleared')); }}
-                                className="flex-1 h-8 text-[10px] bg-rose-500/5 hover:bg-rose-500/10 text-rose-400/80 hover:text-rose-400 rounded-sm border border-rose-500/10"
+                                className="flex-1 h-8 text-[10px] bg-danger-500/5 hover:bg-danger-500/10 text-danger-400/80 hover:text-danger-400 rounded-sm border border-danger-500/10"
                             >
                                 <Trash2 size={16} className="mr-2 opacity-60" />
                                 {t('clear_all_logs')}
@@ -354,11 +354,11 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                         </div>
 
                         {/* About Section */}
-                        <div className="p-4 bg-zinc-950/50 space-y-3">
+                        <div className="p-4 bg-bg/50 space-y-3">
                             <div className="flex justify-between items-center">
                                 <div className="flex flex-col">
                                     <div className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">{APP_METADATA.name}</div>
-                                    <div className="text-[10px] text-zinc-500 uppercase tracking-tighter font-mono">STABLE RELEASE v{version}</div>
+                                    <div className="text-[10px] text-text-dim uppercase tracking-tighter font-mono">STABLE RELEASE v{version}</div>
                                 </div>
                                 <div className="flex gap-2">
                                     <Button size="sm" variant="ghost" onClick={handleCheckUpdate} isLoading={isCheckingUpdate} className="h-6 px-2 text-[10px] bg-white/5 hover:bg-white/10">
@@ -373,21 +373,21 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                             </div>
                             
                             {pendingUpdate && (
-                                <div className="p-2 rounded-sm bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-between gap-3 animate-in fade-in">
-                                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">{t('update_available_title', { version: pendingUpdate.version })}</span>
+                                <div className="p-2 rounded-sm bg-player-500/5 border border-emerald-500/10 flex items-center justify-between gap-3 animate-in fade-in">
+                                    <span className="text-[10px] font-bold text-player-400 uppercase tracking-widest">{t('update_available_title', { version: pendingUpdate.version })}</span>
                                     <div className="flex gap-1.5">
-                                        <button onClick={handleAutoUpdate} className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] rounded-sm font-black uppercase">{t('update_auto')}</button>
+                                        <button onClick={handleAutoUpdate} className="px-2 py-0.5 bg-player-600 text-text text-[10px] rounded-sm font-black uppercase">{t('update_auto')}</button>
                                         <button onClick={handleManualUpdate} className="px-2 py-0.5 bg-white/5 text-zinc-400 text-[10px] rounded-sm font-black uppercase">{t('update_manual')}</button>
                                     </div>
                                 </div>
                             )}
 
-                            <div className="flex gap-4 border-t border-white/5 pt-3">
-                                <button onClick={() => openUrl(APP_METADATA.github)} className="flex items-center gap-1.5 text-zinc-600 hover:text-zinc-300 transition-colors">
+                            <div className="flex gap-4 border-t border-line pt-3">
+                                <button onClick={() => openUrl(APP_METADATA.github)} className="flex items-center gap-1.5 text-text-dim hover:text-zinc-300 transition-colors">
                                     <Github size={16} />
                                     <span className="text-[10px] font-black uppercase tracking-widest">{t('github_repo')}</span>
                                 </button>
-                                <button onClick={() => openUrl(APP_METADATA.blog)} className="flex items-center gap-1.5 text-zinc-600 hover:text-zinc-300 transition-colors">
+                                <button onClick={() => openUrl(APP_METADATA.blog)} className="flex items-center gap-1.5 text-text-dim hover:text-zinc-300 transition-colors">
                                     <FileText size={16} />
                                     <span className="text-[10px] font-black uppercase tracking-widest">{t('blog')}</span>
                                 </button>
@@ -396,11 +396,11 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                     </div>
                 </ModalBody>
 
-                <ModalFooter className="bg-zinc-900/30">
-                    <Button variant="ghost" className="text-zinc-500 h-8 text-[10px] uppercase font-black tracking-widest" onClick={handleCancel} disabled={isSaving}>
+                <ModalFooter className="bg-surface/30">
+                    <Button variant="ghost" className="text-text-dim h-8 text-[10px] uppercase font-black tracking-widest" onClick={handleCancel} disabled={isSaving}>
                         {t('cancel')}
                     </Button>
-                    <Button variant="solid" className="h-8 px-6 bg-primary font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/10 border-none" onClick={handleSave} isLoading={isSaving}>
+                    <Button variant="solid" className="h-8 px-6 bg-gold font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/10 border-none" onClick={handleSave} isLoading={isSaving}>
                         {t('save')}
                     </Button>
                 </ModalFooter>
@@ -411,7 +411,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                 <ModalContent className="max-w-[300px]">
                     <ModalHeader>
                         <div className="flex items-center gap-2">
-                            <AlertTriangle size={16} className={cn(restartReason === 'relocate' ? "text-amber-500" : "text-emerald-500")} />
+                            <AlertTriangle size={16} className={cn(restartReason === 'relocate' ? "text-amber-500" : "text-player-500")} />
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">
                                 {restartReason === 'relocate' ? t('setting_relocate_restart') : t('setting_load_restart')}
                             </span>
@@ -423,7 +423,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                         </p>
                     </ModalBody>
                     <ModalFooter>
-                        <Button variant="solid" className="w-full h-8 bg-emerald-600 font-black text-[10px] uppercase tracking-widest" onClick={() => window.location.reload()}>
+                        <Button variant="solid" className="w-full h-8 bg-player-600 font-black text-[10px] uppercase tracking-widest" onClick={() => window.location.reload()}>
                             {t('understand')}
                         </Button>
                     </ModalFooter>

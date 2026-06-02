@@ -20,16 +20,16 @@ export function LogConsole({ logs, onClear, className = "" }: LogConsoleProps) {
 
     return (
         <div className={cn("flex flex-col bg-black/40 overflow-hidden", className)}>
-            <div className="px-3 py-1 bg-zinc-900/60 border-b border-white/5 flex items-center justify-between">
+            <div className="px-3 py-1 bg-surface/60 border-b border-line flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-emerald-500/40" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                    <CheckCircle2 size={16} className="text-player-500/40" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-text-dim">
                         {t('operation_logs')}
                     </span>
                 </div>
                 <button 
                     onClick={onClear}
-                    className="text-[10px] font-black text-zinc-600 hover:text-zinc-400 uppercase tracking-tighter"
+                    className="text-[10px] font-black text-text-dim hover:text-zinc-400 uppercase tracking-tighter"
                 >
                     {t('clear_logs_btn')}
                 </button>
@@ -42,12 +42,12 @@ export function LogConsole({ logs, onClear, className = "" }: LogConsoleProps) {
                 ) : (
                     logs.map(item => (
                         <div key={item.id} className="flex gap-2 group border-b border-white/[0.02] pb-0.5 last:border-0 hover:bg-white/[0.02] transition-colors">
-                            <span className="text-zinc-600 shrink-0 select-none">[{item.time}]</span>
+                            <span className="text-text-dim shrink-0 select-none">[{item.time}]</span>
                             <span className={cn(
                                 "break-all leading-snug",
                                 item.type === 'error' ? "text-red-500/80" : 
                                 item.type === 'warning' ? "text-amber-500/80" : 
-                                item.type === 'success' ? "text-emerald-500/80" : "text-zinc-400"
+                                item.type === 'success' ? "text-player-500/80" : "text-zinc-400"
                             )}>
                                 {item.message}
                             </span>

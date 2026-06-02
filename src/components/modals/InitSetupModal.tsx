@@ -61,7 +61,7 @@ export const InitSetupModal: React.FC<InitSetupModalProps> = ({ isOpen, onComple
             <ModalContent className="max-w-[450px]">
                 <ModalHeader>
                     <div className="flex items-center gap-2">
-                        <HardDrive size={16} className="text-primary" />
+                        <HardDrive size={16} className="text-gold" />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('init_setup_title')}</span>
                     </div>
                 </ModalHeader>
@@ -79,43 +79,43 @@ export const InitSetupModal: React.FC<InitSetupModalProps> = ({ isOpen, onComple
                                 <button
                                     onClick={handleCreateNew}
                                     disabled={isProcessing}
-                                    className="group flex items-center gap-4 p-4 rounded-sm bg-zinc-900/50 border border-white/5 hover:border-primary/40 hover:bg-primary/5 transition-all text-left"
+                                    className="group flex items-center gap-4 p-4 rounded-sm bg-surface/50 border border-line hover:border-gold/40 hover:bg-gold/5 transition-all text-left"
                                 >
-                                    <div className="w-10 h-10 rounded-sm bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                    <div className="w-10 h-10 rounded-sm bg-gold/10 flex items-center justify-center text-gold group-hover:scale-110 transition-transform">
                                         <Plus size={24} />
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-[12px] font-black uppercase tracking-widest text-zinc-200">{t('init_setup_create')}</span>
-                                        <span className="text-[10px] text-zinc-500 uppercase tracking-tighter">START FRESH IN DEFAULT DIRECTORY</span>
+                                        <span className="text-[10px] text-text-dim uppercase tracking-tighter">START FRESH IN DEFAULT DIRECTORY</span>
                                     </div>
                                 </button>
 
                                 <button
                                     onClick={handleLoadExisting}
                                     disabled={isProcessing}
-                                    className="group flex items-center gap-4 p-4 rounded-sm bg-zinc-900/50 border border-white/5 hover:border-emerald-500/40 hover:bg-emerald-500/5 transition-all text-left"
+                                    className="group flex items-center gap-4 p-4 rounded-sm bg-surface/50 border border-line hover:border-emerald-500/40 hover:bg-player-500/5 transition-all text-left"
                                 >
-                                    <div className="w-10 h-10 rounded-sm bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                                    <div className="w-10 h-10 rounded-sm bg-player-500/10 flex items-center justify-center text-player-500 group-hover:scale-110 transition-transform">
                                         <FolderOpen size={24} />
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-[12px] font-black uppercase tracking-widest text-zinc-200">{t('init_setup_load')}</span>
-                                        <span className="text-[10px] text-zinc-500 uppercase tracking-tighter">LINK TO PREVIOUS DATA FOLDER</span>
+                                        <span className="text-[10px] text-text-dim uppercase tracking-tighter">LINK TO PREVIOUS DATA FOLDER</span>
                                     </div>
                                 </button>
                             </div>
                         </>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-4 space-y-4 text-center">
-                            <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 animate-bounce">
+                            <div className="w-16 h-16 rounded-full bg-player-500/10 flex items-center justify-center text-player-500 animate-bounce">
                                 <RefreshCw size={32} />
                             </div>
-                            <p className="text-[12px] font-black text-emerald-400 uppercase tracking-[0.2em]">
+                            <p className="text-[12px] font-black text-player-400 uppercase tracking-[0.2em]">
                                 {t('init_setup_restart_hint')}
                             </p>
                             <Button
                                 onClick={handleRestart}
-                                className="w-full h-10 bg-emerald-600 font-black text-[11px] uppercase tracking-widest mt-4"
+                                className="w-full h-10 bg-player-600 font-black text-[11px] uppercase tracking-widest mt-4"
                             >
                                 {t('understand')}
                             </Button>

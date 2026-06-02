@@ -31,7 +31,7 @@ export const Modal = ({ isOpen, onClose, children, className, zIndex = 100 }: Mo
 export const ModalContent = ({ children, className }: { children: React.ReactNode; className?: string }) => {
     return (
         <div className={cn(
-            "relative bg-zinc-950 border border-white/10 rounded-sm w-full max-w-lg shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 overflow-hidden flex flex-col max-h-[90vh]",
+            "relative bg-bg border border-line-2 rounded-sm w-full max-w-lg shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 overflow-hidden flex flex-col max-h-[90vh]",
             className
         )} onClick={e => e.stopPropagation()}>
             {children}
@@ -41,12 +41,12 @@ export const ModalContent = ({ children, className }: { children: React.ReactNod
 
 export const ModalHeader = ({ children, onClose, className }: { children: React.ReactNode; onClose?: () => void; className?: string }) => {
     return (
-        <div className={cn("flex items-center justify-between px-3 py-1.5 border-b border-white/5 bg-zinc-900/50 shrink-0", className)}>
+        <div className={cn("flex items-center justify-between px-3 py-1.5 border-b border-line bg-surface/50 shrink-0", className)}>
             <div className="flex items-center gap-2 text-zinc-400 font-black uppercase tracking-widest text-[10px] truncate">
                 {children}
             </div>
             {onClose && (
-                <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-sm">
+                <button onClick={onClose} className="text-text-dim hover:text-text transition-colors p-1 hover:bg-white/5 rounded-sm">
                     <X size={16} />
                 </button>
             )}
@@ -64,7 +64,7 @@ export const ModalBody = ({ children, className }: { children: React.ReactNode; 
 
 export const ModalFooter = ({ children, className }: { children: React.ReactNode; className?: string }) => {
     return (
-        <div className={cn("px-3 py-2 bg-zinc-950 border-t border-white/5 flex justify-end gap-2 shrink-0", className)}>
+        <div className={cn("px-3 py-2 bg-bg border-t border-line flex justify-end gap-2 shrink-0", className)}>
             {children}
         </div>
     );

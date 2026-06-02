@@ -80,32 +80,32 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
 
     return (
         <Modal isOpen={isOpen} onClose={isFixing ? () => { } : onClose}>
-            <ModalContent className="max-w-xl border-white/10 bg-zinc-950 p-0 overflow-hidden shadow-2xl">
+            <ModalContent className="max-w-xl border-line-2 bg-bg p-0 overflow-hidden shadow-2xl">
                 <ModalHeader onClose={isFixing ? undefined : onClose}>
-                    <ShieldAlert size={16} className="text-blue-500" />
+                    <ShieldAlert size={16} className="text-net-500" />
                     {t('fix_permissions')}
                 </ModalHeader>
 
-                <ModalBody className="p-4 bg-zinc-950">
+                <ModalBody className="p-4 bg-bg">
                     <div className="space-y-5">
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-tight leading-relaxed italic border-l-2 border-zinc-800 pl-3">
+                        <p className="text-[10px] text-text-dim uppercase tracking-tight leading-relaxed italic border-l-2 border-zinc-800 pl-3">
                             {t('fix_permissions_desc')}
                         </p>
 
                         {!isFixing && !isDone && (
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">{t('game_path')}</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-text-dim mb-1.5">{t('game_path')}</label>
                                 <div className="flex gap-2">
-                                    <div className="flex-1 flex gap-2 items-center bg-black/50 border border-white/5 rounded-sm px-3 h-8 transition-all group focus-within:border-blue-500/30">
-                                        <HardDrive size={16} className="text-zinc-700 group-focus-within:text-blue-500/50" />
+                                    <div className="flex-1 flex gap-2 items-center bg-black/50 border border-line rounded-sm px-3 h-8 transition-all group focus-within:border-blue-500/30">
+                                        <HardDrive size={16} className="text-zinc-700 group-focus-within:text-net-500/50" />
                                         <input
-                                            className="flex-1 bg-transparent border-none text-[10px] text-zinc-300 outline-none placeholder:text-zinc-800 font-mono"
+                                            className="flex-1 bg-transparent border-none text-[10px] text-zinc-300 outline-none placeholder:text-text-faint font-mono"
                                             value={targetPath}
                                             onChange={e => setTargetPath(e.target.value)}
                                             placeholder={t('example_game_path')}
                                         />
                                     </div>
-                                    <Button variant="outline" size="sm" className="px-3 rounded-sm border-white/10 hover:bg-white/5" onClick={selectFolder}>
+                                    <Button variant="outline" size="sm" className="px-3 rounded-sm border-line-2 hover:bg-line/10" onClick={selectFolder}>
                                         <FolderSearch size={16} />
                                     </Button>
                                 </div>
@@ -113,27 +113,27 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
                         )}
 
                         {(isFixing || logs.length > 0) && (
-                            <div className="relative group border border-white/5 rounded-sm overflow-hidden bg-zinc-900/40">
-                                <div className="flex items-center justify-between px-3 py-1 bg-zinc-900 border-b border-white/5">
-                                    <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{t('logic_stream_output')}</span>
+                            <div className="relative group border border-line rounded-sm overflow-hidden bg-surface/40">
+                                <div className="flex items-center justify-between px-3 py-1 bg-surface border-b border-line">
+                                    <span className="text-[10px] font-black text-text-dim uppercase tracking-widest">{t('logic_stream_output')}</span>
                                     <div className="flex gap-1">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500/30"></div>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-danger-500/30"></div>
                                         <div className="w-1.5 h-1.5 rounded-full bg-amber-500/30"></div>
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/30"></div>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-player-500/30"></div>
                                     </div>
                                 </div>
                                 <div className="h-48 overflow-y-auto p-3 font-mono text-[10px] scrollbar-thin scrollbar-thumb-white/5 scrollbar-track-transparent">
                                     {logs.map((log, i) => (
                                         <div key={i} className={cn(
                                             "flex gap-3 leading-tight",
-                                            log.includes('ERR:') || log.includes('?') ? 'text-rose-400' : 'text-zinc-500'
+                                            log.includes('ERR:') || log.includes('?') ? 'text-danger-400' : 'text-text-dim'
                                         )}>
-                                            <span className="text-zinc-800 shrink-0 select-none">{i.toString().padStart(3, '0')}</span>
+                                            <span className="text-text-faint shrink-0 select-none">{i.toString().padStart(3, '0')}</span>
                                             <span className="truncate">{log}</span>
                                         </div>
                                     ))}
                                     {isFixing && (
-                                        <div className="text-blue-500/50 animate-pulse ml-7">
+                                        <div className="text-net-500/50 animate-pulse ml-7">
                                             _
                                         </div>
                                     )}
@@ -144,12 +144,12 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
                     </div>
                 </ModalBody>
 
-                <ModalFooter className="p-3 border-t border-white/5 bg-zinc-900/50 flex justify-end gap-2">
+                <ModalFooter className="p-3 border-t border-line bg-surface/50 flex justify-end gap-2">
                     {!isDone ? (
                         <>
                             <Button
                                 variant="ghost"
-                                className="h-8 px-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white rounded-sm border border-transparent hover:border-white/5"
+                                className="h-8 px-4 text-[10px] font-black uppercase tracking-widest text-text-dim hover:text-text rounded-sm border border-transparent hover:border-line"
                                 onClick={onClose}
                                 disabled={isFixing}
                             >
@@ -159,7 +159,7 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
                                 variant="solid"
                                 isLoading={isFixing}
                                 disabled={!targetPath}
-                                className="h-8 px-8 bg-blue-600/10 border border-blue-600/30 text-blue-500 hover:bg-blue-600/20 font-black text-[10px] uppercase tracking-[0.2em] rounded-sm"
+                                className="h-8 px-8 bg-net-600/10 border border-blue-600/30 text-net-500 hover:bg-net-600/20 font-black text-[10px] uppercase tracking-[0.2em] rounded-sm"
                                 onClick={handleFixPermissions}
                             >
                                 {isFixing ? t('processing') : t('start_fix')}
@@ -168,7 +168,7 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
                     ) : (
                         <Button
                             variant="solid"
-                            className="h-8 px-12 bg-emerald-600/10 border border-emerald-600/30 text-emerald-500 hover:bg-emerald-600/20 font-black text-[10px] uppercase tracking-[0.2em] rounded-sm"
+                            className="h-8 px-12 bg-player-600/10 border border-emerald-600/30 text-player-500 hover:bg-player-600/20 font-black text-[10px] uppercase tracking-[0.2em] rounded-sm"
                             onClick={onClose}
                         >
                             <Check size={16} className="mr-2" />

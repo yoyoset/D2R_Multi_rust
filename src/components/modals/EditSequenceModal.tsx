@@ -75,33 +75,33 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-2xl bg-zinc-950 border border-white/5 rounded-sm shadow-2xl flex flex-col max-h-[80vh]">
+            <div className="w-full max-w-2xl bg-bg border border-line rounded-sm shadow-2xl flex flex-col max-h-[80vh]">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-white/5 bg-zinc-900/50">
+                <div className="flex items-center justify-between p-4 border-b border-line bg-surface/50">
                     <div className="flex items-center gap-3">
-                        <Save size={16} className="text-primary" />
-                        <h2 className="text-[14px] font-black uppercase tracking-tight text-white">
+                        <Save size={16} className="text-gold" />
+                        <h2 className="text-[14px] font-black uppercase tracking-tight text-text">
                             {t('edit_sequence_preset')}: {config.sequence_presets[presetIndex]?.name || `Preset ${presetIndex + 1}`}
                         </h2>
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-sm transition-colors">
-                        <X size={16} className="text-zinc-500" />
+                    <button onClick={onClose} className="p-1 hover:bg-line/10 rounded-sm transition-colors">
+                        <X size={16} className="text-text-dim" />
                     </button>
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-h-0 flex overflow-hidden">
                     {/* Left: Account Pool */}
-                    <div className="flex-1 border-r border-white/5 flex flex-col">
-                        <div className="p-3 border-b border-white/5 bg-zinc-900/20">
+                    <div className="flex-1 border-r border-line flex flex-col">
+                        <div className="p-3 border-b border-line bg-surface/20">
                             <div className="relative">
-                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
+                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-dim" size={16} />
                                 <input 
                                     type="text"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder={t('search_accounts_placeholder')}
-                                    className="w-full bg-zinc-900 border border-white/5 rounded-sm pl-9 pr-3 py-1.5 text-[10px] focus:outline-none focus:border-primary/50 transition-colors"
+                                    className="w-full bg-surface border border-line rounded-sm pl-9 pr-3 py-1.5 text-[10px] focus:outline-none focus:border-gold/50 transition-colors"
                                 />
                             </div>
                         </div>
@@ -113,20 +113,20 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                                         key={account.id}
                                         className={cn(
                                             "flex items-center justify-between p-2 rounded-sm transition-all group",
-                                            isAdded ? "bg-zinc-900/50 opacity-40 grayscale" : "bg-white/2 hover:bg-white/5 border border-transparent hover:border-white/5"
+                                            isAdded ? "bg-surface/50 opacity-40 grayscale" : "bg-white/2 hover:bg-line/10 border border-transparent hover:border-line"
                                         )}
                                     >
                                         <div className="flex-1 flex items-center gap-3 overflow-hidden mr-2">
                                             <span className="text-[10px] font-bold text-zinc-200 shrink-0">{account.win_user}</span>
-                                            <span className="text-[10px] text-zinc-500 font-mono tracking-tighter truncate max-w-[120px]">{account.bnet_account}</span>
+                                            <span className="text-[10px] text-text-dim font-mono tracking-tighter truncate max-w-[120px]">{account.bnet_account}</span>
                                             {account.note && (
-                                                <span className="text-[10px] text-zinc-600 truncate italic">({account.note})</span>
+                                                <span className="text-[10px] text-text-dim truncate italic">({account.note})</span>
                                             )}
                                         </div>
                                         {!isAdded && (
                                             <button 
                                                 onClick={() => handleAdd(account.id)}
-                                                className="p-1 px-2 rounded-sm bg-primary/10 text-primary hover:bg-primary/20 transition-all text-[10px] font-black uppercase"
+                                                className="p-1 px-2 rounded-sm bg-gold/10 text-gold hover:bg-gold/20 transition-all text-[10px] font-black uppercase"
                                             >
                                                 <Plus size={16} />
                                             </button>
@@ -138,9 +138,9 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                     </div>
 
                     {/* Right: Selected Sequence */}
-                    <div className="flex-1 flex flex-col bg-zinc-950/40">
-                        <div className="p-3 border-b border-white/5 bg-zinc-900/20 flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase text-zinc-500 tracking-tighter">
+                    <div className="flex-1 flex flex-col bg-bg/40">
+                        <div className="p-3 border-b border-line bg-surface/20 flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase text-text-dim tracking-tighter">
                                 {t('selected_queue')} ({selectedIds.length})
                             </span>
                         </div>
@@ -160,32 +160,32 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                                             className={cn(
                                                 "flex items-center gap-2 p-2 border rounded-sm animate-in slide-in-from-right-4 duration-200 transition-all",
                                                 isInvalid 
-                                                    ? "bg-rose-500/10 border-rose-500/40 animate-pulse" 
-                                                    : "bg-zinc-900/80 border-white/5"
+                                                    ? "bg-danger-500/10 border-danger-500/40 animate-pulse" 
+                                                    : "bg-surface/80 border-line"
                                             )}
                                         >
-                                            <span className="text-[10px] font-mono text-zinc-600 w-4">{index + 1}.</span>
+                                            <span className="text-[10px] font-mono text-text-dim w-4">{index + 1}.</span>
                                             <div className="flex-1 min-w-0 flex items-center gap-2">
                                                 {isInvalid ? (
                                                     <>
-                                                        <AlertCircle size={16} className="text-rose-500 shrink-0" />
-                                                        <p className="text-[10px] font-bold text-rose-500 truncate italic">
+                                                        <AlertCircle size={16} className="text-danger-500 shrink-0" />
+                                                        <p className="text-[10px] font-bold text-danger-500 truncate italic">
                                                             {t('invalid_account_sequence')}
                                                         </p>
-                                                        <span className="text-[10px] text-rose-500/40 font-mono">ID:{id.slice(0, 8)}</span>
+                                                        <span className="text-[10px] text-danger-500/40 font-mono">ID:{id.slice(0, 8)}</span>
                                                     </>
                                                 ) : (
                                                     <p className="text-[10px] font-bold text-zinc-200 truncate">{account.win_user}</p>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-0.5">
-                                                <button onClick={() => handleMove(index, 'up')} disabled={index === 0} className="p-1 text-zinc-600 hover:text-zinc-300 disabled:opacity-0 transition-colors">
+                                                <button onClick={() => handleMove(index, 'up')} disabled={index === 0} className="p-1 text-text-dim hover:text-zinc-300 disabled:opacity-0 transition-colors">
                                                     <ChevronUp size={16} />
                                                 </button>
-                                                <button onClick={() => handleMove(index, 'down')} disabled={index === selectedIds.length - 1} className="p-1 text-zinc-600 hover:text-zinc-300 disabled:opacity-0 transition-colors">
+                                                <button onClick={() => handleMove(index, 'down')} disabled={index === selectedIds.length - 1} className="p-1 text-text-dim hover:text-zinc-300 disabled:opacity-0 transition-colors">
                                                     <ChevronDown size={16} />
                                                 </button>
-                                                <button onClick={() => handleRemove(id)} className="p-1 text-zinc-600 hover:text-red-400 transition-colors ml-1">
+                                                <button onClick={() => handleRemove(id)} className="p-1 text-text-dim hover:text-red-400 transition-colors ml-1">
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
@@ -198,16 +198,16 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-white/5 bg-zinc-900/50 flex justify-end gap-3">
+                <div className="p-4 border-t border-line bg-surface/50 flex justify-end gap-3">
                     <button 
                         onClick={onClose}
-                        className="px-4 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-tight text-zinc-400 hover:text-white transition-colors"
+                        className="px-4 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-tight text-zinc-400 hover:text-text transition-colors"
                     >
                         {t('cancel')}
                     </button>
                     <button 
                         onClick={handleSave}
-                        className="px-6 py-1.5 rounded-sm bg-primary text-black text-[10px] font-black uppercase tracking-tight hover:bg-emerald-400 transition-all active:scale-95 shadow-lg shadow-primary/20"
+                        className="px-6 py-1.5 rounded-sm bg-gold text-black text-[10px] font-black uppercase tracking-tight hover:bg-player-400 transition-all active:scale-95 shadow-lg shadow-primary/20"
                     >
                         {t('save_and_apply')}
                     </button>

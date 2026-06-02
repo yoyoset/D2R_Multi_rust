@@ -4,19 +4,19 @@ import { CheckCircle2, AlertCircle, Info, X, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 const ICON_MAP: Record<NotificationType, React.ReactNode> = {
-    success: <CheckCircle2 size={16} className="text-emerald-400" />,
-    error: <AlertCircle size={16} className="text-rose-400" />,
-    info: <Info size={16} className="text-blue-400" />,
+    success: <CheckCircle2 size={16} className="text-player-400" />,
+    error: <AlertCircle size={16} className="text-danger-400" />,
+    info: <Info size={16} className="text-net-400" />,
     warning: <AlertCircle size={16} className="text-amber-400" />,
-    loading: <Loader2 size={16} className="text-primary animate-spin" />,
+    loading: <Loader2 size={16} className="text-gold animate-spin" />,
 };
 
 const BORDER_MAP: Record<NotificationType, string> = {
-    success: "border-emerald-500/20 bg-emerald-500/5",
-    error: "border-rose-500/20 bg-rose-500/5",
-    info: "border-blue-500/20 bg-blue-500/5",
+    success: "border-emerald-500/20 bg-player-500/5",
+    error: "border-danger-500/20 bg-danger-500/5",
+    info: "border-blue-500/20 bg-net-500/5",
     warning: "border-amber-500/20 bg-amber-500/5",
-    loading: "border-primary/20 bg-primary/5",
+    loading: "border-gold/20 bg-gold/5",
 };
 
 export const ToastContainer = () => {
@@ -28,7 +28,7 @@ export const ToastContainer = () => {
                 <div
                     key={n.id}
                     className={cn(
-                        "pointer-events-auto min-w-[280px] max-w-md p-4 rounded-sm border-white/10 bg-zinc-900/90 backdrop-blur-md shadow-2xl animate-in slide-in-from-right-10 duration-300 flex items-start gap-3",
+                        "pointer-events-auto min-w-[280px] max-w-md p-4 rounded-sm border-line-2 bg-surface/90 backdrop-blur-md shadow-2xl animate-in slide-in-from-right-10 duration-300 flex items-start gap-3",
                         BORDER_MAP[n.type]
                     )}
                 >
@@ -38,7 +38,7 @@ export const ToastContainer = () => {
                         {n.action && (
                             <button
                                 onClick={n.action.onClick}
-                                className="mt-2 text-[14px] bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-md transition-colors font-bold block"
+                                className="mt-2 text-[14px] bg-white/10 hover:bg-white/20 text-text px-3 py-1.5 rounded-md transition-colors font-bold block"
                             >
                                 {n.action.label}
                             </button>
@@ -46,7 +46,7 @@ export const ToastContainer = () => {
                     </div>
                     <button
                         onClick={() => removeNotification(n.id)}
-                        className="shrink-0 text-zinc-500 hover:text-white transition-colors self-start"
+                        className="shrink-0 text-text-dim hover:text-text transition-colors self-start"
                     >
                         <X size={16} />
                     </button>

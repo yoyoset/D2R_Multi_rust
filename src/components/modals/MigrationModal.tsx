@@ -52,20 +52,20 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
 
     return (
         <Modal isOpen={isOpen} onClose={() => {}}>
-            <ModalContent className="max-w-md border-primary/30 bg-black/95 shadow-[0_0_50px_-12px_rgba(var(--primary-rgb),0.2)]">
-                <ModalHeader className="border-b border-white/5 bg-zinc-900/50">
-                    <ShieldCheck size={16} className="text-primary mr-2" />
+            <ModalContent className="max-w-md border-gold/30 bg-black/95 shadow-[0_0_50px_-12px_rgba(var(--primary-rgb),0.2)]">
+                <ModalHeader className="border-b border-line bg-surface/50">
+                    <ShieldCheck size={16} className="text-gold mr-2" />
                     <span className="font-black text-[10px] uppercase tracking-[0.2em]">{t('migration_security_infra')}</span>
                 </ModalHeader>
                 
                 <ModalBody className="p-4 space-y-4">
                     {/* Header Info */}
                     <div className="space-y-2">
-                        <h2 className="text-[14px] font-bold text-white flex items-center gap-2">
+                        <h2 className="text-[14px] font-bold text-text flex items-center gap-2">
                             <Zap size={16} className="text-yellow-500 fill-yellow-500/20" />
                             {t('migration_vault_title')}
                         </h2>
-                        <p className="text-[10px] text-zinc-500 leading-relaxed">
+                        <p className="text-[10px] text-text-dim leading-relaxed">
                             {t('migration_vault_desc')}
                         </p>
                     </div>
@@ -74,13 +74,13 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                     <div className="space-y-3">
                         <div className="flex justify-between items-end mb-1">
                             <div className="flex items-center gap-2">
-                                <Gauge size={12} className="text-primary/60" />
+                                <Gauge size={12} className="text-gold/60" />
                                 <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">{t('migration_encryption_progress')}</span>
                             </div>
-                            <span className="text-[14px] font-mono text-primary font-bold">{progress}%</span>
+                            <span className="text-[14px] font-mono text-gold font-bold">{progress}%</span>
                         </div>
                         
-                        <div className="relative h-6 bg-zinc-900 border border-white/10 p-0.5 overflow-hidden">
+                        <div className="relative h-6 bg-surface border border-line-2 p-0.5 overflow-hidden">
                             {/* Scanning Stripes Background */}
                             <div className="absolute inset-0 opacity-10 pointer-events-none" 
                                  style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff, #fff 1px, transparent 1px, transparent 10px)', backgroundSize: '20px 20px' }} 
@@ -88,7 +88,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                             
                             {/* The Bar */}
                             <div 
-                                className="h-full bg-primary relative transition-all duration-300 ease-out shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
+                                className="h-full bg-gold relative transition-all duration-300 ease-out shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
                                 style={{ width: `${progress}%` }}
                             >
                                 {/* Light Highlight */}
@@ -98,12 +98,12 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                     </div>
 
                     {/* Status & Logs */}
-                    <div className="space-y-3 bg-black/40 border border-white/5 p-4 rounded-sm">
+                    <div className="space-y-3 bg-black/40 border border-line p-4 rounded-sm">
                         <div className="flex items-center gap-3">
                             {isFinished ? (
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                <div className="w-2 h-2 rounded-full bg-player-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                             ) : (
-                                <Loader2 size={14} className="text-primary animate-spin" />
+                                <Loader2 size={14} className="text-gold animate-spin" />
                             )}
                             <span className="text-[10px] font-mono text-zinc-300 truncate tracking-tight uppercase">
                                 {currentStatus || t('migration_initializing')}
@@ -111,9 +111,9 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                         </div>
 
                         {/* Scrolling Log Mini-Consoloe */}
-                        <div className="pt-2 border-t border-white/5 space-y-1">
+                        <div className="pt-2 border-t border-line space-y-1">
                             {logs.map((log, i) => (
-                                <div key={i} className="text-[9px] font-mono text-zinc-500 flex gap-2">
+                                <div key={i} className="text-[9px] font-mono text-text-dim flex gap-2">
                                     <span className="text-zinc-700">[{new Date().toLocaleTimeString()}]</span>
                                     {log}
                                 </div>
@@ -124,7 +124,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                         </div>
                     </div>
 
-                    <div className="text-[9px] text-zinc-600 text-center uppercase tracking-widest leading-loose">
+                    <div className="text-[9px] text-text-dim text-center uppercase tracking-widest leading-loose">
                         {t('migration_footer_note')}
                     </div>
                 </ModalBody>

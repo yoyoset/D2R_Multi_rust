@@ -32,10 +32,10 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
 
                 <ModalHeader onClose={onClose}>
                     <div className="flex items-center gap-3">
-                        <Sparkles className="text-primary" size={14} />
+                        <Sparkles className="text-gold" size={14} />
                         <div className="flex flex-col">
-                            <h2 className="text-[10px] font-black text-white uppercase tracking-widest">{t('whats_new_title')}</h2>
-                            <p className="text-[8px] text-zinc-600 font-mono uppercase tracking-tighter mt-0.5">{t('system_evolution_desc')}</p>
+                            <h2 className="text-[10px] font-black text-text uppercase tracking-widest">{t('whats_new_title')}</h2>
+                            <p className="text-[8px] text-text-dim font-mono uppercase tracking-tighter mt-0.5">{t('system_evolution_desc')}</p>
                         </div>
                     </div>
                 </ModalHeader>
@@ -43,18 +43,18 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
                 <ModalBody className="overflow-y-auto p-4 custom-scrollbar space-y-4">
                     {/* Detailed Changelog */}
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-zinc-400 font-black text-[9px] uppercase tracking-widest border-b border-white/5 pb-1.5">
-                            <ListChecks size={12} className="text-zinc-600" />
+                        <div className="flex items-center gap-2 text-zinc-400 font-black text-[9px] uppercase tracking-widest border-b border-line pb-1.5">
+                            <ListChecks size={12} className="text-text-dim" />
                             <span>{t('detailed_changelog')}</span>
                         </div>
 
                         {loading ? (
                             <div className="h-40 flex items-center justify-center">
-                                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
                             </div>
                         ) : (
                             <div className="prose prose-invert prose-xs max-w-none">
-                                <div className="whitespace-pre-wrap text-zinc-400 font-mono leading-relaxed text-[10px] bg-black/50 p-4 rounded-sm border border-white/5 max-h-60 overflow-y-auto custom-scrollbar italic">
+                                <div className="whitespace-pre-wrap text-zinc-400 font-mono leading-relaxed text-[10px] bg-black/50 p-4 rounded-sm border border-line max-h-60 overflow-y-auto custom-scrollbar italic">
                                     {changelog}
                                 </div>
                             </div>
@@ -62,8 +62,8 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
                     </div>
                 </ModalBody>
 
-                <ModalFooter className="bg-zinc-950/50 border-t border-white/5">
-                    <Button variant="solid" size="sm" onClick={onClose} className="bg-primary/80 hover:bg-primary text-white font-black px-8 rounded-sm uppercase tracking-widest">
+                <ModalFooter className="bg-bg/50 border-t border-line">
+                    <Button variant="solid" size="sm" onClick={onClose} className="bg-gold/80 hover:bg-gold text-text font-black px-8 rounded-sm uppercase tracking-widest">
                         {t('explore_now')}
                     </Button>
                 </ModalFooter>

@@ -7,10 +7,10 @@ import { useBlockingNotification } from "../../store/useBlockingNotification";
 import { cn } from "../../lib/utils";
 
 const ICON_MAP = {
-    info: <Info size={16} className="text-blue-400" />,
+    info: <Info size={16} className="text-net-400" />,
     warning: <AlertTriangle size={16} className="text-amber-400" />,
-    error: <XCircle size={16} className="text-rose-400" />,
-    success: <CheckCircle2 size={16} className="text-emerald-400" />,
+    error: <XCircle size={16} className="text-danger-400" />,
+    success: <CheckCircle2 size={16} className="text-player-400" />,
 };
 
 export function NotificationManager() {
@@ -30,7 +30,7 @@ export function NotificationManager() {
 
     return (
         <Modal isOpen={isOpen} onClose={close}>
-            <ModalContent className="max-w-md border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
+            <ModalContent className="max-w-md border-zinc-800 bg-bg/95 backdrop-blur-xl">
                 <ModalHeader onClose={close}>
                     <div className="flex items-center gap-3">
                         {ICON_MAP[type]}
@@ -43,7 +43,7 @@ export function NotificationManager() {
                             {message.split(/(!!.*?!!)/g).map((part, i) => {
                                 if (part.startsWith('!!') && part.endsWith('!!')) {
                                     return (
-                                        <span key={i} className="text-rose-500 font-black">
+                                        <span key={i} className="text-danger-500 font-black">
                                             {part.slice(2, -2)}
                                         </span>
                                     );
@@ -53,8 +53,8 @@ export function NotificationManager() {
                         </div>
 
                         {confirmText && (
-                            <div className="mt-4 p-4 border border-rose-500/10 bg-rose-500/5 rounded-sm space-y-2 animate-in slide-in-from-bottom-2 duration-300">
-                                <span className="text-[10px] text-rose-500/80 font-black uppercase tracking-tighter block mb-1">
+                            <div className="mt-4 p-4 border border-danger-500/10 bg-danger-500/5 rounded-sm space-y-2 animate-in slide-in-from-bottom-2 duration-300">
+                                <span className="text-[10px] text-danger-500/80 font-black uppercase tracking-tighter block mb-1">
                                     {t('confirm_authorization_required')}
                                 </span>
                                 <input
@@ -63,7 +63,7 @@ export function NotificationManager() {
                                     value={safetyInput}
                                     onChange={(e) => setSafetyInput(e.target.value)}
                                     placeholder={t('confirm_authorize_placeholder', { text: confirmText })}
-                                    className="w-full bg-black/60 border border-white/10 rounded-sm px-3 py-2 text-[14px] text-white placeholder:text-zinc-700 outline-none focus:border-rose-500/50 transition-all font-mono"
+                                    className="w-full bg-black/60 border border-line-2 rounded-sm px-3 py-2 text-[14px] text-text placeholder:text-zinc-700 outline-none focus:border-danger-500/50 transition-all font-mono"
                                 />
                             </div>
                         )}

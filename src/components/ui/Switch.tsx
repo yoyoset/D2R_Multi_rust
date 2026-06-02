@@ -29,7 +29,7 @@ export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, descri
                         </span>
                     )}
                     {description && (
-                        <span className="text-[10px] text-zinc-600 uppercase tracking-tighter leading-tight italic">
+                        <span className="text-[10px] text-text-dim uppercase tracking-tighter leading-tight italic">
                             {description}
                         </span>
                     )}
@@ -49,8 +49,8 @@ export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, descri
                 <div className={cn(
                     "w-8 h-4 rounded-sm transition-colors duration-300 border",
                     checked 
-                        ? "bg-primary/90 border-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]" 
-                        : "bg-zinc-900 border-white/10"
+                        ? "bg-gold/90 border-gold shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]" 
+                        : "bg-surface border-line-2"
                 )}></div>
                 {/* Thumb Slider */}
                 <div className={cn(
