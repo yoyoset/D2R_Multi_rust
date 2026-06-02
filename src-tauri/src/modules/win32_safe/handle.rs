@@ -1,7 +1,6 @@
 use windows::Win32::Foundation::{CloseHandle, HANDLE};
 
 #[derive(Debug)]
-#[allow(dead_code)]
 pub struct HandleGuard(pub HANDLE);
 
 impl Drop for HandleGuard {

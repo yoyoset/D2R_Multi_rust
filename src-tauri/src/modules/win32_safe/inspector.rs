@@ -184,7 +184,7 @@ unsafe fn get_handle_name_detailed(
         return None;
     }
 
-    // 1. Type
+    // 1. Type — Main thread, fast, no hang risk
     let mut type_buf = vec![0u8; 512];
     let mut ret_len = 0;
     let status = NtQueryObject(
@@ -206,15 +206,15 @@ unsafe fn get_handle_name_detailed(
         }
     }
 
-    // 2. Name
+    // 2. Name — Move h_dup ownership to worker thread via HandleGuard to prevent UAF
     let (tx, rx) = mpsc::channel();
-    let handle_to_query = h_dup.0 as usize;
+    let handle_guard = crate::modules::win32_safe::handle::HandleGuard::new(h_dup);
 
     thread::spawn(move || {
         let mut name_buf = vec![0u8; 1024];
         let mut r_len = 0;
         let status = NtQueryObject(
-            HANDLE(handle_to_query as *mut c_void),
+            handle_guard.raw(),
             OBJECT_NAME_INFORMATION,
             name_buf.as_mut_ptr() as *mut c_void,
             name_buf.len() as u32,
@@ -233,6 +233,7 @@ unsafe fn get_handle_name_detailed(
             }
         }
         let _ = tx.send(None);
+        drop(handle_guard); // Explicitly drop to ensure ownership, though compiler will do this at scope end
     });
 
     let name = rx
@@ -240,7 +241,7 @@ unsafe fn get_handle_name_detailed(
         .unwrap_or(None)
         .unwrap_or_default();
 
-    let _ = CloseHandle(h_dup);
+    // Main thread no longer closes h_dup — worker thread's HandleGuard drop will do it
 
     Some(HandleInfo {
         handle_value: handle_val,

@@ -254,7 +254,7 @@ unsafe fn get_handle_name_safe(
         return None;
     }
 
-    // 1. Type Pre-filter (Must be Mutant)
+    // 1. Type Pre-filter (Must be Mutant) — Main thread, fast, no hang risk
     let mut type_buf = vec![0u8; 512];
     let mut ret_len = 0;
     let status = NtQueryObject(
@@ -281,7 +281,7 @@ unsafe fn get_handle_name_safe(
         (type_info.length / 2) as usize,
     ));
 
-    // INDUSTRIAL SAFETY: Only query names for types that are known not to hang 
+    // INDUSTRIAL SAFETY: Only query names for types that are known not to hang
     // and are relevant to our search (Mutants/Sections).
     // This prevents ROB-001 (Thread leaks on hanging NtQueryObject calls).
     if type_name != "Mutant" && type_name != "Section" && type_name != "Event" {
@@ -290,14 +290,15 @@ unsafe fn get_handle_name_safe(
     }
 
     // 2. Name Query with RELAXED timeout (1500ms) for diagnostics
+    // Move h_dup ownership to worker thread via HandleGuard to prevent UAF
     let (tx, rx) = mpsc::channel();
-    let handle_to_query = h_dup.0 as usize;
+    let handle_guard = crate::modules::win32_safe::handle::HandleGuard::new(h_dup);
 
     thread::spawn(move || {
         let mut name_buf = vec![0u8; 1024];
         let mut r_len = 0;
         let status = NtQueryObject(
-            HANDLE(handle_to_query as *mut c_void),
+            handle_guard.raw(),
             OBJECT_NAME_INFORMATION,
             name_buf.as_mut_ptr() as *mut c_void,
             name_buf.len() as u32,
@@ -316,6 +317,7 @@ unsafe fn get_handle_name_safe(
             }
         }
         let _ = tx.send(None);
+        drop(handle_guard); // Explicitly drop to ensure ownership, though compiler will do this at scope end
     });
 
     let result = rx
@@ -331,7 +333,7 @@ unsafe fn get_handle_name_safe(
             None
         });
 
-    let _ = CloseHandle(h_dup);
+    // Main thread no longer closes h_dup — worker thread's HandleGuard drop will do it
     result
 }
 
