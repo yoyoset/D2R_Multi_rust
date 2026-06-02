@@ -90,56 +90,55 @@ export const SequencePresetControls: React.FC<SequencePresetControlsProps> = ({
     };
 
     return (
-        <div className="flex items-center gap-1 shrink-0">
-            <div className="flex items-center gap-1 mr-1">
-                <Layers size={16} className="text-zinc-600" />
-                <span className="text-[10px] font-black uppercase tracking-tighter text-zinc-500 whitespace-nowrap">
-                    {t('sequence_presets')}
-                </span>
+        <div className="preset-bar">
+            <div className="preset-label">
+                <Layers size={14} />
+                <span>{t('sequence_presets')}</span>
             </div>
-            
-            <div className="flex items-center gap-1">
+
+            <div className="preset-chips">
                 {[0, 1, 2].map((index) => {
                     const preset = config.sequence_presets?.[index];
                     const accountCount = preset?.accounts?.length || 0;
                     const hasAccounts = accountCount > 0;
                     const hasMissing = hasAccounts && preset?.accounts.some(id => !config.accounts.find(a => a.id === id));
-                    
+
                     return (
-                        <div 
+                        <div
                             key={index}
                             className={cn(
-                                "flex items-center bg-zinc-900 border border-white/5 rounded-sm p-0.5 overflow-hidden transition-all h-[24px]",
-                                hasAccounts ? "hover:border-primary/30" : "opacity-40",
-                                hasMissing && "border-rose-500/50 hover:border-rose-500 bg-rose-500/5"
+                                "preset-chip",
+                                !hasAccounts && "disabled",
+                                hasMissing && "invalid"
                             )}
                         >
                             <button
                                 onClick={() => handleStart(index)}
                                 disabled={!hasAccounts || isSequenceActive}
-                                className={cn(
-                                    "flex items-center gap-1 px-1.5 py-0.5 rounded-sm transition-all text-[10px] font-black uppercase tracking-tight",
-                                    hasAccounts 
-                                        ? "text-zinc-200 hover:bg-primary/10" 
-                                        : "text-zinc-600 cursor-not-allowed"
-                                )}
+                                className="pc-play"
                                 title={hasAccounts ? t('start_sequence') : t('no_accounts_in_preset')}
                             >
-                                <Play 
-                                    size={11} 
-                                    className={cn(hasAccounts ? (hasMissing ? "text-rose-500" : "text-primary") : "text-zinc-600")}
-                                    fill={hasAccounts ? "currentColor" : "none"} 
+                                <Play
+                                    size={11}
+                                    className={cn(
+                                        hasAccounts ? (hasMissing ? "text-danger" : "text-player") : "text-text-dim"
+                                    )}
+                                    fill={hasAccounts ? "currentColor" : "none"}
                                 />
-                                <span className={hasAccounts ? (hasMissing ? "text-rose-400" : "text-zinc-200") : "text-zinc-600"}>P{index + 1}</span>
-                                {hasMissing && <AlertCircle size={16} className="text-rose-500 ml-0.5" />}
+                                <span className={cn(
+                                    hasAccounts ? (hasMissing ? "text-danger" : "text-text") : "text-text-faint"
+                                )}>
+                                    P{index + 1}
+                                </span>
+                                {hasMissing && <AlertCircle size={12} className="text-danger ml-0.5" />}
                             </button>
-                            
+
                             <button
                                 onClick={() => onEditPreset(index)}
-                                className="px-1 py-1 text-zinc-600 hover:text-zinc-300 transition-colors border-l border-white/5 ml-0.5 flex items-center justify-center"
+                                className="pc-edit"
                                 title={t('edit_preset')}
                             >
-                                <Edit2 size={16} />
+                                <Edit2 size={13} />
                             </button>
                         </div>
                     );
