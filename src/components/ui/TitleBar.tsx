@@ -35,34 +35,36 @@ const TitleBar: React.FC = () => {
     return (
         <div
             data-tauri-drag-region
-            className="h-8 bg-zinc-950 border-b border-white/5 flex items-center justify-between select-none z-[100] w-full shrink-0 cursor-default relative"
+            className="titlebar"
             onDoubleClick={handleMaximize}
         >
             {/* Left Content (also draggable) */}
-            <div className="flex items-center h-full pl-3 gap-2 pointer-events-none">
-                <img src="/app-icon.png" alt="logo" className="w-4 h-4" />
-                <span className="text-[10px] font-bold text-zinc-600 tracking-wider uppercase">{t('app_name_short')}</span>
+            <div className="tb-left">
+                <div className="tb-seal">
+                    <img src="/app-icon.png" alt="logo" className="w-5 h-5" />
+                </div>
+                <span className="tb-title">{t('app_name_short')}</span>
             </div>
 
             {/* Right Controls (Non-draggable) */}
-            <div className="flex h-full shrink-0" onMouseDown={e => e.stopPropagation()}>
+            <div className="win-controls" onMouseDown={e => e.stopPropagation()}>
                 <button
                     onClick={handleMinimize}
-                    className="flex items-center justify-center w-11 h-full hover:bg-white/5 transition-colors text-zinc-500 hover:text-zinc-200"
+                    className="win-btn"
                     title={t('minimize')}
                 >
                     <Minus size={16} />
                 </button>
                 <button
                     onClick={handleMaximize}
-                    className="flex items-center justify-center w-11 h-full hover:bg-white/5 transition-colors text-zinc-500 hover:text-zinc-200"
+                    className="win-btn"
                     title={isMaximized ? t('restore') : t('maximize')}
                 >
                     {isMaximized ? <Copy size={16} className="rotate-180" /> : <Square size={16} />}
                 </button>
                 <button
                     onClick={handleClose}
-                    className="flex items-center justify-center w-11 h-full hover:bg-rose-600 transition-colors text-zinc-500 hover:text-white"
+                    className="win-btn close"
                     title={t('close')}
                 >
                     <X size={16} />

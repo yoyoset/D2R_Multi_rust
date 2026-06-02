@@ -25,10 +25,10 @@ function App() {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-zinc-950 text-white overflow-hidden font-sans border border-white/5">
+        <div className="app-shell">
+            <div className="app-bg"></div>
+
             <TitleBar />
-            
-            <div className="fixed inset-0 bg-[url('/bg-pattern.svg')] opacity-5 pointer-events-none"></div>
 
             <ModalRegistry
                 config={core.config}
@@ -67,9 +67,10 @@ function App() {
                 setIsSettingsOpen={core.setIsSettingsOpen}
             />
 
-            <main className="flex-1 min-h-0 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700/80 relative">
-                {core.currentView === 'dashboard' && (
-                    <Dashboard
+            <div className="content">
+                <div className="page">
+                    {core.currentView === 'dashboard' && (
+                        <Dashboard
                         config={core.config}
                         accounts={core.config.accounts}
                         invalidAccountIds={core.invalidAccountIds}
@@ -110,8 +111,9 @@ function App() {
                         accounts={core.config.accounts}
                         selectedAccountId={core.selectedAccountId}
                     />
-                )}
-            </main>
+                    )}
+                </div>
+            </div>
 
             <AppFooter 
                 isAdmin={core.isAdmin}

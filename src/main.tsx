@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import SequencerMini from "./components/views/SequencerMini";
 import "./index.css";
+import "./styles.css";
 import "./i18n";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 

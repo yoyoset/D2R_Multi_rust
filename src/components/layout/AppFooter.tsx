@@ -13,57 +13,49 @@ export function AppFooter({ isAdmin, version, vaultHealthIssues }: AppFooterProp
     const { t } = useTranslation();
 
     return (
-        <footer className="h-6 border-t border-white/5 bg-zinc-950 flex items-center px-4 justify-between flex-shrink-0 z-50">
-            <div className="flex items-center gap-5">
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-tighter">
-                    <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-sm bg-emerald-500/5 border border-emerald-500/10">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <span className="text-emerald-500 font-bold">{t('footer_runtime_ready')}</span>
-                    </div>
-                </div>
-
-
-
-                {/* Vault Health Indicator */}
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-tighter group cursor-help"
-                    title={vaultHealthIssues && vaultHealthIssues.length > 0 
-                        ? vaultHealthIssues.map(i => `${i.win_user}: ${i.reason}`).join('\n')
-                        : ''}>
-                    <ShieldCheck size={12} className={cn(
-                        !vaultHealthIssues || vaultHealthIssues.length === 0 
-                            ? "text-emerald-500" : "text-amber-500 animate-pulse"
-                    )} />
-                    <span className="text-zinc-600">Vault:</span>
-                    <span className={cn(
-                        "px-1.5 py-0.5 rounded-sm font-bold",
-                        !vaultHealthIssues || vaultHealthIssues.length === 0 
-                            ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                            : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                    )}>
-                        {!vaultHealthIssues || vaultHealthIssues.length === 0 
-                            ? t('vault_health_ok') 
-                            : `${vaultHealthIssues.length}${t('vault_health_issues')}`}
-                    </span>
-                </div>
+        <footer className="statusbar">
+            <div className="sb-item">
+                <div className="sb-dot"></div>
+                <span>{t('footer_runtime_ready')}</span>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-tighter">
-                    <ShieldCheck size={12} className={cn(isAdmin ? "text-primary" : "text-zinc-600")} />
-                    <span className="text-zinc-600">{t('footer_security_level')}:</span>
+            {/* Vault Health Indicator */}
+            <div className="sb-item group cursor-help"
+                title={vaultHealthIssues && vaultHealthIssues.length > 0
+                    ? vaultHealthIssues.map(i => `${i.win_user}: ${i.reason}`).join('\n')
+                    : ''}>
+                <ShieldCheck size={12} className={cn(
+                    !vaultHealthIssues || vaultHealthIssues.length === 0
+                        ? "text-ok" : "text-warn animate-pulse"
+                )} />
+                <span className="lbl">Vault:</span>
+                <span className={cn(
+                    "sb-tag",
+                    !vaultHealthIssues || vaultHealthIssues.length === 0
+                        ? "ok"
+                        : ""
+                )}>
+                    {!vaultHealthIssues || vaultHealthIssues.length === 0
+                        ? t('vault_health_ok')
+                        : `${vaultHealthIssues.length}${t('vault_health_issues')}`}
+                </span>
+            </div>
+
+            <div className="sb-right">
+                <div className="sb-item">
+                    <ShieldCheck size={12} className={cn(isAdmin ? "text-gold" : "text-text-faint")} />
+                    <span className="lbl">{t('footer_security_level')}:</span>
                     <span className={cn(
-                        "px-1.5 py-0.5 rounded-sm font-bold",
-                        isAdmin ? "bg-primary/10 text-primary border border-primary/20" : "bg-zinc-800/50 text-zinc-500 border border-white/5"
+                        "sb-tag",
+                        isAdmin ? "root" : ""
                     )}>
                         {isAdmin ? t('footer_security_privileged') : t('footer_security_limited')}
                     </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-zinc-700 font-mono text-[10px] uppercase tracking-[0.2em]">
-                    <span className="px-1.5 py-0.5 border border-white/5 rounded-sm bg-white/2">
-                        {t('footer_build')}: v{version}
-                    </span>
-                    <Activity size={12} className="text-zinc-800" />
+                <div className="sb-item">
+                    <span className="sb-ver">{t('footer_build')}: v{version}</span>
+                    <Activity size={12} />
                 </div>
             </div>
         </footer>

@@ -3,119 +3,22 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   color-scheme: dark;
-  --color-primary: 59 130 246; /* Blue 500 */
+  --color-primary: 59 130 246; /* Legacy: Blue 500 for backward compat */
   --color-success: 16 185 129;
   --color-info: 37 99 235;
-  
-  /* Industrial Design Tokens */
-  --industrial-border: rgba(255, 255, 255, 0.08);
-  --industrial-border-strong: rgba(255, 255, 255, 0.15);
-  --industrial-bg-sidebar: #09090b;
-  --industrial-bg-card: rgba(24, 24, 27, 0.4);
-  --radius-industrial: 2px;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  @apply bg-[#09090b] text-zinc-300 overflow-hidden select-none;
-}
-
-/* Industrial Font Utilities */
-.font-mono {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
-}
-
-.text-technical {
-  @apply font-mono text-[10px] tracking-tight;
-}
-
-/* Force Industrial Radius & Border for existing utility usage */
-.rounded-sm, .rounded, .rounded-md, .rounded-lg, .rounded-xl {
-  border-radius: var(--radius-industrial) !important;
-}
-
-.border-white\/5, .border-white\/10 {
-  border-color: var(--industrial-border) !important;
-}
-
-/* Scrollbar styling - Square & Slim */
-::-webkit-scrollbar {
-  width: 4px; /* Slimmer for industrial look */
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-zinc-800 border-0 rounded-none;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-zinc-700;
-}
-
-@layer components {
-  .industrial-card {
-    @apply bg-zinc-900/40 border border-white/10 rounded-sm transition-all duration-200 hover:border-primary/50 hover:bg-zinc-800/60;
-  }
-}
-
-/* Industrial Component Animations */
-@keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
-}
-
-.scanline {
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.05), transparent);
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  animation: scanline 4s linear infinite;
-  z-index: 50;
-}
-
-@keyframes pulse-status {
-  0%, 100% { opacity: 1; filter: brightness(1); }
-  50% { opacity: 0.6; filter: brightness(0.7); }
-}
-
-.animate-pulse-industrial {
-  animation: pulse-status 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse-gold {
-  0% { 
-    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); 
-    border-color: rgba(234, 179, 8, 0.4);
-  }
-  70% { 
-    box-shadow: 0 0 0 10px rgba(234, 179, 8, 0); 
-    border-color: rgba(234, 179, 8, 0.1);
-  }
-  100% { 
-    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); 
-    border-color: rgba(234, 179, 8, 0.4);
-  }
-}
-
-.animate-pulse-gold {
-  animation: pulse-gold 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-
-
-.text-gold {
-  color: #fbbf24; /* Amber 400 */
-}
-
-.border-gold\/30 {
-  border-color: rgba(251, 191, 36, 0.3);
+  @apply overflow-hidden select-none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* 🛡️ Industrial UI Hardening: Disable Browser Native Password Indicators */
