@@ -15,6 +15,8 @@ import { check } from "@tauri-apps/plugin-updater";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { APP_METADATA } from "../../metadata";
 
+declare const __APP_VERSION__: string;
+
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -45,7 +47,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
     const clearLogs = useLogs(state => state.clearLogs);
     const { addNotification } = useNotification();
 
-    const [version, setVersion] = useState("0.1.0");
+    const [version, setVersion] = useState(__APP_VERSION__);
     const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
     const [locationInfo, setLocationInfo] = useState<DataLocationInfo | null>(null);
     const [isRelocating, setIsRelocating] = useState(false);
