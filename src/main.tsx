@@ -15,7 +15,9 @@ function Root() {
   const [label, setLabel] = useState<string | null>(null);
 
   useEffect(() => {
-    const win = getCurrentWindow();
+    let win: ReturnType<typeof getCurrentWindow> | null = null;
+    try { win = getCurrentWindow(); } catch { win = null; }
+    if (!win) { setLabel('main'); return; } // browser/preview fallback
     setLabel(win.label);
 
     // Show window after React is fully mounted to prevent white flash

@@ -3,15 +3,19 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useTranslation } from 'react-i18next';
 import { Minus, Square, X, Copy } from 'lucide-react';
 
-const appWindow = getCurrentWindow();
+// Guard: in a plain browser (no Tauri runtime) getCurrentWindow() throws.
+// Resolve lazily/safely so the UI still renders for inspection/preview.
+let appWindow: ReturnType<typeof getCurrentWindow> | null = null;
+try { appWindow = getCurrentWindow(); } catch { appWindow = null; }
 
 const TitleBar: React.FC = () => {
     const { t } = useTranslation();
     const [isMaximized, setIsMaximized] = useState(false);
 
     useEffect(() => {
+        if (!appWindow) return;
         const updateMaximized = async () => {
-            const maximized = await appWindow.isMaximized();
+            const maximized = await appWindow!.isMaximized();
             setIsMaximized(maximized);
         };
 
@@ -26,11 +30,11 @@ const TitleBar: React.FC = () => {
         };
     }, []);
 
-    const handleMinimize = () => appWindow.minimize();
+    const handleMinimize = () => appWindow?.minimize();
     const handleMaximize = async () => {
-        await appWindow.toggleMaximize();
+        await appWindow?.toggleMaximize();
     };
-    const handleClose = () => appWindow.close();
+    const handleClose = () => appWindow?.close();
 
     return (
         <div
