@@ -7,15 +7,15 @@ const ICON_MAP: Record<NotificationType, React.ReactNode> = {
     success: <CheckCircle2 size={16} className="text-player-400" />,
     error: <AlertCircle size={16} className="text-danger-400" />,
     info: <Info size={16} className="text-net-400" />,
-    warning: <AlertCircle size={16} className="text-amber-400" />,
+    warning: <AlertCircle size={16} className="text-warn" />,
     loading: <Loader2 size={16} className="text-gold animate-spin" />,
 };
 
 const BORDER_MAP: Record<NotificationType, string> = {
-    success: "border-emerald-500/20 bg-player-500/5",
+    success: "border-player/20 bg-player-500/5",
     error: "border-danger-500/20 bg-danger-500/5",
-    info: "border-blue-500/20 bg-net-500/5",
-    warning: "border-amber-500/20 bg-amber-500/5",
+    info: "border-net/20 bg-net-500/5",
+    warning: "border-warn/20 bg-warn/5",
     loading: "border-gold/20 bg-gold/5",
 };
 
@@ -33,7 +33,7 @@ export const ToastContainer = () => {
                     )}
                 >
                     <div className="shrink-0 mt-0.5">{ICON_MAP[n.type]}</div>
-                    <div className="flex-1 text-[14px] font-medium text-zinc-200 pr-2 leading-relaxed">
+                    <div className="flex-1 text-[14px] font-medium text-text pr-2 leading-relaxed">
                         {n.message}
                         {n.action && (
                             <button

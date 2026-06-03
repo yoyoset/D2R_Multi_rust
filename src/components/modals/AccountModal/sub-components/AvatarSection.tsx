@@ -60,7 +60,7 @@ export function AvatarSection({ avatar, setAvatar, previewAvatar, setPreviewAvat
 
     return (
         <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-dim mb-1.5">
                 {t('avatar')}
             </label>
             <div className="flex flex-wrap gap-2.5 relative">
@@ -84,7 +84,7 @@ export function AvatarSection({ avatar, setAvatar, previewAvatar, setPreviewAvat
                     onMouseLeave={() => setPreviewAvatar(null)}
                     className={cn(
                         "w-7 h-7 rounded-sm border flex items-center justify-center cursor-pointer transition-all bg-black/40 hover:bg-black/60",
-                        avatar?.startsWith('data:') ? "border-primary text-primary" : "border-white/10 text-zinc-500 hover:text-zinc-300"
+                        avatar?.startsWith('data:') ? "border-primary text-primary" : "border-white/10 text-text-dim hover:text-text-dim"
                     )}
                 >
                     <input type="file" className="hidden" accept="image/*" onChange={(e) => {
@@ -103,7 +103,7 @@ export function AvatarSection({ avatar, setAvatar, previewAvatar, setPreviewAvat
                 </label>
 
                 {previewAvatar && (
-                    <div className="absolute bottom-full left-0 mb-4 p-2 bg-zinc-900 border border-white/10 rounded-sm shadow-2xl z-[100] animate-in zoom-in-95 duration-200 pointer-events-none">
+                    <div className="absolute bottom-full left-0 mb-4 p-2 bg-surface border border-white/10 rounded-sm shadow-2xl z-[100] animate-in zoom-in-95 duration-200 pointer-events-none">
                         <img
                             src={previewAvatar}
                             alt={t('preview')}

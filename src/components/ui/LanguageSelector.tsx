@@ -37,7 +37,7 @@ export const LanguageSelector: React.FC = () => {
         <div className="relative" ref={containerRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/5 transition-all text-zinc-400 hover:text-zinc-200"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/5 transition-all text-text-dim hover:text-text"
             >
                 <Globe size={16} />
                 <span className="text-[10px] font-medium uppercase">{currentLang.short}</span>
@@ -54,7 +54,7 @@ export const LanguageSelector: React.FC = () => {
                                 "w-full text-left px-3 py-2 text-[10px] transition-colors",
                                 i18n.language === lang.code
                                     ? "bg-gold/20 text-gold font-bold"
-                                    : "text-zinc-400 hover:bg-white/5 hover:text-zinc-100"
+                                    : "text-text-dim hover:bg-white/5 hover:text-text"
                             )}
                         >
                             {lang.label}

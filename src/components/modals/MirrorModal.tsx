@@ -72,7 +72,7 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ isOpen, onClose, onLog }) => 
 
                 <ModalBody>
                     <div className="space-y-5">
-                        <p className="text-[14px] text-zinc-400 italic leading-relaxed">
+                        <p className="text-[14px] text-text-dim italic leading-relaxed">
                             {t('mirror_desc')}
                         </p>
 
@@ -81,7 +81,7 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ isOpen, onClose, onLog }) => 
                                 <label className="text-[10px] font-black uppercase tracking-widest text-text-dim mb-1.5">{t('mirror_source')}</label>
                                 <div className="flex gap-2">
                                     <input
-                                        className="flex-1 bg-black/50 border border-line rounded-sm px-3 py-1.5 text-[10px] text-zinc-300 focus:border-gold/50 outline-none transition-all placeholder:text-text-faint font-mono h-8"
+                                        className="flex-1 bg-black/50 border border-line rounded-sm px-3 py-1.5 text-[10px] text-text-dim focus:border-gold/50 outline-none transition-all placeholder:text-text-faint font-mono h-8"
                                         value={mirrorSource}
                                         onChange={e => setMirrorSource(e.target.value)}
                                         placeholder={t('example_mirror_source')}
@@ -96,7 +96,7 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ isOpen, onClose, onLog }) => 
                                 <label className="text-[10px] font-black uppercase tracking-widest text-text-dim mb-1.5">{t('mirror_dest')}</label>
                                 <div className="flex gap-2">
                                     <input
-                                        className="flex-1 bg-black/50 border border-line rounded-sm px-3 py-1.5 text-[10px] text-zinc-300 focus:border-gold/50 outline-none transition-all placeholder:text-text-faint font-mono h-8"
+                                        className="flex-1 bg-black/50 border border-line rounded-sm px-3 py-1.5 text-[10px] text-text-dim focus:border-gold/50 outline-none transition-all placeholder:text-text-faint font-mono h-8"
                                         value={mirrorDest}
                                         onChange={e => setMirrorDest(e.target.value)}
                                         placeholder={t('example_mirror_dest')}
@@ -110,7 +110,7 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ isOpen, onClose, onLog }) => 
                             <div className="space-y-1.5 flex flex-col">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-text-dim mb-1.5">{t('mirror_name')}</label>
                                 <input
-                                    className="w-full bg-black/50 border border-line rounded-sm px-3 py-1.5 text-[10px] text-zinc-300 focus:border-gold/50 outline-none transition-all placeholder:text-text-faint font-mono uppercase h-8"
+                                    className="w-full bg-black/50 border border-line rounded-sm px-3 py-1.5 text-[10px] text-text-dim focus:border-gold/50 outline-none transition-all placeholder:text-text-faint font-mono uppercase h-8"
                                     value={mirrorName}
                                     onChange={e => setMirrorName(e.target.value)}
                                     placeholder={t('example_mirror_name')}

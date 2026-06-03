@@ -39,23 +39,23 @@ export default function DiagnosticModal({ isOpen, onClose, title, results }: Dia
                             results.map((res, idx) => (
                                 <div key={idx} className={cn(
                                     "px-4 py-2.5 rounded-sm border flex items-start gap-4 transition-all duration-300",
-                                    res.status === 'Pass' ? "bg-player-500/5 border-emerald-500/10 hover:bg-player-500/10" :
+                                    res.status === 'Pass' ? "bg-player-500/5 border-player/10 hover:bg-player-500/10" :
                                     res.status === 'Fail' ? "bg-danger-500/5 border-danger-500/20 hover:bg-danger-500/10" :
-                                    "bg-amber-500/5 border-amber-500/10 hover:bg-amber-500/10"
+                                    "bg-warn/5 border-warn/10 hover:bg-warn/10"
                                 )}>
                                     <div className="mt-1 shrink-0">
                                         {res.status === 'Pass' ? <CheckCircle2 size={14} className="text-player-500" /> :
                                          res.status === 'Fail' ? <ShieldAlert size={14} className="text-danger-500" /> :
-                                         <AlertTriangle size={14} className="text-amber-500" />}
+                                         <AlertTriangle size={14} className="text-warn" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-center h-5 mb-1">
-                                            <span className="font-black text-[9px] text-zinc-300 uppercase tracking-widest">{t(res.name)}</span>
+                                            <span className="font-black text-[9px] text-text-dim uppercase tracking-widest">{t(res.name)}</span>
                                              <span className={cn(
                                                  "text-[8px] font-black px-1.5 py-0.5 rounded-sm border-t border-line uppercase shadow-inner",
                                                  res.status === 'Pass' ? "bg-player-500/20 text-player-400" :
                                                  res.status === 'Fail' ? "bg-danger-500/20 text-danger-400" :
-                                                 "bg-amber-500/20 text-amber-400"
+                                                 "bg-warn/20 text-warn"
                                              )}>{res.status}</span>
                                         </div>
                                         <p className="text-[10px] text-text-dim leading-normal font-mono uppercase tracking-tighter opacity-80">

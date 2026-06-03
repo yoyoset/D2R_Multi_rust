@@ -142,9 +142,9 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                                 </Button>
                              </div>
                             <div className="relative group">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-700" size={16} />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" size={16} />
                                  <input
-                                    className="w-full bg-black/50 border border-line rounded-sm pl-9 pr-3 h-8 text-[10px] text-zinc-300 focus:border-blue-500/30 outline-none transition-all placeholder:text-text-faint font-mono"
+                                    className="w-full bg-black/50 border border-line rounded-sm pl-9 pr-3 h-8 text-[10px] text-text-dim focus:border-net/30 outline-none transition-all placeholder:text-text-faint font-mono"
                                     placeholder={t('search_process_placeholder')}
                                     value={procSearch}
                                     onChange={e => setProcSearch(e.target.value)}
@@ -167,7 +167,7 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                                     <div className="flex justify-between items-center mb-0.5">
                                         <span className={cn(
                                             "text-[10px] font-black uppercase tracking-tight truncate",
-                                            selectedPid === p.pid ? "text-net-400" : "text-zinc-400"
+                                            selectedPid === p.pid ? "text-net-400" : "text-text-dim"
                                         )}>{p.name}</span>
                                         <span className="text-[10px] opacity-30 font-mono text-text-dim">PID:{p.pid}</span>
                                     </div>
@@ -183,9 +183,9 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                             <div className="flex-1 space-y-2">
                                  <label className="text-[10px] font-black text-text-dim uppercase tracking-[0.2em] mb-1.5">{t('logic_pattern_matcher')}</label>
                                 <div className="relative group">
-                                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-700" size={16} />
+                                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" size={16} />
                                      <input
-                                         className="w-full bg-black/50 border border-line rounded-sm pl-9 pr-3 h-8 text-[10px] text-zinc-300 focus:border-emerald-500/30 outline-none transition-all placeholder:text-text-faint font-mono"
+                                         className="w-full bg-black/50 border border-line rounded-sm pl-9 pr-3 h-8 text-[10px] text-text-dim focus:border-player/30 outline-none transition-all placeholder:text-text-faint font-mono"
                                          placeholder={t('search_handle_placeholder')}
                                         value={handleSearch}
                                         onChange={e => setHandleSearch(e.target.value)}
@@ -226,7 +226,7 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                                             )}
                                         >
                                             <div className="flex items-center gap-3 truncate">
-                                                <Key size={16} className={cn(isD2RMatch ? "text-danger-500/70" : "text-zinc-700")} />
+                                                <Key size={16} className={cn(isD2RMatch ? "text-danger-500/70" : "text-text-faint")} />
                                                 <span className={cn(
                                                     "truncate font-mono tracking-tight", 
                                                     isD2RMatch ? "text-danger-400 font-black" : "text-text-dim"
@@ -259,9 +259,9 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                         </div>
 
                         {selectedPid && (
-                            <div className="m-3 p-3 rounded-sm bg-orange-500/5 border border-orange-500/10 flex items-start gap-3">
-                                <ShieldAlert size={16} className="text-orange-500 shrink-0 mt-0.5" />
-                                <p className="text-[10px] text-orange-400/80 leading-relaxed italic font-black uppercase tracking-tighter">
+                            <div className="m-3 p-3 rounded-sm bg-ember/5 border border-ember/10 flex items-start gap-3">
+                                <ShieldAlert size={16} className="text-ember shrink-0 mt-0.5" />
+                                <p className="text-[10px] text-ember/80 leading-relaxed italic font-black uppercase tracking-tighter">
                                     {t('manual_explorer_safety_hint')}
                                 </p>
                             </div>
@@ -282,7 +282,7 @@ const ProcessExplorer: React.FC<ProcessExplorerProps> = ({ isOpen, onClose, onLo
                     </div>
                     <Button 
                         variant="ghost" 
-                        className="h-8 px-6 text-[10px] font-black uppercase tracking-widest text-text-dim hover:text-zinc-100 rounded-sm border border-line hover:bg-line/10" 
+                        className="h-8 px-6 text-[10px] font-black uppercase tracking-widest text-text-dim hover:text-text rounded-sm border border-line hover:bg-line/10" 
                         onClick={onClose}
                     >
                         {t('terminate_scan') || 'CLOSE'}

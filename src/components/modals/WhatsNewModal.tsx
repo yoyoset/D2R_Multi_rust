@@ -28,7 +28,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalContent className="max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-amber-500 to-rose-500"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-warn to-danger"></div>
 
                 <ModalHeader onClose={onClose}>
                     <div className="flex items-center gap-3">
@@ -43,7 +43,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
                 <ModalBody className="overflow-y-auto p-4 custom-scrollbar space-y-4">
                     {/* Detailed Changelog */}
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-zinc-400 font-black text-[9px] uppercase tracking-widest border-b border-line pb-1.5">
+                        <div className="flex items-center gap-2 text-text-dim font-black text-[9px] uppercase tracking-widest border-b border-line pb-1.5">
                             <ListChecks size={12} className="text-text-dim" />
                             <span>{t('detailed_changelog')}</span>
                         </div>
@@ -54,7 +54,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
                             </div>
                         ) : (
                             <div className="prose prose-invert prose-xs max-w-none">
-                                <div className="whitespace-pre-wrap text-zinc-400 font-mono leading-relaxed text-[10px] bg-black/50 p-4 rounded-sm border border-line max-h-60 overflow-y-auto custom-scrollbar italic">
+                                <div className="whitespace-pre-wrap text-text-dim font-mono leading-relaxed text-[10px] bg-black/50 p-4 rounded-sm border border-line max-h-60 overflow-y-auto custom-scrollbar italic">
                                     {changelog}
                                 </div>
                             </div>

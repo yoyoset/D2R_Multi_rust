@@ -117,7 +117,7 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                                         )}
                                     >
                                         <div className="flex-1 flex items-center gap-3 overflow-hidden mr-2">
-                                            <span className="text-[10px] font-bold text-zinc-200 shrink-0">{account.win_user}</span>
+                                            <span className="text-[10px] font-bold text-text shrink-0">{account.win_user}</span>
                                             <span className="text-[10px] text-text-dim font-mono tracking-tighter truncate max-w-[120px]">{account.bnet_account}</span>
                                             {account.note && (
                                                 <span className="text-[10px] text-text-dim truncate italic">({account.note})</span>
@@ -146,7 +146,7 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                         </div>
                         <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin">
                             {selectedIds.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-zinc-700 opacity-20 italic text-[10px]">
+                                <div className="h-full flex flex-col items-center justify-center text-text-faint opacity-20 italic text-[10px]">
                                     {t('empty_queue_hint')}
                                 </div>
                             ) : (
@@ -175,17 +175,17 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                                                         <span className="text-[10px] text-danger-500/40 font-mono">ID:{id.slice(0, 8)}</span>
                                                     </>
                                                 ) : (
-                                                    <p className="text-[10px] font-bold text-zinc-200 truncate">{account.win_user}</p>
+                                                    <p className="text-[10px] font-bold text-text truncate">{account.win_user}</p>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-0.5">
-                                                <button onClick={() => handleMove(index, 'up')} disabled={index === 0} className="p-1 text-text-dim hover:text-zinc-300 disabled:opacity-0 transition-colors">
+                                                <button onClick={() => handleMove(index, 'up')} disabled={index === 0} className="p-1 text-text-dim hover:text-text-dim disabled:opacity-0 transition-colors">
                                                     <ChevronUp size={16} />
                                                 </button>
-                                                <button onClick={() => handleMove(index, 'down')} disabled={index === selectedIds.length - 1} className="p-1 text-text-dim hover:text-zinc-300 disabled:opacity-0 transition-colors">
+                                                <button onClick={() => handleMove(index, 'down')} disabled={index === selectedIds.length - 1} className="p-1 text-text-dim hover:text-text-dim disabled:opacity-0 transition-colors">
                                                     <ChevronDown size={16} />
                                                 </button>
-                                                <button onClick={() => handleRemove(id)} className="p-1 text-text-dim hover:text-red-400 transition-colors ml-1">
+                                                <button onClick={() => handleRemove(id)} className="p-1 text-text-dim hover:text-danger transition-colors ml-1">
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
@@ -201,7 +201,7 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                 <div className="p-4 border-t border-line bg-surface/50 flex justify-end gap-3">
                     <button 
                         onClick={onClose}
-                        className="px-4 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-tight text-zinc-400 hover:text-text transition-colors"
+                        className="px-4 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-tight text-text-dim hover:text-text transition-colors"
                     >
                         {t('cancel')}
                     </button>

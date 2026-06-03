@@ -1,31 +1,66 @@
-/* ============================== TOKENS ============================== */
+/* ============================== TOKENS ==============================
+   Colors are defined as RGB *triplets* (`R G B`) so both Tailwind utilities
+   (rgb(var(--c-x) / <alpha-value>)) and the semantic CSS variables below can
+   share one source of truth — and a [data-theme] block only needs to override
+   the triplets to re-skin the entire app. */
 :root{
-  --bg:#0a0907;
-  --bg-2:#0f0d0a;
-  --surface:#151210;
-  --surface-2:#1c1814;
-  --surface-3:#241e18;
-  --line: rgba(217,164,65,0.10);
-  --line-2: rgba(217,164,65,0.18);
-  --line-strong: rgba(217,164,65,0.34);
+  /* --- raw color channels (theme overrides target these) --- */
+  --c-bg: 10 9 7;
+  --c-bg2: 15 13 10;
+  --c-surface: 21 18 16;
+  --c-surface2: 28 24 20;
+  --c-surface3: 36 30 24;
 
-  --text:#ece5d6;
-  --text-dim:#9a9082;
-  --text-faint:#6b6155;
+  --c-text: 236 229 214;
+  --c-text-dim: 154 144 130;
+  --c-text-faint: 107 97 85;
 
-  --gold:#d9a441;
-  --gold-bright:#f1c870;
-  --gold-deep:#9c7322;
-  --ember:#c9663a;
+  --c-gold: 217 164 65;
+  --c-gold-bright: 241 200 112;
+  --c-gold-deep: 156 115 34;
+  --c-ember: 201 102 58;
 
-  --player:#63c98c;   /* D2R 玩家 launch */
+  --c-player: 99 201 140;
+  --c-net: 91 143 214;
+  --c-ok: 91 191 134;
+  --c-warn: 217 164 65;
+  --c-danger: 207 90 68;
+
+  --c-line: 217 164 65;     /* tint used for hairline borders */
+  --c-shadow: 0 0 0;        /* drop-shadow base */
+
+  /* alpha for hairline borders (theme can dial these) */
+  --line-a1: 0.10;
+  --line-a2: 0.18;
+  --line-a3: 0.34;
+
+  /* --- derived semantic variables (consumed throughout this file) --- */
+  --bg:rgb(var(--c-bg));
+  --bg-2:rgb(var(--c-bg2));
+  --surface:rgb(var(--c-surface));
+  --surface-2:rgb(var(--c-surface2));
+  --surface-3:rgb(var(--c-surface3));
+  --line: rgb(var(--c-line) / var(--line-a1));
+  --line-2: rgb(var(--c-line) / var(--line-a2));
+  --line-strong: rgb(var(--c-line) / var(--line-a3));
+
+  --text:rgb(var(--c-text));
+  --text-dim:rgb(var(--c-text-dim));
+  --text-faint:rgb(var(--c-text-faint));
+
+  --gold:rgb(var(--c-gold));
+  --gold-bright:rgb(var(--c-gold-bright));
+  --gold-deep:rgb(var(--c-gold-deep));
+  --ember:rgb(var(--c-ember));
+
+  --player:rgb(var(--c-player));
   --player-deep:#1f5e3a;
-  --net:#5b8fd6;      /* 仅战网 launch */
+  --net:rgb(var(--c-net));
   --net-deep:#244a73;
 
-  --ok:#5bbf86;
-  --warn:#d9a441;
-  --danger:#cf5a44;
+  --ok:rgb(var(--c-ok));
+  --warn:rgb(var(--c-warn));
+  --danger:rgb(var(--c-danger));
 
   --radius: 4px;
   --radius-lg: 7px;
@@ -38,7 +73,7 @@
   --font-mono:'IBM Plex Mono',ui-monospace,monospace;
 
   --density-row: 78px;
-  --shadow-card: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 24px -12px rgba(0,0,0,0.7);
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 24px -12px rgb(var(--c-shadow) / 0.7);
 }
 
 /* density variants */

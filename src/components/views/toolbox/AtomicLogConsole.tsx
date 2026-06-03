@@ -30,7 +30,7 @@ export const AtomicLogConsole: React.FC<AtomicLogConsoleProps> = ({ logs, onClea
                         e.stopPropagation();
                         onClear();
                     }}
-                    className="text-[10px] font-black uppercase tracking-widest text-zinc-700 hover:text-zinc-400 transition-colors"
+                    className="text-[10px] font-black uppercase tracking-widest text-text-faint hover:text-text-dim transition-colors"
                 >
                     {t('clear_logs_btn')}
                 </button>
@@ -45,7 +45,7 @@ export const AtomicLogConsole: React.FC<AtomicLogConsoleProps> = ({ logs, onClea
                         "flex gap-3 leading-tight px-1 py-0.5 rounded-sm",
                         entry.level === 'error' ? "text-danger-400 bg-danger-500/5" : 
                         entry.level === 'success' ? "text-player-400 bg-player-500/5" : 
-                        entry.level === 'warning' ? "text-amber-400 bg-amber-500/5" : "text-text-dim"
+                        entry.level === 'warning' ? "text-warn bg-warn/5" : "text-text-dim"
                     )}>
                         <span className="opacity-30 shrink-0 select-none">[{entry.time}]</span>
                         <span className="flex-1 truncate uppercase tracking-tighter">{entry.message}</span>

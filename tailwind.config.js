@@ -7,18 +7,33 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Dark Forge Design System
-                bg: '#0a0907',
-                'bg-2': '#0f0d0a',
-                surface: { DEFAULT: '#151210', 2: '#1c1814', 3: '#241e18' },
-                text: { DEFAULT: '#ece5d6', dim: '#9a9082', faint: '#6b6155' },
-                gold: { DEFAULT: '#d9a441', bright: '#f1c870', deep: '#9c7322' },
-                ember: '#c9663a',
-                player: { DEFAULT: '#63c98c', deep: '#1f5e3a' },
-                net: { DEFAULT: '#5b8fd6', deep: '#244a73' },
-                ok: '#5bbf86',
-                warn: '#d9a441',
-                danger: '#cf5a44',
+                // Dark Forge Design System — driven by RGB-triplet CSS vars
+                // defined in styles.css :root, so [data-theme] overrides re-skin
+                // both these Tailwind utilities and the semantic .css classes.
+                bg: 'rgb(var(--c-bg) / <alpha-value>)',
+                'bg-2': 'rgb(var(--c-bg2) / <alpha-value>)',
+                surface: {
+                    DEFAULT: 'rgb(var(--c-surface) / <alpha-value>)',
+                    2: 'rgb(var(--c-surface2) / <alpha-value>)',
+                    3: 'rgb(var(--c-surface3) / <alpha-value>)',
+                },
+                text: {
+                    DEFAULT: 'rgb(var(--c-text) / <alpha-value>)',
+                    dim: 'rgb(var(--c-text-dim) / <alpha-value>)',
+                    faint: 'rgb(var(--c-text-faint) / <alpha-value>)',
+                },
+                gold: {
+                    DEFAULT: 'rgb(var(--c-gold) / <alpha-value>)',
+                    bright: 'rgb(var(--c-gold-bright) / <alpha-value>)',
+                    deep: 'rgb(var(--c-gold-deep) / <alpha-value>)',
+                },
+                ember: 'rgb(var(--c-ember) / <alpha-value>)',
+                player: { DEFAULT: 'rgb(var(--c-player) / <alpha-value>)', deep: '#1f5e3a' },
+                net: { DEFAULT: 'rgb(var(--c-net) / <alpha-value>)', deep: '#244a73' },
+                ok: 'rgb(var(--c-ok) / <alpha-value>)',
+                warn: 'rgb(var(--c-warn) / <alpha-value>)',
+                danger: 'rgb(var(--c-danger) / <alpha-value>)',
+                line: 'rgb(var(--c-line) / <alpha-value>)',
                 // Legacy (for backward compat during migration)
                 void: "#09090b",
                 card: "#18181b",
@@ -27,9 +42,9 @@ export default {
                 border: "#27272a",
             },
             borderColor: {
-                line: 'rgba(217,164,65,0.10)',
-                'line-2': 'rgba(217,164,65,0.18)',
-                'line-strong': 'rgba(217,164,65,0.34)',
+                line: 'rgb(var(--c-line) / 0.10)',
+                'line-2': 'rgb(var(--c-line) / 0.18)',
+                'line-strong': 'rgb(var(--c-line) / 0.34)',
             },
             fontFamily: {
                 display: ['Cinzel', 'Noto Serif SC', 'serif'],

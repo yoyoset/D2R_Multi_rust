@@ -29,7 +29,7 @@ export function LogConsole({ logs, onClear, className = "" }: LogConsoleProps) {
                 </div>
                 <button 
                     onClick={onClear}
-                    className="text-[10px] font-black text-text-dim hover:text-zinc-400 uppercase tracking-tighter"
+                    className="text-[10px] font-black text-text-dim hover:text-text-dim uppercase tracking-tighter"
                 >
                     {t('clear_logs_btn')}
                 </button>
@@ -45,9 +45,9 @@ export function LogConsole({ logs, onClear, className = "" }: LogConsoleProps) {
                             <span className="text-text-dim shrink-0 select-none">[{item.time}]</span>
                             <span className={cn(
                                 "break-all leading-snug",
-                                item.type === 'error' ? "text-red-500/80" : 
-                                item.type === 'warning' ? "text-amber-500/80" : 
-                                item.type === 'success' ? "text-player-500/80" : "text-zinc-400"
+                                item.type === 'error' ? "text-danger/80" : 
+                                item.type === 'warning' ? "text-warn/80" : 
+                                item.type === 'success' ? "text-player-500/80" : "text-text-dim"
                             )}>
                                 {item.message}
                             </span>

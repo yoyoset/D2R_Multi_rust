@@ -28,7 +28,7 @@ export const AvatarPicker = ({ avatar, onSelect, previewAvatar, setPreviewAvatar
 
     return (
         <div className="space-y-3">
-            <label className="text-[14px] font-medium text-zinc-300">
+            <label className="text-[14px] font-medium text-text-dim">
                 {t('avatar')}
             </label>
             <div className="flex flex-wrap gap-2 relative">
@@ -51,8 +51,8 @@ export const AvatarPicker = ({ avatar, onSelect, previewAvatar, setPreviewAvatar
                     onMouseEnter={() => avatar?.startsWith('data:') && setPreviewAvatar(avatar)}
                     onMouseLeave={() => setPreviewAvatar(null)}
                     className={cn(
-                        "w-7 h-7 rounded-sm border flex items-center justify-center cursor-pointer transition-all bg-zinc-900",
-                        avatar?.startsWith('data:') ? "border-primary text-primary" : "border-white/10 text-zinc-500 hover:text-zinc-300 hover:border-white/20"
+                        "w-7 h-7 rounded-sm border flex items-center justify-center cursor-pointer transition-all bg-surface",
+                        avatar?.startsWith('data:') ? "border-primary text-primary" : "border-white/10 text-text-dim hover:text-text-dim hover:border-white/20"
                     )}
                 >
                     <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />

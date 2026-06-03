@@ -31,7 +31,7 @@ export const ClassAvatar = ({ cls, size = "md", className }: { cls: string; size
 
     return (
         <div className={cn(
-            "rounded-sm border border-white/10 flex items-center justify-center overflow-hidden bg-zinc-950 relative group/avatar shrink-0",
+            "rounded-sm border border-white/10 flex items-center justify-center overflow-hidden bg-bg relative group/avatar shrink-0",
             !className?.includes('w-') && sizes[size],
             className
         )}>

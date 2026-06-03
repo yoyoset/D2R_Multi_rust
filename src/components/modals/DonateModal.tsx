@@ -39,13 +39,13 @@ export function DonateModal({ isOpen, onClose }: DonateModalProps) {
                                 alt="Dev"
                                 className="relative w-24 h-24 rounded-full border-4 border-[#FF5F5F]/20 object-cover shadow-xl group-hover:scale-105 transition-all duration-500"
                             />
-                            <div className="absolute bottom-1 right-1 w-5 h-5 bg-[#FF5F5F] rounded-full border-2 border-zinc-950 flex items-center justify-center shadow-lg">
+                            <div className="absolute bottom-1 right-1 w-5 h-5 bg-[#FF5F5F] rounded-full border-2 border-line flex items-center justify-center shadow-lg">
                                 <Coffee size={8} className="fill-white text-text" />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <p className="text-zinc-200 font-medium text-[14px] leading-relaxed italic max-w-md px-8 tracking-[0.05em]">
+                            <p className="text-text font-medium text-[14px] leading-relaxed italic max-w-md px-8 tracking-[0.05em]">
                                 "{t('donate_blessing')}"
                             </p>
                         </div>
@@ -63,7 +63,7 @@ export function DonateModal({ isOpen, onClose }: DonateModalProps) {
 
                         {/* WeChat */}
                         <div className="flex flex-col items-center gap-3 group">
-                            <div className="relative p-1.5 rounded-sm bg-surface border border-line-2 group-hover:border-emerald-500/50 transition-all shadow-2xl group-hover:shadow-emerald-500/10">
+                            <div className="relative p-1.5 rounded-sm bg-surface border border-line-2 group-hover:border-player/50 transition-all shadow-2xl group-hover:shadow-emerald-500/10">
                                 <img src={wechatImg} alt="WeChat" className="w-32 h-32 rounded-sm transition-all duration-300 group-hover:scale-[1.02]" />
                             </div>
                             <span className="text-[10px] font-black text-text-dim uppercase tracking-tighter group-hover:text-player-500 transition-colors">{t('donate_wechat')}</span>
@@ -71,7 +71,7 @@ export function DonateModal({ isOpen, onClose }: DonateModalProps) {
 
                         {/* PayPal */}
                         <div className="flex flex-col items-center gap-3 group">
-                            <div className="relative p-1.5 rounded-sm bg-surface border border-line-2 group-hover:border-blue-500/50 transition-all shadow-2xl group-hover:shadow-blue-500/10">
+                            <div className="relative p-1.5 rounded-sm bg-surface border border-line-2 group-hover:border-net/50 transition-all shadow-2xl group-hover:shadow-blue-500/10">
                                 <img src={paypalImg} alt="PayPal" className="w-32 h-32 rounded-sm transition-all duration-300 group-hover:scale-[1.02]" />
                             </div>
                             <span className="text-[10px] font-black text-text-dim uppercase tracking-tighter group-hover:text-net-500 transition-colors">{t('donate_paypal')}</span>

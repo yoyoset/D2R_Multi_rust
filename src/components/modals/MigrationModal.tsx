@@ -62,7 +62,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                     {/* Header Info */}
                     <div className="space-y-2">
                         <h2 className="text-[14px] font-bold text-text flex items-center gap-2">
-                            <Zap size={16} className="text-yellow-500 fill-yellow-500/20" />
+                            <Zap size={16} className="text-warn fill-warn/20" />
                             {t('migration_vault_title')}
                         </h2>
                         <p className="text-[10px] text-text-dim leading-relaxed">
@@ -75,7 +75,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                         <div className="flex justify-between items-end mb-1">
                             <div className="flex items-center gap-2">
                                 <Gauge size={12} className="text-gold/60" />
-                                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">{t('migration_encryption_progress')}</span>
+                                <span className="text-[10px] font-mono text-text-dim uppercase tracking-tighter">{t('migration_encryption_progress')}</span>
                             </div>
                             <span className="text-[14px] font-mono text-gold font-bold">{progress}%</span>
                         </div>
@@ -105,7 +105,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                             ) : (
                                 <Loader2 size={14} className="text-gold animate-spin" />
                             )}
-                            <span className="text-[10px] font-mono text-zinc-300 truncate tracking-tight uppercase">
+                            <span className="text-[10px] font-mono text-text-dim truncate tracking-tight uppercase">
                                 {currentStatus || t('migration_initializing')}
                             </span>
                         </div>
@@ -114,12 +114,12 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                         <div className="pt-2 border-t border-line space-y-1">
                             {logs.map((log, i) => (
                                 <div key={i} className="text-[9px] font-mono text-text-dim flex gap-2">
-                                    <span className="text-zinc-700">[{new Date().toLocaleTimeString()}]</span>
+                                    <span className="text-text-faint">[{new Date().toLocaleTimeString()}]</span>
                                     {log}
                                 </div>
                             ))}
                             {logs.length === 0 && (
-                                <div className="text-[9px] font-mono text-zinc-700 italic">{t('migration_waiting_telemetry')}</div>
+                                <div className="text-[9px] font-mono text-text-faint italic">{t('migration_waiting_telemetry')}</div>
                             )}
                         </div>
                     </div>

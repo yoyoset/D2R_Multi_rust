@@ -232,11 +232,11 @@ const SequencerMini: React.FC = () => {
                                  isCurrent ? <div className="w-3 h-3 rounded-full border-2 border-gold animate-pulse" /> : 
                                  <Circle size={11} className="text-text-faint" />}
                                 <div className="flex flex-col min-w-0 flex-1">
-                                    <span className={cn("text-[10px] font-bold truncate", isCurrent ? "text-gold" : "text-zinc-200")}>
+                                    <span className={cn("text-[10px] font-bold truncate", isCurrent ? "text-gold" : "text-text")}>
                                         {acc?.bnet_account || acc?.note || acc?.win_user}
                                     </span>
                                 </div>
-                                <span className="text-[10px] font-mono text-zinc-700">#{index + 1}</span>
+                                <span className="text-[10px] font-mono text-text-faint">#{index + 1}</span>
                             </div>
                         );
                     }) : (

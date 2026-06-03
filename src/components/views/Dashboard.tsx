@@ -139,7 +139,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                         </SortableContext>
 
                         {accounts.length === 0 && (
-                            <div className="col-span-full w-full max-w-md mx-auto text-center p-4 text-text-dim border border-dashed border-zinc-800 rounded-sm bg-surface/10 mt-6">
+                            <div className="col-span-full w-full max-w-md mx-auto text-center p-4 text-text-dim border border-dashed border-line rounded-sm bg-surface/10 mt-6">
                                 <User size={48} className="mx-auto mb-4 opacity-10" />
                                 <p className="text-[14px]">{t('no_accounts_hint')}</p>
                             </div>

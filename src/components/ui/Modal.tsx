@@ -42,7 +42,7 @@ export const ModalContent = ({ children, className }: { children: React.ReactNod
 export const ModalHeader = ({ children, onClose, className }: { children: React.ReactNode; onClose?: () => void; className?: string }) => {
     return (
         <div className={cn("flex items-center justify-between px-3 py-1.5 border-b border-line bg-surface/50 shrink-0", className)}>
-            <div className="flex items-center gap-2 text-zinc-400 font-black uppercase tracking-widest text-[10px] truncate">
+            <div className="flex items-center gap-2 text-text-dim font-black uppercase tracking-widest text-[10px] truncate">
                 {children}
             </div>
             {onClose && (

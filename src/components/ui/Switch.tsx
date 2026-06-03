@@ -24,7 +24,7 @@ export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, descri
             {(label || description) && (
                 <div className="flex flex-col gap-0.25">
                     {label && (
-                        <span className="text-[10px] font-bold text-zinc-400 group-hover:text-zinc-200 transition-colors uppercase tracking-tight">
+                        <span className="text-[10px] font-bold text-text-dim group-hover:text-text transition-colors uppercase tracking-tight">
                             {label}
                         </span>
                     )}

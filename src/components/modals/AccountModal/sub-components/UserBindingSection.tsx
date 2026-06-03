@@ -42,14 +42,14 @@ export function UserBindingSection({
     return (
         <div className="space-y-3">
             <div className="flex justify-between items-center">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-dim mb-1.5">
                     {t('win_user_binding')}
                 </label>
                 <div className="flex gap-3">
                     {(isManualInput || isCreatingNew) && (
                         <button
                             onClick={() => { setIsManualInput(false); setIsCreatingNew(false); }}
-                            className="text-[14px] text-zinc-500 hover:text-white transition-colors flex items-center gap-1"
+                            className="text-[14px] text-text-dim hover:text-white transition-colors flex items-center gap-1"
                         >
                             <ChevronLeft size={16} /> {t('back_to_list')}
                         </button>
@@ -59,7 +59,7 @@ export function UserBindingSection({
                         className={cn(
                             "text-[10px] px-2 py-1 rounded transition-all flex items-center gap-1",
                             isCreatingNew
-                                ? "text-zinc-400 hover:text-white underline underline-offset-4"
+                                ? "text-text-dim hover:text-white underline underline-offset-4"
                                 : "bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 font-bold shadow-[0_0_10px_rgb(var(--color-primary)/0.2)]"
                         )}
                     >
@@ -75,27 +75,27 @@ export function UserBindingSection({
 
             {isManualInput ? (
                 <div className="flex items-center gap-4 animate-in slide-in-from-top-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 min-w-[3rem] whitespace-nowrap">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-dim min-w-[3rem] whitespace-nowrap">
                         {t('label_username')}
                     </label>
                     <input
                         type="text"
                         value={winUser}
                         onChange={(e) => setWinUser(e.target.value)}
-                        className="flex-1 bg-black/50 border border-white/5 rounded-sm px-3 py-1.5 text-[10px] text-gray-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all font-mono h-8"
+                        className="flex-1 bg-black/50 border border-white/5 rounded-sm px-3 py-1.5 text-[10px] text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all font-mono h-8"
                         placeholder={t('win_username')}
                     />
                 </div>
             ) : (
                 <div className="relative group flex gap-3">
                     <div className="relative flex-1">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-dim pointer-events-none">
                             <UserRound size={16} />
                         </div>
                         <select
                             value={winUser}
                             onChange={(e) => setWinUser(e.target.value)}
-                            className="w-full h-10 bg-black/50 border border-white/10 rounded-sm pl-10 pr-3 text-[14px] text-gray-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer transition-all"
+                            className="w-full h-10 bg-black/50 border border-white/10 rounded-sm pl-10 pr-3 text-[14px] text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer transition-all"
                         >
                             <option value="" disabled>{t('select_win_user')}</option>
                             {osUsers.map(u => {
@@ -118,7 +118,7 @@ export function UserBindingSection({
                             isLoading={isScanning}
                             className="h-10 px-4 border border-white/10 bg-black/20 hover:bg-black/40 text-[14px]"
                         >
-                            <Sparkles size={16} className="mr-1.5 text-zinc-400" />
+                            <Sparkles size={16} className="mr-1.5 text-text-dim" />
                             {t('scan_users')}
                         </Button>
                     )}

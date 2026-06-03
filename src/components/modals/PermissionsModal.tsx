@@ -88,7 +88,7 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
 
                 <ModalBody className="p-4 bg-bg">
                     <div className="space-y-5">
-                        <p className="text-[10px] text-text-dim uppercase tracking-tight leading-relaxed italic border-l-2 border-zinc-800 pl-3">
+                        <p className="text-[10px] text-text-dim uppercase tracking-tight leading-relaxed italic border-l-2 border-line pl-3">
                             {t('fix_permissions_desc')}
                         </p>
 
@@ -96,10 +96,10 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
                             <div className="space-y-1.5 flex flex-col">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-text-dim mb-1.5">{t('game_path')}</label>
                                 <div className="flex gap-2">
-                                    <div className="flex-1 flex gap-2 items-center bg-black/50 border border-line rounded-sm px-3 h-8 transition-all group focus-within:border-blue-500/30">
-                                        <HardDrive size={16} className="text-zinc-700 group-focus-within:text-net-500/50" />
+                                    <div className="flex-1 flex gap-2 items-center bg-black/50 border border-line rounded-sm px-3 h-8 transition-all group focus-within:border-net/30">
+                                        <HardDrive size={16} className="text-text-faint group-focus-within:text-net-500/50" />
                                         <input
-                                            className="flex-1 bg-transparent border-none text-[10px] text-zinc-300 outline-none placeholder:text-text-faint font-mono"
+                                            className="flex-1 bg-transparent border-none text-[10px] text-text-dim outline-none placeholder:text-text-faint font-mono"
                                             value={targetPath}
                                             onChange={e => setTargetPath(e.target.value)}
                                             placeholder={t('example_game_path')}
@@ -118,7 +118,7 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
                                     <span className="text-[10px] font-black text-text-dim uppercase tracking-widest">{t('logic_stream_output')}</span>
                                     <div className="flex gap-1">
                                         <div className="w-1.5 h-1.5 rounded-full bg-danger-500/30"></div>
-                                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500/30"></div>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-warn/30"></div>
                                         <div className="w-1.5 h-1.5 rounded-full bg-player-500/30"></div>
                                     </div>
                                 </div>
@@ -159,7 +159,7 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
                                 variant="solid"
                                 isLoading={isFixing}
                                 disabled={!targetPath}
-                                className="h-8 px-8 bg-net-600/10 border border-blue-600/30 text-net-500 hover:bg-net-600/20 font-black text-[10px] uppercase tracking-[0.2em] rounded-sm"
+                                className="h-8 px-8 bg-net-600/10 border border-net/30 text-net-500 hover:bg-net-600/20 font-black text-[10px] uppercase tracking-[0.2em] rounded-sm"
                                 onClick={handleFixPermissions}
                             >
                                 {isFixing ? t('processing') : t('start_fix')}
@@ -168,7 +168,7 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({ isOpen, onClose, on
                     ) : (
                         <Button
                             variant="solid"
-                            className="h-8 px-12 bg-player-600/10 border border-emerald-600/30 text-player-500 hover:bg-player-600/20 font-black text-[10px] uppercase tracking-[0.2em] rounded-sm"
+                            className="h-8 px-12 bg-player-600/10 border border-player/30 text-player-500 hover:bg-player-600/20 font-black text-[10px] uppercase tracking-[0.2em] rounded-sm"
                             onClick={onClose}
                         >
                             <Check size={16} className="mr-2" />
