@@ -49,23 +49,26 @@ export function AppHeader({
                 <button
                     onClick={() => setCurrentView('dashboard')}
                     className={cn("tab", currentView === 'dashboard' && "active")}
+                    title={t('dashboard')}
                 >
-                    <LayoutGrid size={16} />
-                    {t('dashboard')}
+                    <LayoutGrid size={15} />
+                    <span className="tab-label">{t('dashboard')}</span>
                 </button>
                 <button
                     onClick={() => setCurrentView('accounts')}
                     className={cn("tab", currentView === 'accounts' && "active")}
+                    title={t('accounts')}
                 >
-                    <Users size={16} />
-                    {t('accounts')}
+                    <Users size={15} />
+                    <span className="tab-label">{t('accounts')}</span>
                 </button>
                 <button
                     onClick={() => setCurrentView('manual')}
                     className={cn("tab", currentView === 'manual' && "active")}
+                    title={t('manual')}
                 >
-                    <Wrench size={16} />
-                    {t('manual')}
+                    <Wrench size={15} />
+                    <span className="tab-label">{t('manual')}</span>
                 </button>
             </nav>
 
