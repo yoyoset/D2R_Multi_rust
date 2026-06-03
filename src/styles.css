@@ -145,6 +145,23 @@ body{
 }
 .coffee-btn:hover{ filter:brightness(1.08); transform:translateY(-1px); }
 
+/* narrow window (default min size is 700px): compact the top nav so the
+   right-side tools never overflow / get clipped by overflow-x:auto */
+@media (max-width: 820px){
+  .topnav{ gap:10px; padding:0 12px; }
+  .brand{ gap:9px; padding-right:2px; }
+  .brand-seal{ width:34px; height:34px; }
+  .brand-text .bt-name{ font-size:16px; letter-spacing:.06em; }
+  .brand-text .bt-mode{ font-size:9.5px; margin-top:3px; }
+  .tabs{ gap:2px; padding:4px; }
+  .tab{ padding:7px 11px; font-size:12.5px; gap:7px; }
+  .nav-tools{ gap:4px; }
+  .icon-btn{ width:34px; height:34px; }
+  .lang-btn{ padding:0 8px; gap:5px; }
+  .coffee-btn{ padding:9px 11px; margin-left:2px; }
+  .coffee-btn span{ display:none; }
+}
+
 /* ============================== CONTENT ============================== */
 .content{ flex:1 1 auto; overflow-y:auto; overflow-x:hidden; }
 .page{ max-width:1180px; margin:0 auto; padding:22px 30px 36px; }
