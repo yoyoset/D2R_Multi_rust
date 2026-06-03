@@ -151,6 +151,12 @@ body{
 [data-density="compact"] .page{ padding:16px 26px 30px; }
 [data-density="compact"] .sec-head{ margin-bottom:13px; }
 [data-density="compact"] .tool-group{ margin-bottom:15px; }
+[data-density="compact"] .launch{ padding:13px 17px; gap:13px; }
+[data-density="compact"] .launch .l-icon{ width:42px; height:42px; }
+[data-density="compact"] .launch .l-title{ font-size:16px; }
+[data-density="compact"] .launch-grid{ gap:12px; margin-bottom:14px; }
+[data-density="compact"] .preset-bar{ padding:9px 12px; margin-bottom:12px; }
+[data-density="compact"] .sec-title h1{ font-size:21px; }
 
 /* section header */
 .sec-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; }
@@ -176,7 +182,10 @@ body{
 .preset-bar{ display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:11px 14px; border:1px dashed var(--line-2); border-radius:var(--radius); background:rgba(0,0,0,0.18); }
 .preset-label{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:var(--text-dim); padding-right:4px; }
 .preset-label svg{ color:var(--gold); width:16px; height:16px; }
+.preset-chips{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .preset-chip{ display:flex; align-items:center; border:1px solid var(--line-2); border-radius:var(--radius); overflow:hidden; transition:.15s; }
+.preset-chip.disabled{ opacity:.4; }
+.preset-chip.invalid{ border-color:rgba(207,90,68,0.5); background:rgba(207,90,68,0.05); }
 .preset-chip:hover{ border-color:var(--line-strong); }
 .preset-chip .pc-play{ display:flex; align-items:center; gap:7px; padding:7px 13px; background:rgba(255,255,255,0.02); color:var(--text); border:0; cursor:pointer; font-family:var(--font-mono); font-size:12px; font-weight:600; letter-spacing:.06em; transition:.14s; }
 .preset-chip .pc-play:hover{ background:rgba(99,201,140,0.12); color:var(--player); }
@@ -230,6 +239,30 @@ body{
 .acct-row.sel{ background:linear-gradient(90deg, rgba(217,164,65,0.10), rgba(217,164,65,0.02)); border-color:var(--line-2); border-radius:var(--radius); }
 .acct-row.sel::before{ background:linear-gradient(180deg,var(--gold-bright),var(--gold-deep)); box-shadow:0 0 14px rgba(217,164,65,0.6); }
 .acct-row.empty{ opacity:.45; }
+.acct-row.invalid{ border-color:rgba(207,90,68,0.35); background:rgba(207,90,68,0.04); }
+.acct-row.invalid::before{ background:var(--danger); }
+
+/* hover action toolbar (shared list + card) */
+.acct-actions{
+  position:absolute; display:flex; align-items:center; gap:1px; padding:3px;
+  background:rgba(10,9,7,0.94); border:1px solid var(--line-2); border-radius:var(--radius);
+  opacity:0; pointer-events:none; transition:opacity .14s; backdrop-filter:blur(6px); z-index:20;
+}
+.acct-row .acct-actions{ top:50%; right:14px; transform:translateY(-50%); }
+.gcard .acct-actions{ top:12px; right:12px; }
+.acct-row:hover .acct-actions, .acct-row.sel .acct-actions,
+.gcard:hover .acct-actions, .gcard.sel .acct-actions{ opacity:1; pointer-events:auto; }
+.acct-actions button, .acct-actions .drag{
+  width:27px; height:25px; display:grid; place-items:center;
+  color:var(--text-dim); background:none; border:0; border-radius:3px; cursor:pointer; transition:.13s;
+}
+.acct-actions button:hover{ color:var(--gold); background:rgba(217,164,65,0.1); }
+.acct-actions button.snap:hover{ color:var(--player); background:rgba(99,201,140,0.1); }
+.acct-actions .drag{ cursor:grab; border-left:1px solid var(--line); color:var(--text-faint); }
+.acct-actions .drag:hover{ color:var(--text); }
+.gcard.invalid{ border-color:rgba(207,90,68,0.4); background:rgba(207,90,68,0.05); }
+.col-alias .warn-ic{ display:inline-flex; vertical-align:middle; margin-left:6px; color:var(--warn); }
+.col-status .lock-ic{ color:var(--warn); margin-right:2px; }
 
 .av{ width:42px; height:42px; border-radius:var(--radius); display:grid; place-items:center; border:1px solid var(--line-2); background:linear-gradient(160deg,var(--surface-2),var(--surface)); position:relative; overflow:hidden; }
 .av .av-glyph{ font-family:var(--font-display); font-weight:700; font-size:16px; color:var(--gold); }

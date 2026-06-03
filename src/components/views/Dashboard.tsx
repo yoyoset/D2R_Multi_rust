@@ -93,7 +93,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     const isLaunchDisabled = accounts.length === 0 || !selectedAccountId || isLaunching;
 
     return (
-        <div className="flex flex-col items-center w-full">
+        <div className="flex flex-col w-full">
             <DashboardHeader
                 config={config}
                 viewMode={viewMode}
@@ -110,13 +110,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                 onEditSequencePreset={onEditSequencePreset}
             />
 
-            <div className="w-full shrink-0 px-4 pt-1 pb-10">
+            <div className="w-full shrink-0 pt-2 pb-10">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <div className={cn(
                         "w-full",
                         viewMode === 'card'
-                            ? "grid gap-2 w-full grid-cols-[repeat(auto-fill,minmax(130px,1fr))]"
-                            : "flex flex-col gap-2"
+                            ? "grid gap-3 w-full grid-cols-[repeat(auto-fill,minmax(232px,1fr))]"
+                            : "flex flex-col"
                     )}>
                         <SortableContext
                             items={accounts.map(a => a.id)}

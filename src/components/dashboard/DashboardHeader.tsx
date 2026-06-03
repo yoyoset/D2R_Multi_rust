@@ -40,9 +40,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     const { t } = useTranslation();
 
     return (
-        <div className="sticky top-0 z-40 w-full flex flex-col border-b border-line bg-surface/40 backdrop-blur-sm">
+        <div className="sticky top-0 z-40 w-full flex flex-col -mt-4 pt-4 pb-3 mb-1 border-b border-line bg-bg/85 backdrop-blur-sm">
             {/* Section Header */}
-            <div className="flex-1 px-6 pt-6 pb-0">
+            <div>
                 <div className="sec-head">
                     <div className="sec-title">
                         <div className="sec-tick"></div>
@@ -110,10 +110,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     config={config}
                     onEditPreset={onEditSequencePreset}
                 />
-            </div>
 
-            {/* Launch Action */}
-            <div className="px-6 pb-6">
+                {/* Launch Action */}
                 <LaunchActions
                     onLaunch={onLaunch}
                     isLaunching={isLaunching}
