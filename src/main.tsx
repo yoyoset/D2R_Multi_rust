@@ -6,6 +6,10 @@ import "./index.css";
 import "./styles.css";
 import "./i18n";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { initTheme } from "./lib/theme";
+
+// Apply the persisted theme before first paint to avoid a flash.
+initTheme();
 
 function Root() {
   const [label, setLabel] = useState<string | null>(null);

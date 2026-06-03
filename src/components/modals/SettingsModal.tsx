@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { Check, Palette, Settings as SettingsIcon, Settings2, Trash2, FileText, Github, RefreshCw, FolderOpen, HardDrive, AlertTriangle } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { applyThemeColor } from "../../lib/utils/color";
+import { THEMES as SKINS, ThemeId, getStoredTheme, setTheme } from "../../lib/theme";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 import { getVersion } from "@tauri-apps/api/app";
 import { check } from "@tauri-apps/plugin-updater";
@@ -34,6 +35,7 @@ const THEMES = [
 export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, onOpenWhatsNew }: SettingsModalProps) {
     const { t } = useTranslation();
     const [themeColor, setThemeColor] = useState(config.theme_color || '#3b82f6');
+    const [skin, setSkin] = useState<ThemeId>(getStoredTheme());
     const [closeToTray, setCloseToTray] = useState(config.close_to_tray ?? true);
     const [enableLogging, setEnableLogging] = useState(config.enable_logging ?? false);
     const [advancedLaunchMode, setAdvancedLaunchMode] = useState(config.advanced_launch_mode ?? false);
@@ -204,6 +206,41 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                 <Palette size={16} className="text-text-dim" />
                                 <span className="text-[10px] font-black text-text-dim uppercase tracking-widest">{t('appearance')}</span>
                             </div>
+
+                            {/* Theme (skin) selector */}
+                            <div className="space-y-1.5">
+                                <span className="text-[10px] font-bold text-text-faint uppercase tracking-wider">{t('theme_skin')}</span>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {SKINS.map((s) => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => { setSkin(s.id); setTheme(s.id); }}
+                                            className={cn(
+                                                "flex flex-col items-stretch gap-1.5 p-2 rounded transition-all border",
+                                                skin === s.id
+                                                    ? "border-gold ring-1 ring-gold/30 bg-gold/5"
+                                                    : "border-line hover:border-line-strong opacity-80 hover:opacity-100"
+                                            )}
+                                            title={t(s.nameKey)}
+                                        >
+                                            <div className="flex h-7 rounded-[3px] overflow-hidden border border-line">
+                                                <span className="flex-1" style={{ background: s.swatch[0] }} />
+                                                <span className="flex-1" style={{ background: s.swatch[1] }} />
+                                                <span className="flex-1" style={{ background: s.swatch[2] }} />
+                                            </div>
+                                            <span className={cn(
+                                                "text-[10px] font-bold uppercase tracking-wide text-center truncate",
+                                                skin === s.id ? "text-gold" : "text-text-dim"
+                                            )}>
+                                                {t(s.nameKey)}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Accent color */}
+                            <span className="text-[10px] font-bold text-text-faint uppercase tracking-wider block pt-1">{t('accent_color')}</span>
                             <div className="flex flex-wrap gap-2">
                                 {THEMES.map((theme) => (
                                     <button
