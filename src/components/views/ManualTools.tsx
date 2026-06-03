@@ -10,13 +10,16 @@ import {
     Search,
     Shield,
     ShieldAlert,
-    Users
+    Users,
+    AlertTriangle
 } from 'lucide-react';
 import * as API from '../../lib/api';
 import { cn } from '../../lib/utils';
 import { useManualTools } from '../../hooks/useManualTools';
 import { useAccountStatus } from '../../hooks/useAccountStatus';
 
+import { ToolSection } from './toolbox/ToolSection';
+import { ToolEntry } from './toolbox/ToolEntry';
 import { AtomicLogConsole } from './toolbox/AtomicLogConsole';
 
 import MirrorModal from '../modals/MirrorModal';
@@ -28,24 +31,6 @@ interface ManualToolsProps {
     accounts?: API.Account[];
     selectedAccountId?: string | null;
 }
-
-interface TcardProps {
-    icon: React.ReactNode;
-    name: string;
-    desc?: string;
-    onClick: () => void;
-    danger?: boolean;
-}
-
-const Tcard: React.FC<TcardProps> = ({ icon, name, desc, onClick, danger }) => (
-    <button className={cn("tcard", danger && "danger")} onClick={onClick}>
-        <div className="tc-ic">{icon}</div>
-        <div className="tc-body">
-            <div className="tc-name">{name}</div>
-            {desc && <div className="tc-desc">{desc}</div>}
-        </div>
-    </button>
-);
 
 const ManualTools: React.FC<ManualToolsProps> = ({ accounts = [], selectedAccountId = null }) => {
     const { t } = useTranslation();
@@ -97,141 +82,84 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts = [], selectedAccoun
         <div className="flex flex-col h-full w-full overflow-hidden select-none">
             {/* Diagnostic toolbar */}
             <div className="flex items-center gap-2 pb-3 mb-1 border-b border-line shrink-0">
-                <button
-                    onClick={runSystemDiag}
-                    disabled={isDiagnosing}
-                    className="ghost-btn"
-                >
+                <button onClick={runSystemDiag} disabled={isDiagnosing} className="ghost-btn">
                     <MonitorSmartphone size={15} className="text-net" />
                     {t('diag_check_users')}
                 </button>
-                <button
-                    onClick={runGameDiag}
-                    disabled={isDiagnosing}
-                    className="ghost-btn"
-                >
+                <button onClick={runGameDiag} disabled={isDiagnosing} className="ghost-btn">
                     <ShieldAlert size={15} className="text-text-dim" />
                     {t('diag_check_permissions')}
                 </button>
             </div>
 
-            {/* Scrollable tool groups */}
-            <div className="flex-1 min-h-0 overflow-y-auto pt-3 pb-4">
-                {/* ---- Independent launch ---- */}
-                <div className="tool-group">
-                    <h2>
-                        <Play size={13} className="text-player" />
-                        {t('independent_launch')}
-                    </h2>
+            {/* Compact 3-column tool grid */}
+            <div className="flex-none min-h-0 overflow-y-auto border border-line rounded mt-3 bg-bg/20">
+                <div className="grid grid-cols-3 divide-x divide-line">
+                    {/* Independent launch */}
+                    <ToolSection icon={<Play size={16} />} title={t('independent_launch')} color="player">
+                        <div className="p-3 space-y-3">
+                            {!selectedAccountId ? (
+                                <div className="p-3 border border-dashed border-line rounded-sm bg-surface/20 text-center space-y-1.5 opacity-60">
+                                    <AlertTriangle size={16} className="mx-auto text-text-faint" />
+                                    <p className="text-[10px] font-mono uppercase tracking-widest text-text-dim">{t('no_account_selected')}</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={forceLaunch}
+                                        className={cn(
+                                            "w-full h-10 rounded-sm flex flex-col items-center justify-center gap-0 border transition-all",
+                                            isClash
+                                                ? "bg-warn/10 border-warn/30 text-warn hover:bg-warn/20"
+                                                : "bg-player/10 border-player/30 text-player hover:bg-player/20"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Play size={14} fill="currentColor" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">
+                                                {isClash ? t('force_launch') : t('separate_launch')}
+                                            </span>
+                                        </div>
+                                        <span className="text-[9px] font-mono opacity-50 truncate max-w-full px-2">
+                                            {selectedAccount?.win_user}
+                                        </span>
+                                    </button>
 
-                    {!selectedAccountId ? (
-                        <div className="empty-note !py-6">{t('no_account_selected')}</div>
-                    ) : (
-                        <button
-                            onClick={forceLaunch}
-                            className={cn(
-                                "w-full mb-2 px-4 py-3 rounded border flex items-center gap-3 transition-all text-left",
-                                isClash
-                                    ? "bg-warn/10 border-warn/30 text-warn hover:bg-warn/15"
-                                    : "bg-player/10 border-player/30 text-player hover:bg-player/15"
+                                    {isClash && (
+                                        <div className="flex items-start gap-2 p-2 bg-warn/5 border border-warn/10 rounded-sm">
+                                            <AlertTriangle size={14} className="text-warn shrink-0 mt-0.5" />
+                                            <p className="text-[10px] text-warn/80 leading-relaxed italic">{t('game_running_prevent_launch')}</p>
+                                        </div>
+                                    )}
+                                </>
                             )}
-                        >
-                            <Play size={18} fill="currentColor" className="shrink-0" />
-                            <div className="min-w-0">
-                                <div className="text-[13px] font-black uppercase tracking-wide">
-                                    {isClash ? t('force_launch') : t('separate_launch')}
-                                </div>
-                                <div className="text-[11px] font-mono opacity-60 truncate">
-                                    {isClash ? t('game_running_prevent_launch') : selectedAccount?.win_user}
-                                </div>
+
+                            <div className="space-y-0.5">
+                                <ToolEntry icon={<RefreshCw size={16} />} title={t('mirror_manager')} onClick={() => setIsMirrorOpen(true)} />
+                                <ToolEntry icon={<Settings2 size={16} />} title={t('nuke_concise')} onClick={resetSettings} color="danger" />
                             </div>
-                        </button>
-                    )}
+                        </div>
+                    </ToolSection>
 
-                    <div className="tool-grid">
-                        <Tcard
-                            icon={<RefreshCw size={16} />}
-                            name={t('mirror_manager')}
-                            desc={t('mirror_manager_desc')}
-                            onClick={() => setIsMirrorOpen(true)}
-                        />
-                        <Tcard
-                            icon={<Settings2 size={16} />}
-                            name={t('nuke_concise')}
-                            desc={t('nuke_concise_desc')}
-                            onClick={resetSettings}
-                            danger
-                        />
-                    </div>
-                </div>
+                    {/* Environment cleanup */}
+                    <ToolSection icon={<Shield size={16} />} title={t('env_cleanup')} color="danger">
+                        <div className="p-2 space-y-0.5">
+                            <ToolEntry icon={<Shield size={16} />} title={t('cleanup_handles')} onClick={cleanupHandles} />
+                            <ToolEntry icon={<Search size={16} />} title={t('manual_repair_btn')} onClick={() => setIsProcessExplorerOpen(true)} />
+                            <ToolEntry icon={<Trash2 size={16} />} title={t('cleanup_archives')} onClick={cleanupArchives} />
+                            <ToolEntry icon={<StopCircle size={16} />} title={t('stop_bnet_processes')} onClick={forceKill} color="danger" />
+                        </div>
+                    </ToolSection>
 
-                {/* ---- Environment cleanup ---- */}
-                <div className="tool-group">
-                    <h2>
-                        <Shield size={13} className="text-danger" />
-                        {t('env_cleanup')}
-                    </h2>
-                    <div className="tool-grid">
-                        <Tcard
-                            icon={<Shield size={16} />}
-                            name={t('cleanup_handles')}
-                            desc={t('cleanup_handles_desc')}
-                            onClick={cleanupHandles}
-                        />
-                        <Tcard
-                            icon={<Search size={16} />}
-                            name={t('manual_repair_btn')}
-                            desc={t('manual_repair_desc')}
-                            onClick={() => setIsProcessExplorerOpen(true)}
-                        />
-                        <Tcard
-                            icon={<Trash2 size={16} />}
-                            name={t('cleanup_archives')}
-                            desc={t('cleanup_archives_desc')}
-                            onClick={cleanupArchives}
-                        />
-                        <Tcard
-                            icon={<StopCircle size={16} />}
-                            name={t('stop_bnet_processes')}
-                            desc={t('stop_bnet_processes_desc')}
-                            onClick={forceKill}
-                            danger
-                        />
-                    </div>
-                </div>
-
-                {/* ---- System utilities ---- */}
-                <div className="tool-group">
-                    <h2>
-                        <MonitorSmartphone size={13} className="text-net" />
-                        {t('system_utils')}
-                    </h2>
-                    <div className="tool-grid">
-                        <Tcard
-                            icon={<Users size={16} />}
-                            name={t('open_local_users')}
-                            desc={t('open_local_users_desc')}
-                            onClick={() => API.openLusrmgr()}
-                        />
-                        <Tcard
-                            icon={<ShieldAlert size={16} />}
-                            name={t('open_adv_users')}
-                            desc={t('open_adv_users_desc')}
-                            onClick={() => API.openNetplwiz()}
-                        />
-                        <Tcard
-                            icon={<RefreshCw size={16} />}
-                            name={t('open_user_switch')}
-                            desc={t('open_user_switch_desc')}
-                            onClick={() => API.openUserSwitch()}
-                        />
-                        <Tcard
-                            icon={<Shield size={16} />}
-                            name={t('fix_permissions')}
-                            desc={t('fix_permissions_desc')}
-                            onClick={() => setIsPermissionsOpen(true)}
-                        />
-                    </div>
+                    {/* System utilities */}
+                    <ToolSection icon={<MonitorSmartphone size={16} />} title={t('system_utils')} color="net">
+                        <div className="p-2 space-y-0.5">
+                            <ToolEntry icon={<Users size={16} />} title={t('open_local_users')} onClick={() => API.openLusrmgr()} />
+                            <ToolEntry icon={<ShieldAlert size={16} />} title={t('open_adv_users')} onClick={() => API.openNetplwiz()} />
+                            <ToolEntry icon={<RefreshCw size={16} />} title={t('open_user_switch')} onClick={() => API.openUserSwitch()} />
+                            <ToolEntry icon={<Shield size={16} />} title={t('fix_permissions')} onClick={() => setIsPermissionsOpen(true)} color="player" />
+                        </div>
+                    </ToolSection>
                 </div>
             </div>
 
@@ -241,7 +169,7 @@ const ManualTools: React.FC<ManualToolsProps> = ({ accounts = [], selectedAccoun
                 onClear={() => addLog(t('log_audit_cleared'), 'info')}
                 isExpanded={isLogsExpanded}
                 onToggle={() => setIsLogsExpanded(!isLogsExpanded)}
-                className={cn("shrink-0", isLogsExpanded ? "max-h-[30vh]" : "")}
+                className={cn(isLogsExpanded ? "flex-1" : "shrink-0")}
             />
 
             {/* Modals */}
