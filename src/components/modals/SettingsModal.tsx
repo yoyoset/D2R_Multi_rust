@@ -40,7 +40,6 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
     const [skin, setSkin] = useState<ThemeId>(getStoredTheme());
     const [closeToTray, setCloseToTray] = useState(config.close_to_tray ?? true);
     const [enableLogging, setEnableLogging] = useState(config.enable_logging ?? false);
-    const [advancedLaunchMode, setAdvancedLaunchMode] = useState(config.advanced_launch_mode ?? false);
     const [enableWindowRename, setEnableWindowRename] = useState(config.enable_window_rename ?? false);
     const [windowRenameFormat, setWindowRenameFormat] = useState(config.window_rename_format || 'note');
     const [isSaving, setIsSaving] = useState(false);
@@ -151,7 +150,6 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
         setThemeColor(config.theme_color || '#3b82f6');
         setCloseToTray(config.close_to_tray ?? true);
         setEnableLogging(config.enable_logging ?? false);
-        setAdvancedLaunchMode(config.advanced_launch_mode ?? false);
         setEnableWindowRename(config.enable_window_rename ?? false);
         setWindowRenameFormat(config.window_rename_format || 'note');
     }, [config]);
@@ -173,7 +171,6 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                 theme_color: themeColor,
                 close_to_tray: closeToTray,
                 enable_logging: enableLogging,
-                advanced_launch_mode: advancedLaunchMode,
                 enable_window_rename: enableWindowRename,
                 window_rename_format: windowRenameFormat,
             };
@@ -273,13 +270,6 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                 description={t('setting_enable_logging_desc')}
                                 checked={enableLogging}
                                 onChange={setEnableLogging}
-                            />
-
-                            <Switch
-                                label={t('setting_advanced_launch_mode')}
-                                description={t('setting_advanced_launch_mode_desc')}
-                                checked={advancedLaunchMode}
-                                onChange={setAdvancedLaunchMode}
                             />
                         </div>
 

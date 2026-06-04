@@ -15,7 +15,6 @@ interface LaunchActionsProps {
 export const LaunchActions: React.FC<LaunchActionsProps> = ({
     onLaunch,
     isLaunching,
-    advancedLaunchMode,
     selectedAccountStatus,
     isLaunchDisabled
 }) => {
@@ -48,9 +47,9 @@ export const LaunchActions: React.FC<LaunchActionsProps> = ({
                 </div>
             </button>
 
-            {/* Network Launch Button (Blue) */}
+            {/* Network Launch Button (Blue) — Bnet client only */}
             <button
-                onClick={() => onLaunch(true, advancedLaunchMode)}
+                onClick={() => onLaunch(true, false)}
                 disabled={isLaunchDisabled}
                 className={cn("launch net", isLaunchDisabled && "opacity-50 cursor-not-allowed")}
             >
@@ -63,7 +62,7 @@ export const LaunchActions: React.FC<LaunchActionsProps> = ({
                         {isLaunching ? t('launching') : t('launch_bnet_only')}
                     </div>
                     <div className="l-sub">
-                        {advancedLaunchMode ? t('advanced_mode') : t('bnet_chat')}
+                        {t('bnet_chat')}
                     </div>
                 </div>
                 <div className="l-arrow">
