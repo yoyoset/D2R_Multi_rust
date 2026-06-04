@@ -460,10 +460,10 @@ body{
 
 /* account mgmt table */
 .amt{ width:100%; border:1px solid var(--line); border-radius:var(--radius-lg); overflow:hidden; }
-.amt-head, .amt-row{ display:grid; grid-template-columns:42px 96px 1.3fr 1.5fr 88px 80px; gap:12px; align-items:center; padding:0 14px; }
-.amt-head{ height:42px; background:rgba(0,0,0,0.3); border-bottom:1px solid var(--line-2); font-family:var(--font-mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); }
+.amt-head, .amt-row{ display:grid; grid-template-columns:38px 92px 1.3fr 1.5fr 88px 76px; gap:12px; align-items:center; padding:0 13px; }
+.amt-head{ height:36px; background:rgba(0,0,0,0.3); border-bottom:1px solid var(--line-2); font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); }
 .amt-head > div{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.amt-row{ height:62px; border-bottom:1px solid var(--line); transition:.14s; }
+.amt-row{ height:46px; border-bottom:1px solid var(--line); transition:.14s; }
 .amt-row:last-child{ border-bottom:0; }
 .amt-row:hover{ background:rgb(var(--hover) / 0.02); }
 .amt input{ width:100%; background:rgba(0,0,0,0.25); border:1px solid var(--line); border-radius:3px; padding:7px 9px; color:var(--text); font-family:var(--font-mono); font-size:12.5px; transition:.14s; }

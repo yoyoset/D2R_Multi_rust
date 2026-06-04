@@ -86,7 +86,7 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, invalidAccoun
                                 )}
                             >
                                 {/* avatar */}
-                                <div className="av" style={{ width: 36, height: 36 }}>
+                                <div className="av" style={{ width: 28, height: 28 }}>
                                     {isInvalid && (
                                         <div className="absolute inset-0 grid place-items-center z-10 bg-[rgba(207,90,68,0.25)]">
                                             <Ghost size={15} className="text-danger" />
@@ -145,7 +145,7 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, invalidAccoun
                                         }}
                                         title={t('save_snapshot_hint')}
                                         className={cn(
-                                            "p-1.5 rounded-sm transition-colors",
+                                            "p-1 rounded-sm transition-colors",
                                             account.skip_config_sync
                                                 ? "text-warn bg-warn/10 hover:text-warn"
                                                 : "text-text-faint hover:text-warn opacity-0 group-hover:opacity-100"
@@ -156,14 +156,14 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, invalidAccoun
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onEdit(account); }}
                                         title={t('edit')}
-                                        className="p-1.5 text-text-faint hover:text-gold rounded-sm transition-colors opacity-0 group-hover:opacity-100"
+                                        className="p-1 text-text-faint hover:text-gold rounded-sm transition-colors opacity-0 group-hover:opacity-100"
                                     >
                                         <Edit2 size={15} />
                                     </button>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(account.id); }}
                                         title={t('confirm_delete')}
-                                        className="p-1.5 text-text-faint hover:text-danger rounded-sm transition-colors opacity-0 group-hover:opacity-100"
+                                        className="p-1 text-text-faint hover:text-danger rounded-sm transition-colors opacity-0 group-hover:opacity-100"
                                     >
                                         <Trash2 size={15} />
                                     </button>
