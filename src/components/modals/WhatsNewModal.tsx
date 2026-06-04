@@ -28,7 +28,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ isOpen, onClose })
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalContent className="max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-warn to-danger"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold via-warn to-danger"></div>
 
                 <ModalHeader onClose={onClose}>
                     <div className="flex items-center gap-3">

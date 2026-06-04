@@ -350,6 +350,8 @@ export default {
     "table_game_path": "游戏路径",
     "global_path": "全局",
     "refresh_paths": "刷新路径",
+    "edit": "编辑",
+    "active_processes_found_title": "检测到运行中的进程",
     "audit_vault": "审计凭据",
     "paths_refreshed_success": "游戏路径已更新并保存",
     "setting_current_path": "当前数据存储位置",
