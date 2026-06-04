@@ -207,7 +207,7 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                     </button>
                     <button 
                         onClick={handleSave}
-                        className="px-6 py-1.5 rounded-sm bg-gold text-black text-[10px] font-black uppercase tracking-tight hover:bg-player-400 transition-all active:scale-95 shadow-lg shadow-primary/20"
+                        className="px-6 py-1.5 rounded-sm bg-gold text-black text-[10px] font-black uppercase tracking-tight hover:bg-player-400 transition-all active:scale-95 shadow-lg shadow-gold/20"
                     >
                         {t('save_and_apply')}
                     </button>

@@ -21,7 +21,7 @@ const PolicyCheckbox = ({
     icon: Icon, 
     label, 
     hint, 
-    activeColor = "text-primary" 
+    activeColor = "text-gold" 
 }: { 
     checked: boolean, 
     onChange: (v: boolean) => void, 
@@ -83,7 +83,7 @@ export function PolicySection({
                     icon={ShieldCheck}
                     label={t('apply_password_policy')}
                     hint={t('apply_password_policy_hint')}
-                    activeColor="text-primary"
+                    activeColor="text-gold"
                 />
                 <PolicyCheckbox
                     checked={skipConfigSync}

@@ -178,7 +178,7 @@ const SequencerMini: React.FC = () => {
                                     ? "bg-surface text-text-dim cursor-not-allowed" 
                                     : isFinished 
                                         ? "bg-player-500 text-text hover:bg-player-600 font-black shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                                        : "bg-gold text-black hover:bg-gold/80 font-black shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]"
+                                        : "bg-gold text-black hover:bg-gold/80 font-black shadow-[0_0_15px_rgb(var(--c-gold)/0.3)]"
                             )}
                         >
                             {isProcessing ? (
@@ -225,7 +225,7 @@ const SequencerMini: React.FC = () => {
                             <div key={id} className={cn(
                                 "flex items-center gap-3 px-3 py-2 rounded-sm transition-all border",
                                 isCurrent 
-                                    ? "bg-gold/5 border-gold/30 shadow-[inset_0_0_10px_rgba(var(--primary-rgb),0.05)]" 
+                                    ? "bg-gold/5 border-gold/30 shadow-[inset_0_0_10px_rgb(var(--c-gold)/0.05)]" 
                                     : isDone ? "opacity-30 border-transparent" : "bg-white/2 border-line"
                             )}>
                                 {isDone ? <CheckCircle2 size={11} className="text-player-500" /> : 

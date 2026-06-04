@@ -34,10 +34,9 @@ export default {
                 warn: 'rgb(var(--c-warn) / <alpha-value>)',
                 danger: 'rgb(var(--c-danger) / <alpha-value>)',
                 line: 'rgb(var(--c-line) / <alpha-value>)',
-                // Legacy (for backward compat during migration)
+                // Legacy (a few un-migrated modal components still reference these)
                 void: "#09090b",
                 card: "#18181b",
-                primary: "rgb(var(--color-primary) / <alpha-value>)",
                 secondary: "#a1a1aa",
                 border: "#27272a",
             },
@@ -64,7 +63,6 @@ export default {
                 'glow-gold-sm': '0 0 10px rgba(212, 175, 55, 0.3)',
                 'glow-gold': '0 0 20px rgba(212, 175, 55, 0.4)',
                 'glow-gold-lg': '0 0 35px rgba(212, 175, 55, 0.5)',
-                'glow-primary': '0 0 20px rgb(var(--color-primary) / 0.4)',
             },
             animation: {
                 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

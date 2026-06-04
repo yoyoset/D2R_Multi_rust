@@ -105,7 +105,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                                 "text-[10px] px-2 py-1 rounded-sm transition-all flex items-center gap-1 uppercase font-black tracking-tight",
                                 isCreatingNew
                                     ? "text-text-dim hover:text-white underline underline-offset-4"
-                                    : "bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20"
+                                    : "bg-gold/10 text-gold border border-gold/30 hover:bg-gold/20"
                             )}
                         >
                             {isCreatingNew ? t('use_existing_user') : (
@@ -129,7 +129,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                             type="text"
                             value={winUser}
                             onChange={(e) => setWinUser(e.target.value)}
-                            className="flex-1 bg-black/50 border border-white/5 rounded-sm px-3 h-8 text-[10px] text-text focus:border-primary/50 focus:outline-none transition-all font-mono"
+                            className="flex-1 bg-black/50 border border-white/5 rounded-sm px-3 h-8 text-[10px] text-text focus:border-gold/50 focus:outline-none transition-all font-mono"
                             placeholder={t('win_username')}
                         />
                     </div>
@@ -145,7 +145,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                                 onBlur={(e) => verifyWindowsPassword(e.target.value)}
                                 className={cn(
                                     "w-full bg-black/50 border rounded-sm pl-3 pr-10 h-8 text-[10px] text-text focus:outline-none transition-all font-mono",
-                                    passwordError ? "border-danger/30 focus:border-danger/50" : "border-white/10 focus:border-primary/50"
+                                    passwordError ? "border-danger/30 focus:border-danger/50" : "border-white/10 focus:border-gold/50"
                                 )}
                                 placeholder={t('win_password')}
                             />
@@ -181,7 +181,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                                 <select
                                     value={winUser}
                                     onChange={(e) => setWinUser(e.target.value)}
-                                    className="w-full h-8 bg-black/50 border border-white/5 rounded-sm pl-9 pr-3 text-[10px] text-text focus:border-primary/50 focus:outline-none appearance-none cursor-pointer transition-all uppercase font-bold tracking-tight"
+                                    className="w-full h-8 bg-black/50 border border-white/5 rounded-sm pl-9 pr-3 text-[10px] text-text focus:border-gold/50 focus:outline-none appearance-none cursor-pointer transition-all uppercase font-bold tracking-tight"
                                 >
                                     <option value="" disabled>{t('select_win_user')}</option>
                                     {osUsers.map(u => (
@@ -253,7 +253,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                                                 onBlur={(e) => verifyWindowsPassword(e.target.value)}
                                                 className={cn(
                                                     "w-full bg-surface border rounded-sm pl-3 pr-10 py-1.5 text-[10px] text-text focus:outline-none transition-all font-mono",
-                                                    passwordError ? "border-danger/30 focus:border-danger/50" : "border-white/10 focus:border-primary/50"
+                                                    passwordError ? "border-danger/30 focus:border-danger/50" : "border-white/10 focus:border-gold/50"
                                                 )}
                                                 placeholder={t('win_password')}
                                             />
@@ -281,7 +281,7 @@ export const WindowsUserSection = (props: WindowsUserSectionProps) => {
                                     <div className="flex items-center gap-3 p-2 bg-bg/50 border border-white/5 rounded-sm group/check cursor-pointer" onClick={() => setPassNeverExpires(!passNeverExpires)}>
                                         <div className={cn(
                                             "w-3.5 h-3.5 rounded-sm border flex items-center justify-center transition-all",
-                                            passNeverExpires ? "bg-primary border-primary" : "border-white/10 bg-black/40 group-hover/check:border-white/20"
+                                            passNeverExpires ? "bg-gold border-gold" : "border-white/10 bg-black/40 group-hover/check:border-white/20"
                                         )}>
                                             {passNeverExpires && <Check size={10} className="text-black stroke-[4px]" />}
                                         </div>

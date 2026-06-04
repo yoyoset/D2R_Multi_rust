@@ -52,7 +52,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
 
     return (
         <Modal isOpen={isOpen} onClose={() => {}}>
-            <ModalContent className="max-w-md border-gold/30 bg-black/95 shadow-[0_0_50px_-12px_rgba(var(--primary-rgb),0.2)]">
+            <ModalContent className="max-w-md border-gold/30 bg-black/95 shadow-[0_0_50px_-12px_rgb(var(--c-gold)/0.2)]">
                 <ModalHeader className="border-b border-line bg-surface/50">
                     <ShieldCheck size={16} className="text-gold mr-2" />
                     <span className="font-black text-[10px] uppercase tracking-[0.2em]">{t('migration_security_infra')}</span>
@@ -88,7 +88,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({ isOpen, onComple
                             
                             {/* The Bar */}
                             <div 
-                                className="h-full bg-gold relative transition-all duration-300 ease-out shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
+                                className="h-full bg-gold relative transition-all duration-300 ease-out shadow-[0_0_15px_rgb(var(--c-gold)/0.5)]"
                                 style={{ width: `${progress}%` }}
                             >
                                 {/* Light Highlight */}

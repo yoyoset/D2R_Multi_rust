@@ -49,7 +49,7 @@ export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, descri
                 <div className={cn(
                     "w-8 h-4 rounded-sm transition-colors duration-300 border",
                     checked 
-                        ? "bg-gold/90 border-gold shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]" 
+                        ? "bg-gold/90 border-gold shadow-[0_0_8px_rgb(var(--c-gold)/0.1)]" 
                         : "bg-surface border-line-2"
                 )}></div>
                 {/* Thumb Slider */}

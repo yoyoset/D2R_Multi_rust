@@ -60,7 +60,7 @@ export function UserBindingSection({
                             "text-[10px] px-2 py-1 rounded transition-all flex items-center gap-1",
                             isCreatingNew
                                 ? "text-text-dim hover:text-white underline underline-offset-4"
-                                : "bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 font-bold shadow-[0_0_10px_rgb(var(--color-primary)/0.2)]"
+                                : "bg-gold/20 text-gold border border-gold/30 hover:bg-gold/30 font-bold shadow-[0_0_10px_rgb(var(--c-gold)/0.2)]"
                         )}
                     >
                         {isCreatingNew ? t('use_existing_user') : (
@@ -82,7 +82,7 @@ export function UserBindingSection({
                         type="text"
                         value={winUser}
                         onChange={(e) => setWinUser(e.target.value)}
-                        className="flex-1 bg-black/50 border border-white/5 rounded-sm px-3 py-1.5 text-[10px] text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all font-mono h-8"
+                        className="flex-1 bg-black/50 border border-white/5 rounded-sm px-3 py-1.5 text-[10px] text-text focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all font-mono h-8"
                         placeholder={t('win_username')}
                     />
                 </div>
@@ -95,7 +95,7 @@ export function UserBindingSection({
                         <select
                             value={winUser}
                             onChange={(e) => setWinUser(e.target.value)}
-                            className="w-full h-10 bg-black/50 border border-white/10 rounded-sm pl-10 pr-3 text-[14px] text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer transition-all"
+                            className="w-full h-10 bg-black/50 border border-white/10 rounded-sm pl-10 pr-3 text-[14px] text-text focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 appearance-none cursor-pointer transition-all"
                         >
                             <option value="" disabled>{t('select_win_user')}</option>
                             {osUsers.map(u => {

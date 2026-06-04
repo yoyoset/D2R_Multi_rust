@@ -41,7 +41,7 @@ export const AvatarPicker = ({ avatar, onSelect, previewAvatar, setPreviewAvatar
                         onClick={() => onSelect(cls)}
                         className={cn(
                             "relative transition-all duration-200 outline-none rounded-sm border",
-                            avatar === cls ? "border-primary bg-primary/10" : "border-white/5 opacity-60 hover:opacity-100 hover:border-white/20"
+                            avatar === cls ? "border-gold bg-gold/10" : "border-white/5 opacity-60 hover:opacity-100 hover:border-white/20"
                         )}
                     >
                         <ClassAvatar cls={cls} size="sm" />
@@ -52,7 +52,7 @@ export const AvatarPicker = ({ avatar, onSelect, previewAvatar, setPreviewAvatar
                     onMouseLeave={() => setPreviewAvatar(null)}
                     className={cn(
                         "w-7 h-7 rounded-sm border flex items-center justify-center cursor-pointer transition-all bg-surface",
-                        avatar?.startsWith('data:') ? "border-primary text-primary" : "border-white/10 text-text-dim hover:text-text-dim hover:border-white/20"
+                        avatar?.startsWith('data:') ? "border-gold text-gold" : "border-white/10 text-text-dim hover:text-text-dim hover:border-white/20"
                     )}
                 >
                     <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />

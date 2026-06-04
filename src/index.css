@@ -4,9 +4,6 @@
 
 :root {
   color-scheme: dark;
-  --color-primary: 59 130 246; /* Legacy: Blue 500 for backward compat */
-  --color-success: 16 185 129;
-  --color-info: 37 99 235;
 }
 
 html, body {

@@ -96,7 +96,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                     >
                         <div className={cn(
                             "w-4 h-4 rounded border flex items-center justify-center transition-all bg-surface",
-                            dontShowAgain ? "bg-gold border-gold shadow-[0_0_8px_rgba(var(--primary-rgb),0.3)]" : "border-line-2 group-hover:border-line-2"
+                            dontShowAgain ? "bg-gold border-gold shadow-[0_0_8px_rgb(var(--c-gold)/0.3)]" : "border-line-2 group-hover:border-line-2"
                         )}>
                             {dontShowAgain && (
                                 <svg className="w-2.5 h-2.5 text-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,7 +109,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                         </span>
                     </div>
 
-                    <Button variant="solid" onClick={() => onClose(dontShowAgain)} className="bg-gold text-text px-10 h-9 text-[13px] font-bold rounded-md shadow-lg shadow-primary/20">
+                    <Button variant="solid" onClick={() => onClose(dontShowAgain)} className="bg-gold text-text px-10 h-9 text-[13px] font-bold rounded-md shadow-lg shadow-gold/20">
                         {t('got_it')}
                     </Button>
                 </ModalFooter>

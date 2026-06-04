@@ -45,7 +45,7 @@ export function PasswordSection({
                         disabled={isValidatingPass}
                         className={cn(
                             "w-full bg-black/50 border border-white/5 rounded-sm pl-3 pr-10 py-1.5 text-[10px] text-text focus:outline-none focus:ring-1 transition-all font-mono h-8 disabled:opacity-50",
-                            passwordError ? "border-danger/50 focus:border-danger focus:ring-danger/20" : "focus:border-primary focus:ring-primary/20"
+                            passwordError ? "border-danger/50 focus:border-danger focus:ring-danger/20" : "focus:border-gold focus:ring-gold/20"
                         )}
                         placeholder={t('win_password')}
                     />
@@ -66,7 +66,7 @@ export function PasswordSection({
             </div>
             {!passwordError && winPass === "********" && (
                 <div className="flex items-center gap-1.5 px-[3.5rem] text-[10px] text-text-dim animate-in fade-in slide-in-from-top-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-gold/40 animate-pulse" />
                     {t('credential_stored_hint')}
                 </div>
             )}

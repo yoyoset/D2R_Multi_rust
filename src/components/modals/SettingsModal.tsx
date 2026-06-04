@@ -5,9 +5,8 @@ import { AppConfig, saveConfig, getDataLocationInfo, relocateData, openPath, ope
 import { useLogs } from "../../store/useLogs";
 import { useNotification } from "../../store/useNotification";
 import { useTranslation } from "react-i18next";
-import { Check, Palette, Settings as SettingsIcon, Settings2, Trash2, FileText, Github, RefreshCw, FolderOpen, HardDrive, AlertTriangle } from "lucide-react";
+import { Palette, Settings as SettingsIcon, Settings2, Trash2, FileText, Github, RefreshCw, FolderOpen, HardDrive, AlertTriangle } from "lucide-react";
 import { cn } from "../../lib/utils";
-import { applyThemeColor } from "../../lib/utils/color";
 import { THEMES as SKINS, ThemeId, getStoredTheme, setTheme } from "../../lib/theme";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 import { getVersion } from "@tauri-apps/api/app";
@@ -26,17 +25,8 @@ interface SettingsModalProps {
     onOpenWhatsNew?: () => void;
 }
 
-const THEMES = [
-    { name: 'Linear Blue', color: '#3b82f6' },
-    { name: 'Violet', color: '#8b5cf6' },
-    { name: 'Emerald', color: '#10b981' },
-    { name: 'Amber', color: '#f59e0b' },
-    { name: 'Rose', color: '#f43f5e' },
-];
-
 export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, onOpenWhatsNew }: SettingsModalProps) {
     const { t } = useTranslation();
-    const [themeColor, setThemeColor] = useState(config.theme_color || '#3b82f6');
     const [skin, setSkin] = useState<ThemeId>(getStoredTheme());
     const [closeToTray, setCloseToTray] = useState(config.close_to_tray ?? true);
     const [enableLogging, setEnableLogging] = useState(config.enable_logging ?? false);
@@ -147,17 +137,11 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
     };
 
     useEffect(() => {
-        setThemeColor(config.theme_color || '#3b82f6');
         setCloseToTray(config.close_to_tray ?? true);
         setEnableLogging(config.enable_logging ?? false);
         setEnableWindowRename(config.enable_window_rename ?? false);
         setWindowRenameFormat(config.window_rename_format || 'note');
     }, [config]);
-
-    // Apply Live Theme Preview
-    useEffect(() => {
-        applyThemeColor(themeColor);
-    }, [themeColor]);
 
     const handleCancel = () => {
         onClose();
@@ -168,7 +152,6 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
         try {
             const newConfig = {
                 ...config,
-                theme_color: themeColor,
                 close_to_tray: closeToTray,
                 enable_logging: enableLogging,
                 enable_window_rename: enableWindowRename,
@@ -236,24 +219,6 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                         </button>
                                     ))}
                                 </div>
-                            </div>
-
-                            {/* Accent color */}
-                            <span className="text-[10px] font-bold text-text-faint uppercase tracking-wider block pt-1">{t('accent_color')}</span>
-                            <div className="flex flex-wrap gap-2">
-                                {THEMES.map((theme) => (
-                                    <button
-                                        key={theme.color}
-                                        onClick={() => setThemeColor(theme.color)}
-                                        className={cn(
-                                            "w-7 h-7 rounded-sm flex items-center justify-center transition-all border border-line",
-                                            themeColor === theme.color ? "border-white ring-1 ring-white/20" : "opacity-60 hover:opacity-100"
-                                        )}
-                                        style={{ backgroundColor: theme.color }}
-                                    >
-                                        {themeColor === theme.color && <Check size={16} className="text-text" />}
-                                    </button>
-                                ))}
                             </div>
                         </div>
 
@@ -346,7 +311,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                                 className={cn(
                                                     "px-2 py-1.5 rounded-sm border text-left transition-all",
                                                     windowRenameFormat === opt.id 
-                                                        ? "bg-gold/10 border-gold/40 text-gold shadow-lg shadow-primary/5" 
+                                                        ? "bg-gold/10 border-gold/40 text-gold shadow-lg shadow-gold/5" 
                                                         : "bg-black/20 border-line text-text-dim hover:border-line-2"
                                                 )}
                                             >
@@ -429,7 +394,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                     <Button variant="ghost" className="text-text-dim h-8 text-[10px] uppercase font-black tracking-widest" onClick={handleCancel} disabled={isSaving}>
                         {t('cancel')}
                     </Button>
-                    <Button variant="solid" className="h-8 px-6 bg-gold font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/10 border-none" onClick={handleSave} isLoading={isSaving}>
+                    <Button variant="solid" className="h-8 px-6 bg-gold font-black text-[10px] uppercase tracking-widest shadow-lg shadow-gold/10 border-none" onClick={handleSave} isLoading={isSaving}>
                         {t('save')}
                     </Button>
                 </ModalFooter>

@@ -73,7 +73,7 @@ export function AvatarSection({ avatar, setAvatar, previewAvatar, setPreviewAvat
                         onClick={() => setAvatar(cls)}
                         className={cn(
                             "relative transition-all duration-200 outline-none rounded-sm",
-                            avatar === cls ? "ring-2 ring-primary ring-offset-2 ring-offset-zinc-900 scale-105 z-10" : "hover:scale-105 opacity-60 hover:opacity-100"
+                            avatar === cls ? "ring-2 ring-gold ring-offset-2 ring-offset-zinc-900 scale-105 z-10" : "hover:scale-105 opacity-60 hover:opacity-100"
                         )}
                     >
                         <ClassAvatar cls={cls} size="sm" />
@@ -84,7 +84,7 @@ export function AvatarSection({ avatar, setAvatar, previewAvatar, setPreviewAvat
                     onMouseLeave={() => setPreviewAvatar(null)}
                     className={cn(
                         "w-7 h-7 rounded-sm border flex items-center justify-center cursor-pointer transition-all bg-black/40 hover:bg-black/60",
-                        avatar?.startsWith('data:') ? "border-primary text-primary" : "border-white/10 text-text-dim hover:text-text-dim"
+                        avatar?.startsWith('data:') ? "border-gold text-gold" : "border-white/10 text-text-dim hover:text-text-dim"
                     )}
                 >
                     <input type="file" className="hidden" accept="image/*" onChange={(e) => {
