@@ -115,7 +115,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                         <div className={cn(
                         "w-full",
                         viewMode === 'card'
-                            ? "grid gap-3 w-full grid-cols-[repeat(auto-fill,minmax(232px,1fr))]"
+                            ? "grid gap-2.5 w-full grid-cols-[repeat(auto-fill,minmax(150px,1fr))]"
                             : "flex flex-col"
                     )}>
                         <SortableContext

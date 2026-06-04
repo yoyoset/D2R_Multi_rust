@@ -107,36 +107,24 @@ export function SortableAccountItem({ account, isInvalid, isMissingCredentials, 
             >
                 <div className="gc-top">
                     {Avatar}
-                    <div className="min-w-0">
-                        <div className="gc-alias truncate flex items-center">
+                    <div className="min-w-0 flex-1">
+                        <div className="gc-alias truncate" title={account.bnet_account || ''}>
                             {account.bnet_account || "—"}
-                            {isMissingCredentials && (
-                                <span className="warn-ic" title={t('msg.auth.reauth_required')}>
-                                    <AlertTriangle size={13} />
-                                </span>
-                            )}
                         </div>
                         <div className="gc-uid truncate">{account.win_user}</div>
                     </div>
+                    {isMissingCredentials && (
+                        <span className="warn-ic shrink-0" title={t('msg.auth.reauth_required')}>
+                            <AlertTriangle size={13} />
+                        </span>
+                    )}
                 </div>
 
-                <div className="gc-meta">
-                    <div className="r">
-                        <b>{t('table_game_path')}</b>
-                        <span className="truncate max-w-[140px]" title={account.game_path}>
-                            {account.game_path || "—"}
-                        </span>
-                    </div>
-                    <div className="r">
-                        <b>{t('table_notes')}</b>
-                        <span className="truncate max-w-[140px] text-gold/70 italic">
-                            {account.note || "—"}
-                        </span>
-                    </div>
-                    <div className="r items-center">
-                        <b>{t('status_label')}</b>
-                        <span className="col-status">{StatusPips}</span>
-                    </div>
+                <div className="gc-foot">
+                    <span className="gc-note truncate" title={account.note || account.game_path || ''}>
+                        {account.note || (account.game_path ? account.game_path.split(/[\\/]/).pop() : "—")}
+                    </span>
+                    <span className="col-status">{StatusPips}</span>
                 </div>
 
                 {Actions}

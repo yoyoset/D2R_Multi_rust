@@ -412,16 +412,17 @@ body{
 
 /* grid view */
 .acct-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(248px,1fr)); gap:14px; }
-.gcard{ position:relative; padding:16px; border:1px solid var(--line); border-radius:var(--radius-lg); background:var(--surface); cursor:pointer; transition:.16s; overflow:hidden; }
+.gcard{ position:relative; padding:11px 12px; border:1px solid var(--line); border-radius:var(--radius-lg); background:var(--surface); cursor:pointer; transition:.16s; overflow:hidden; }
 .gcard:hover{ border-color:var(--line-strong); transform:translateY(-2px); background:var(--surface-2); }
 .gcard.sel{ border-color:var(--line-strong); background:linear-gradient(160deg,rgb(var(--c-gold) / 0.10),var(--surface)); }
 .gcard.empty{ opacity:.45; }
-.gcard .gc-top{ display:flex; align-items:center; gap:11px; margin-bottom:12px; }
-.gcard .gc-alias{ font-family:var(--font-display); font-size:15px; font-weight:700; }
-.gcard .gc-uid{ font-family:var(--font-mono); font-size:10.5px; color:var(--text-faint); }
-.gcard .gc-meta{ display:flex; flex-direction:column; gap:7px; font-family:var(--font-mono); font-size:11.5px; color:var(--text-faint); }
-.gcard .gc-meta .r{ display:flex; justify-content:space-between; gap:10px; }
-.gcard .gc-meta .r b{ color:var(--text-dim); font-weight:500; }
+.gcard .gc-top{ display:flex; align-items:center; gap:9px; margin-bottom:10px; }
+.gcard .gc-top .av{ width:32px; height:32px; flex:0 0 auto; }
+.gcard .gc-alias{ font-family:var(--font-display); font-size:14px; font-weight:700; color:var(--text); line-height:1.15; }
+.gcard .gc-uid{ font-family:var(--font-mono); font-size:10px; color:var(--text-faint); line-height:1.2; margin-top:1px; }
+.gcard .gc-foot{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:8px; border-top:1px solid var(--line); }
+.gcard .gc-note{ font-family:var(--font-display); font-style:italic; font-size:11.5px; color:rgb(var(--c-gold) / 0.75); min-width:0; }
+.gcard .gc-foot .col-status{ flex:0 0 auto; gap:5px; }
 
 /* ============================== STATUS BAR ============================== */
 .statusbar{
@@ -457,8 +458,9 @@ body{
 
 /* account mgmt table */
 .amt{ width:100%; border:1px solid var(--line); border-radius:var(--radius-lg); overflow:hidden; }
-.amt-head, .amt-row{ display:grid; grid-template-columns:48px 150px 1fr 1.4fr 130px 100px; gap:16px; align-items:center; padding:0 18px; }
-.amt-head{ height:46px; background:rgba(0,0,0,0.3); border-bottom:1px solid var(--line-2); font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-faint); }
+.amt-head, .amt-row{ display:grid; grid-template-columns:42px 96px 1.3fr 1.5fr 88px 80px; gap:12px; align-items:center; padding:0 14px; }
+.amt-head{ height:42px; background:rgba(0,0,0,0.3); border-bottom:1px solid var(--line-2); font-family:var(--font-mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); }
+.amt-head > div{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .amt-row{ height:62px; border-bottom:1px solid var(--line); transition:.14s; }
 .amt-row:last-child{ border-bottom:0; }
 .amt-row:hover{ background:rgb(var(--hover) / 0.02); }
