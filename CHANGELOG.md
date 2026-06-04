@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.3] - 2026-06-04
+
+### Fixed (修复)
+- **List Selection & Polish / 列表选中与细节**: Account-row action buttons no longer stay pinned over the status dots when a row is selected (they show on hover only); unified the account-manager selected-row highlight with the dashboard (gold tick + gradient); fixed card aliases whose descenders (y/g) were clipped. (修复了列表选中行时编辑/快照按钮常驻遮挡状态点的问题——改为仅悬停显示；统一了账号管理与仪表盘的选中行高亮（金色竖条+渐变）；修复了卡片别名下伸笔画 y/g 被裁切的问题)
+
+---
+
 ## [0.6.2] - 2026-06-04
 
 ### Changed (调整)
