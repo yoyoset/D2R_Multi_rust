@@ -6,10 +6,11 @@ import { VaultIssue } from "../../lib/api";
 interface AppFooterProps {
     isAdmin: boolean;
     version: string;
+    // Kept for API compatibility (vault audit still runs); no longer shown in the status bar.
     vaultHealthIssues?: VaultIssue[];
 }
 
-export function AppFooter({ isAdmin, version, vaultHealthIssues }: AppFooterProps) {
+export function AppFooter({ isAdmin, version }: AppFooterProps) {
     const { t } = useTranslation();
 
     return (
@@ -17,28 +18,6 @@ export function AppFooter({ isAdmin, version, vaultHealthIssues }: AppFooterProp
             <div className="sb-item">
                 <div className="sb-dot"></div>
                 <span>{t('footer_runtime_ready')}</span>
-            </div>
-
-            {/* Vault Health Indicator */}
-            <div className="sb-item group cursor-help"
-                title={vaultHealthIssues && vaultHealthIssues.length > 0
-                    ? vaultHealthIssues.map(i => `${i.win_user}: ${i.reason}`).join('\n')
-                    : ''}>
-                <ShieldCheck size={12} className={cn(
-                    !vaultHealthIssues || vaultHealthIssues.length === 0
-                        ? "text-ok" : "text-warn animate-pulse"
-                )} />
-                <span className="lbl">Vault:</span>
-                <span className={cn(
-                    "sb-tag",
-                    !vaultHealthIssues || vaultHealthIssues.length === 0
-                        ? "ok"
-                        : ""
-                )}>
-                    {!vaultHealthIssues || vaultHealthIssues.length === 0
-                        ? t('vault_health_ok')
-                        : `${vaultHealthIssues.length}${t('vault_health_issues')}`}
-                </span>
             </div>
 
             <div className="sb-right">
