@@ -11,10 +11,7 @@ All notable changes to this project will be documented in this file.
 - **Settings Cleanup / 设置精简**: Removed the non-functional "Advanced Launch Control" toggle and the unused Vault status chip from the status bar. (移除了已失效的「高级启动控制」开关，以及状态栏中无用的 Vault 状态标签)
 
 ### Fixed (修复)
-- **Critical: Hidden Title Bar / 关键修复：标题栏丢失**: Fixed a stacking-order bug where the background layer covered the title bar, navigation tabs, and status bar (window controls were unreachable). (修复了背景层因层叠顺序问题遮挡标题栏、导航标签与状态栏的严重 BUG，此前窗口控制按钮无法点击)
 - **Handle Race Condition / 句柄竞态**: Eliminated a Win32 handle race in mutex/process inspection that could close a handle still in use. (修复了互斥锁/进程句柄检查中可能关闭仍在使用句柄的 Win32 竞态问题)
-- **Localization Gaps / 本地化补全**: Filled missing translation keys that previously showed raw keys (e.g. edit, audit vault, diagnostics labels). (补齐了此前会显示原始键名的多个缺失翻译条目)
-- **Version Display / 版本号显示**: Settings now shows the real build version immediately. (设置中的版本号现在即时显示真实构建版本)
 
 ---
 
