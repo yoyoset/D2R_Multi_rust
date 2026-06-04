@@ -383,8 +383,8 @@ body{
 }
 .acct-row .acct-actions{ top:50%; right:14px; transform:translateY(-50%); }
 .gcard .acct-actions{ top:12px; right:12px; }
-.acct-row:hover .acct-actions, .acct-row.sel .acct-actions,
-.gcard:hover .acct-actions, .gcard.sel .acct-actions{ opacity:1; pointer-events:auto; }
+.acct-row:hover .acct-actions,
+.gcard:hover .acct-actions{ opacity:1; pointer-events:auto; }
 .acct-actions button, .acct-actions .drag{
   width:27px; height:25px; display:grid; place-items:center;
   color:var(--text-dim); background:none; border:0; border-radius:3px; cursor:pointer; transition:.13s;
