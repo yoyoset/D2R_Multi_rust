@@ -463,9 +463,13 @@ body{
 .amt-head, .amt-row{ display:grid; grid-template-columns:38px 92px 1.3fr 1.5fr 88px 76px; gap:12px; align-items:center; padding:0 13px; }
 .amt-head{ height:36px; background:rgba(0,0,0,0.3); border-bottom:1px solid var(--line-2); font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); }
 .amt-head > div{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.amt-row{ height:46px; border-bottom:1px solid var(--line); transition:.14s; }
+.amt-row{ position:relative; height:46px; border-bottom:1px solid var(--line); transition:.14s; }
+.amt-row::before{ content:""; position:absolute; left:0; top:8px; bottom:8px; width:3px; border-radius:3px; background:transparent; transition:.16s; }
 .amt-row:last-child{ border-bottom:0; }
 .amt-row:hover{ background:rgb(var(--hover) / 0.02); }
+.amt-row:hover::before{ background:var(--line-strong); }
+.amt-row.sel{ background:linear-gradient(90deg, rgb(var(--c-gold) / 0.10), rgb(var(--c-gold) / 0.02)); }
+.amt-row.sel::before{ background:linear-gradient(180deg,var(--gold-bright),var(--gold-deep)); box-shadow:0 0 14px rgb(var(--c-gold) / 0.6); }
 .amt input{ width:100%; background:rgba(0,0,0,0.25); border:1px solid var(--line); border-radius:3px; padding:7px 9px; color:var(--text); font-family:var(--font-mono); font-size:12.5px; transition:.14s; }
 .amt input:focus{ outline:none; border-color:var(--line-strong); background:rgb(var(--c-gold) / 0.05); }
 .cred-dot{ display:flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim); }

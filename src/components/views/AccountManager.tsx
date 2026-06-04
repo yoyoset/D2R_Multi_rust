@@ -81,7 +81,7 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, invalidAccoun
                                 onClick={() => setSelectedId(account.id)}
                                 className={cn(
                                     "amt-row group cursor-pointer",
-                                    selectedId === account.id && "bg-gold/5",
+                                    selectedId === account.id && "sel",
                                     isInvalid && "bg-danger/5"
                                 )}
                             >
