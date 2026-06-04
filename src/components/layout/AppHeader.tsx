@@ -26,9 +26,6 @@ export function AppHeader({
     return (
         <header className="topnav">
             <div className="brand">
-                <div className="brand-seal">
-                    <img src="/app-icon.png" alt="logo" className="w-7 h-7" />
-                </div>
                 <div className="brand-text">
                     <div className="bt-name">{t('app_name_part1')} <b>{t('app_name_part2')}</b></div>
                     <div className="bt-mode">
