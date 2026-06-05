@@ -12,7 +12,7 @@ pub fn launch_game(
     app: &AppHandle,
     account: &Account,
     bnet_only: bool,
-    _force: bool,
+    force: bool,
     advanced_mode: bool,
 ) -> Result<u32, AccountError> {
     // 0. Pre-Maintenance Audit: Look for "Double-Online" accounts to backup
@@ -21,22 +21,57 @@ pub fn launch_game(
     }
     
     let state = app.state::<crate::state::AppState>();
-    
-    // Industrial Hardening: Multi-Account Mode Enforcement
-    {
-        let config = state.config_lock();
-        if config.advanced_launch_mode == Some(false) {
-            let status_cache = state.status_lock();
-            let any_active = status_cache.iter().any(|(user, status)| {
-                // Ignore the current account if it's already online (launcher will kill it anyway)
-                user.to_lowercase() != account.win_user.to_lowercase() && status.d2r_pid.is_some()
-            });
-            
-            if any_active {
-                logger::log_localized(Some(app), "error", "error.game.multi_account_blocked", None, "Launch Blocked: Simultaneous accounts disabled in settings and another account is already active");
-                return Err(AccountError::SysInfo("error.game.multi_account_blocked".to_string()));
+
+    // Soft launch pacing (NOT a multi-account block).
+    //
+    // Multi-account is the core purpose of this tool, so we never block on
+    // "another account is running". The only real hazard is a timing race:
+    // every launch kills Battle.net globally, so launching a *second* account
+    // before the *previous* one's Battle.net has come up can abort it. We guard
+    // only that window, and softly:
+    //   - `force == true` bypasses it entirely (the dashboard's amber 强制
+    //     button and the sequencer both pass force=true).
+    //   - It only applies across *different* accounts, never to re-launching
+    //     the same one.
+    //   - It releases the instant the previous account's Battle.net (or D2R)
+    //     is visible in the status cache, or after a safety cap — so it can
+    //     never strand a launch indefinitely.
+    if !force {
+        const PACING_CAP: std::time::Duration = std::time::Duration::from_secs(60);
+        let cur_user = account.win_user.to_lowercase();
+        let pending_prev = {
+            let last = state.last_launch_lock();
+            last.as_ref().and_then(|(prev_user, when)| {
+                if prev_user != &cur_user && when.elapsed() < PACING_CAP {
+                    Some(prev_user.clone())
+                } else {
+                    None
+                }
+            })
+        };
+
+        if let Some(prev_user) = pending_prev {
+            let prev_up = {
+                let status_cache = state.status_lock();
+                status_cache.iter().any(|(user, status)| {
+                    user.to_lowercase() == prev_user
+                        && (status.bnet_pid.is_some() || status.d2r_pid.is_some())
+                })
+            };
+
+            if !prev_up {
+                logger::log_localized(Some(app), "warn", "error.game.launch_too_soon",
+                    Some(serde_json::json!({ "user": prev_user })),
+                    "Launch pacing: previous account's Battle.net is still starting up; wait or force");
+                return Err(AccountError::SysInfo("LAUNCH_TOO_SOON".to_string()));
             }
         }
+    }
+
+    // Record this launch so the next one is paced against it.
+    {
+        let mut last = state.last_launch_lock();
+        *last = Some((account.win_user.to_lowercase(), std::time::Instant::now()));
     }
 
     state.refresh_game_processes();

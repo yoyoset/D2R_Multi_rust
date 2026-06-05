@@ -17,6 +17,9 @@ pub struct AppState {
     pub active_sequence: Mutex<Option<ActiveSequenceState>>,
     pub config: Mutex<crate::modules::config::AppConfig>,
     pub account_statuses: Mutex<HashMap<String, AccountStatus>>,
+    /// Soft launch pacing: (win_user lowercase, when) of the most recent launch.
+    /// Used to avoid stranding a previous account whose Battle.net hasn't come up yet.
+    pub last_launch: Mutex<Option<(String, std::time::Instant)>>,
     pub shutdown_tx: tokio::sync::broadcast::Sender<()>,
 }
 
@@ -32,6 +35,7 @@ impl AppState {
             active_sequence: Mutex::new(None),
             config: Mutex::new(crate::modules::config::AppConfig::default()),
             account_statuses: Mutex::new(HashMap::new()),
+            last_launch: Mutex::new(None),
             shutdown_tx: tokio::sync::broadcast::channel(1).0,
         }
     }
@@ -59,6 +63,11 @@ impl AppState {
     /// Optimized zero-latency lock for account process status cache
     pub fn status_lock(&self) -> MutexGuard<'_, HashMap<String, AccountStatus>> {
         self.account_statuses.lock()
+    }
+
+    /// Lock for the soft launch-pacing record
+    pub fn last_launch_lock(&self) -> MutexGuard<'_, Option<(String, std::time::Instant)>> {
+        self.last_launch.lock()
     }
 
     pub fn refresh_game_processes(&self) {

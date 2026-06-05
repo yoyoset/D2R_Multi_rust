@@ -168,11 +168,11 @@ export function useAppCore() {
         addLog({ message: t('log_edit_account', { name: acc.win_user }), level: 'info' });
     }, [t, addLog]);
 
-    const handleLaunch = useCallback(async (bnetOnly: boolean = false, advancedMode: boolean = false) => {
+    const handleLaunch = useCallback(async (bnetOnly: boolean = false, advancedMode: boolean = false, force: boolean = false) => {
         if (!selectedAccountId) return;
         const account = config.accounts.find(a => a.id === selectedAccountId);
         if (!account) return;
-        await performLaunch(account, bnetOnly, false, advancedMode, handleEditAccount);
+        await performLaunch(account, bnetOnly, force, advancedMode, handleEditAccount);
     }, [selectedAccountId, config.accounts, performLaunch, handleEditAccount]);
 
     const handleDeleteAccount = useCallback(async (id: string) => {

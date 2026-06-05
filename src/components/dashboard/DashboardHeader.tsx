@@ -10,7 +10,7 @@ interface DashboardHeaderProps {
     config: AppConfig;
     viewMode: 'card' | 'list';
     onViewModeChange: (mode: 'card' | 'list') => void;
-    onLaunch: (bnetOnly?: boolean, advancedMode?: boolean) => void;
+    onLaunch: (bnetOnly?: boolean, advancedMode?: boolean, force?: boolean) => void;
     isLaunching: boolean;
     advancedLaunchMode?: boolean;
     selectedAccountStatus?: AccountStatus;

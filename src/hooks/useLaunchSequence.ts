@@ -90,6 +90,35 @@ export function useLaunchSequence() {
                 return;
             }
 
+            if (errorMsg.includes('LAUNCH_TOO_SOON')) {
+                showBlocking(
+                    t('launch_too_soon_title'),
+                    t('launch_too_soon_desc'),
+                    [
+                        {
+                            label: t('cancel'),
+                            variant: 'outline',
+                            onClick: () => {
+                                setIsLaunching(false);
+                                closeBlocking();
+                            }
+                        },
+                        {
+                            label: t('force_launch'),
+                            variant: 'danger',
+                            onClick: () => {
+                                closeBlocking();
+                                performLaunch(account, bnetOnly, true, advancedMode, onEdit);
+                            }
+                        }
+                    ],
+                    'warning',
+                    undefined,
+                    () => setIsLaunching(false)
+                );
+                return;
+            }
+
             if (errorMsg.includes('USER_UNINITIALIZED')) {
                 showBlocking(
                     t('user_uninitialized_title'),

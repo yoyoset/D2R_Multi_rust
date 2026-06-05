@@ -58,6 +58,7 @@ pub fn init_translations() {
     
     en.insert("logs.system.atomic_save".into(), "Atomic configuration persistence pulse: OK".into());
     en.insert("error.game.multi_account_blocked".into(), "Launch Blocked: Simultaneous accounts disabled in settings and another account is already active".into());
+    en.insert("error.game.launch_too_soon".into(), "Launch pacing: previous account ({user}) Battle.net is still starting up; wait a moment or force launch".into());
     en.insert("error.game.invalid_path".into(), "Battle.net installation path not found".into());
     en.insert("error.game.user_uninitialized".into(), "Windows account environment initialization incomplete".into());
     en.insert("error.diag.icacls_failed".into(), "icacls inspection failed: {error}".into());
@@ -134,6 +135,7 @@ pub fn init_translations() {
 
     zh.insert("logs.system.atomic_save".into(), "原子配置持久化脉冲: 正常".into());
     zh.insert("error.game.multi_account_blocked".into(), "启动拦截：设置中已禁用多账号同时在线，且当前已有其他账号正在运行".into());
+    zh.insert("error.game.launch_too_soon".into(), "启动节流：上一个账号（{user}）的战网还在启动中，请稍候片刻或强制启动".into());
     zh.insert("error.game.invalid_path".into(), "未找到 Battle.net 安装路径".into());
     zh.insert("error.game.user_uninitialized".into(), "Windows 账户环境初始化未完成".into());
     zh.insert("error.diag.icacls_failed".into(), "icacls 权限检查失败：{error}".into());
@@ -210,6 +212,7 @@ pub fn init_translations() {
 
     tw.insert("logs.system.atomic_save".into(), "原子配置持久化脈衝: 正常".into());
     tw.insert("error.game.multi_account_blocked".into(), "啟動攔截：設置中已禁用多帳號同時在線，且當前已有其他帳號正在運行".into());
+    tw.insert("error.game.launch_too_soon".into(), "啟動節流：上一個帳號（{user}）的戰網還在啟動中，請稍候片刻或強制啟動".into());
     tw.insert("error.game.invalid_path".into(), "未找到 Battle.net 安裝路徑".into());
     tw.insert("error.game.user_uninitialized".into(), "Windows 帳戶環境初始化未完成".into());
     tw.insert("error.diag.icacls_failed".into(), "icacls 權限檢查失敗：{error}".into());
@@ -286,6 +289,7 @@ pub fn init_translations() {
 
     ja.insert("logs.system.atomic_save".into(), "アトミック構成の永続化パルス: 正常".into());
     ja.insert("error.game.multi_account_blocked".into(), "起動をブロックしました：設定で複数アカウントの同時オンラインが禁止されており、既に別のアカウントがアクティブです".into());
+    ja.insert("error.game.launch_too_soon".into(), "起動ペーシング：前のアカウント（{user}）の Battle.net がまだ起動中です。少し待つか強制起動してください".into());
     ja.insert("error.game.invalid_path".into(), "Battle.net インストールパスが見つかりません".into());
     ja.insert("error.game.user_uninitialized".into(), "Windows アカウント環境の初期化が未完了です".into());
     ja.insert("error.diag.icacls_failed".into(), "icacls アクセス権限チェックに失敗しました：{error}".into());
@@ -364,6 +368,7 @@ pub fn init_translations() {
 
     ko.insert("logs.system.atomic_save".into(), "원자적 구성 지속성 펄스: 정상".into());
     ko.insert("error.game.multi_account_blocked".into(), "실행 차단: 설정에서 여러 계정의 동시 접속이 비활성화되어 있고 이미 다른 계정이 실행 중입니다".into());
+    ko.insert("error.game.launch_too_soon".into(), "실행 페이싱: 이전 계정({user})의 배틀넷이 아직 시작 중입니다. 잠시 기다리거나 강제 실행하십시오".into());
     ko.insert("error.game.invalid_path".into(), "Battle.net 설치 경로를 찾을 수 없습니다".into());
     ko.insert("error.game.user_uninitialized".into(), "Windows 계정 환경 초기화가 완료되지 않았습니다".into());
     ko.insert("logs.config.readme_snapshot_title".into(), "# D2R Multiplay 계정 스냅샷 매핑 (자동 생성)".into());

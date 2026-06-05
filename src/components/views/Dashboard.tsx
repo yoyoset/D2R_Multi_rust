@@ -32,7 +32,7 @@ interface DashboardProps {
     missingCredentialIds: Set<string>;
     selectedAccountId: string | null;
     onSelectAccount: (id: string) => void;
-    onLaunch: (bnetOnly?: boolean, advancedMode?: boolean) => void;
+    onLaunch: (bnetOnly?: boolean, advancedMode?: boolean, force?: boolean) => void;
     isLaunching: boolean;
     advancedLaunchMode?: boolean;
     onReorder: (newAccounts: Account[]) => void;

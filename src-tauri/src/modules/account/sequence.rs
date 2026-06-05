@@ -222,8 +222,10 @@ pub async fn trigger_current_step(
     let app_handle = app.clone();
     let account_clone = account.clone();
 
+    // force=true: the sequencer is trusted orchestration with its own pacing,
+    // so it bypasses the soft launch-pacing guard (which targets manual clicks).
     let result = tauri::async_runtime::spawn_blocking(move || {
-        launch_game(&*os, &app_handle, &account_clone, false, false, false)
+        launch_game(&*os, &app_handle, &account_clone, false, true, false)
     }).await.map_err(|e| format!("logs.inspector.task_join_error|{{\"error\":\"{}\"}}", e))?;
 
     if let Err(e) = result {

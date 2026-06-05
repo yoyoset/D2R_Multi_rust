@@ -354,6 +354,14 @@ body{
 .launch.net .l-icon{ color:var(--net); border-color:rgb(var(--c-net) / 0.4); background:rgb(var(--c-net) / 0.08); }
 .launch.net .l-title{ color:#c4d8f3; }
 
+/* Force state: BN or game already active — relaunch will forcibly kill & restart */
+.launch.force{ background:linear-gradient(110deg, rgb(var(--c-warn) / 0.26), rgb(var(--c-surface) / 0.4)); border-color:rgb(var(--c-warn) / 0.45); }
+.launch.force::before{ background:radial-gradient(380px 120px at 18% 50%, rgb(var(--c-warn) / 0.18), transparent 70%); }
+.launch.force:hover::before{ opacity:1; }
+.launch.force .l-icon{ color:var(--warn); border-color:rgb(var(--c-warn) / 0.45); background:rgb(var(--c-warn) / 0.1); }
+.launch.force .l-title{ color:#f0d9a8; }
+.l-force-word{ color:var(--danger); font-weight:800; }
+
 .launch.busy{ pointer-events:none; }
 .launch .l-prog{ position:absolute; left:0; bottom:0; height:3px; width:0; background:var(--gold-bright); box-shadow:0 0 10px var(--gold); transition:width .1s linear; }
 

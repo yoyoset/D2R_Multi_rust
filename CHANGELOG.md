@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.5] - 2026-06-05
+
+### Fixed (修复)
+- **Multi-Account Launch Unblocked / 解除多开拦截**: Removed an over-aggressive guard that blocked launching a new account whenever another account's game was already running (`multi_account_blocked`) — it defeated the tool's core multi-boxing purpose and broke the sequencer. (移除了一个过度严格的拦截：只要有其他账号的游戏正在运行就禁止启动新账号——它违背了工具多开的核心用途，并会中断序列自动启动)
+
+### Changed (调整)
+- **Soft Launch Pacing / 软性启动节流**: Replaced the hard block with a soft, bypassable guard that only protects the real race window — launching a second account before the previous one's Battle.net has come up. It releases the instant the previous account's Battle.net appears (or after a 60s cap) and never blocks re-launching the same account. (用软性可绕过的保护取代硬拦截：只防护真正的竞态窗口——在上一个账号的战网起来之前就启动下一个；一旦上个账号战网出现即放行（最多 60 秒），且永不拦截重开同一账号)
+- **Real Force Launch / 强制启动落地**: The Force flag now works end-to-end. When Battle.net or the game is already active, both launch buttons turn amber with a red “(强制)” suffix and bypass the pacing guard; a too-early manual launch shows a soft “wait or force” dialog. The sequencer always bypasses pacing. (强制标志现已端到端生效：当战网或游戏已在运行时，两个启动按钮变为琥珀色并带红色「(强制)」后缀、直接绕过节流；过早的手动启动会弹出「稍候或强制」对话框；序列自动启动始终绕过节流)
+- **Bnet-Only Label / 仅战网标注**: The Battle.net-only button now notes that it performs no handle cleanup (无句柄查杀). (仅战网按钮现标注其不执行句柄查杀)
+
+### Internal (内部)
+- i18n coverage: added the missing `bnet_chat` string for zh-TW/ja/ko and new `force` / `launch_too_soon` strings across all five locales. (i18n 覆盖：补齐 zh-TW/ja/ko 的 bnet_chat，并为五种语言新增 force / launch_too_soon 文案)
+
+---
+
 ## [0.6.3] - 2026-06-04
 
 ### Fixed (修复)

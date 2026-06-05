@@ -662,7 +662,7 @@ dependencies = [
 
 [[package]]
 name = "d2r-rust"
-version = "0.6.3"
+version = "0.6.5"
 dependencies = [
  "anyhow",
  "chrono",
