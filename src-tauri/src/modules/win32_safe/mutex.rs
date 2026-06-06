@@ -61,12 +61,9 @@ struct UNICODE_STRING {
     buffer: *mut u16,
 }
 
+/// Standalone entry (manual "kill mutexes" button): discovers D2R PIDs itself
+/// via a process scan, then closes their instance mutexes.
 pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error> {
-    // 0. Enable SeDebugPrivilege
-    if !crate::modules::win_admin::enable_debug_privilege() {
-        crate::modules::logger::log_localized(Some(app), "warn", "logs.mutex.debug_priv_failed", None, "Failed to enable debug privilege, sensing process may be limited");
-    }
-
     // 1. Identify target PIDs
     let mut sys = System::new();
     sys.refresh_processes_specifics(
@@ -75,17 +72,33 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
         ProcessRefreshKind::nothing().with_exe(UpdateKind::Always),
     );
 
-    let mut target_pids = std::collections::HashSet::new();
+    let mut pids = Vec::new();
     for (pid, process) in sys.processes() {
         if let Some(exe_path) = process.exe() {
             if let Some(exe_name) = exe_path.file_name() {
                 let name = exe_name.to_string_lossy().to_lowercase();
                 if name == "d2r.exe" || name == "diabloii.exe" {
-                    target_pids.insert(pid.as_u32());
+                    pids.push(pid.as_u32());
                 }
             }
         }
     }
+
+    close_d2r_mutexes_with_pids(app, &pids)
+}
+
+/// Hot-path entry: caller supplies the already-known D2R PIDs (e.g. from the
+/// launch pre-flight audit), avoiding a redundant System + full with_exe refresh.
+pub fn close_d2r_mutexes_with_pids(
+    app: &tauri::AppHandle,
+    pids: &[u32],
+) -> Result<usize, anyhow::Error> {
+    // 0. Enable SeDebugPrivilege
+    if !crate::modules::win_admin::enable_debug_privilege() {
+        crate::modules::logger::log_localized(Some(app), "warn", "logs.mutex.debug_priv_failed", None, "Failed to enable debug privilege, sensing process may be limited");
+    }
+
+    let target_pids: std::collections::HashSet<u32> = pids.iter().copied().collect();
 
     if target_pids.is_empty() {
         crate::modules::logger::log_localized(Some(app), "info", "logs.mutex.no_processes", None, "No D2R processes found, skipping mutex cleanup");
@@ -93,11 +106,28 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
     }
 
     unsafe {
-        // 2. Get Extended System Handles
-        let mut size: u32 = 0x100000;
+        // [PERF] sub-phase timing inside the mutex sweep.
+        let __mt_start = std::time::Instant::now();
+        let mut __mt = __mt_start;
+        macro_rules! mperf {
+            ($l:expr) => {{
+                let now = std::time::Instant::now();
+                if cfg!(debug_assertions) {
+                    crate::modules::logger::log(
+                        Some(app), "info", None, None,
+                        &format!("[PERF]   mutex.{:<8} {:>5} ms", $l, now.duration_since(__mt).as_millis()),
+                    );
+                }
+                __mt = now;
+            }};
+        }
+
+        // Single system-wide enumeration (start at 32 MB so a ~200k-handle
+        // system completes in one call instead of re-enumerating 4-5 times as a
+        // small buffer doubles — that was the real mutex cost).
+        let mut size: u32 = 0x2000000; // 32 MB
         let mut buffer: Vec<u8> = vec![0; size as usize];
         let mut return_length: u32 = 0;
-
         loop {
             let status = NtQuerySystemInformation(
                 SYSTEM_EXTENDED_HANDLE_INFORMATION,
@@ -105,9 +135,9 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                 size,
                 &mut return_length,
             );
-
             if status == STATUS_INFO_LENGTH_MISMATCH || status == STATUS_BUFFER_OVERFLOW {
-                size = return_length.max(size * 2);
+                let needed = return_length.saturating_add(return_length / 4);
+                size = needed.max(size.saturating_mul(2));
                 buffer.resize(size as usize, 0);
             } else if status == STATUS_SUCCESS {
                 break;
@@ -118,6 +148,7 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                 ));
             }
         }
+        mperf!("enum");
 
         let info = &*(buffer.as_ptr() as *const SYSTEM_HANDLE_INFORMATION_EX);
         let handles_ptr = buffer
@@ -135,17 +166,13 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
 
         let mut closed_count = 0;
         let mut target_handle_count = 0;
-
-        // 3. System-Wide Sweep (BAT-style)
-        // We look for any "Mutant" object matching our D2R patterns, regardless of PID.
         let mut mutant_type_index = 0u16;
         let mut found_mutant_type = false;
 
-        // Pass 1: Targeted Scan (PID based - Fast)
+        // Pass 1: Targeted scan — only handles owned by our D2R PIDs.
         for i in 0..info.number_of_handles {
             let entry = *handles_ptr.add(i);
             let pid = entry.unique_process_id as u32;
-
             if target_pids.contains(&pid) {
                 target_handle_count += 1;
                 if let Some(name) = get_handle_name_safe(app, pid, entry.handle_value, true) {
@@ -153,22 +180,15 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                         mutant_type_index = entry.object_type_index;
                         found_mutant_type = true;
                     }
-
-                    if check_and_close_if_match(
-                        app,
-                        &name,
-                        pid,
-                        entry.handle_value,
-                        &mut closed_count,
-                    ) {
+                    if check_and_close_if_match(app, &name, pid, entry.handle_value, &mut closed_count) {
                         continue;
                     }
                 }
             }
         }
+        mperf!("pass1");
 
-        // Pass 2: Global Scan (Type based - BAT style)
-        // If we found the mutant type index, scan the WHOLE system for our specific heavy-duty names.
+        // Pass 2: Cross-session global scan (only when advanced/multi-account).
         let multi_account = {
             use tauri::Manager;
             let state = app.state::<crate::state::AppState>();
@@ -188,23 +208,16 @@ pub fn close_d2r_mutexes(app: &tauri::AppHandle) -> Result<usize, anyhow::Error>
                 let entry = *handles_ptr.add(i);
                 if entry.object_type_index == mutant_type_index {
                     let pid = entry.unique_process_id as u32;
-                    // Skip if we just checked this in Pass 1 to avoid double-logging
                     if target_pids.contains(&pid) {
                         continue;
                     }
-
                     if let Some(name) = get_handle_name_safe(app, pid, entry.handle_value, false) {
-                        check_and_close_if_match(
-                            app,
-                            &name,
-                            pid,
-                            entry.handle_value,
-                            &mut closed_count,
-                        );
+                        check_and_close_if_match(app, &name, pid, entry.handle_value, &mut closed_count);
                     }
                 }
             }
         }
+        mperf!("pass2");
 
         if closed_count == 0 {
             crate::modules::logger::log_localized(
@@ -281,10 +294,13 @@ unsafe fn get_handle_name_safe(
         (type_info.length / 2) as usize,
     ));
 
-    // INDUSTRIAL SAFETY: Only query names for types that are known not to hang
-    // and are relevant to our search (Mutants/Sections).
-    // This prevents ROB-001 (Thread leaks on hanging NtQueryObject calls).
-    if type_name != "Mutant" && type_name != "Section" && type_name != "Event" {
+    // IMPORTANT: the D2R instance lock "DiabloII Check For Other Instances" is an
+    // EVENT, not a Mutant (verified via the in-app handle explorer). "D2R Store
+    // Mutex" is a Mutant. So we must allow Event (and Mutant, and Section for the
+    // store lock variants). We still exclude every other type — that both avoids
+    // the types whose NtQueryObject(NAME) can hang (sync file/pipe handles) and
+    // skips the bulk of a process's handles.
+    if type_name != "Mutant" && type_name != "Event" && type_name != "Section" {
         let _ = CloseHandle(h_dup);
         return None;
     }

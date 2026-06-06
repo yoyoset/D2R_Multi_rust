@@ -82,7 +82,29 @@ use std::path::PathBuf;
 const LOG_FILENAME: &str = "d2r-multiplay.log";
 const MAX_LOG_SIZE: u64 = 10 * 1024 * 1024; // 10MB
 
+static RESOLVED_LOG_PATH: OnceLock<PathBuf> = OnceLock::new();
+
 pub fn get_log_path() -> Option<PathBuf> {
+    // Fast path: already resolved to the data directory.
+    if let Some(p) = RESOLVED_LOG_PATH.get() {
+        return Some(p.clone());
+    }
+
+    // Preferred: follow the configured data root (data_path.txt / portable /
+    // %APPDATA%), same single-source-of-truth the rest of the app uses.
+    // Logs live in `<data_root>\logs\` so rotation files stay tidy.
+    if let Some(app) = GLOBAL_APP_HANDLE.get() {
+        let dir = crate::modules::data_root::get_data_root(app).join("logs");
+        if std::fs::create_dir_all(&dir).is_ok() {
+            let path = dir.join(LOG_FILENAME);
+            let _ = RESOLVED_LOG_PATH.set(path.clone());
+            return Some(path);
+        }
+    }
+
+    // Fallback (very early startup, before the global handle is set): next to
+    // the exe. Intentionally NOT cached, so we upgrade to the data dir once
+    // the handle becomes available.
     if let Ok(mut exe_path) = std::env::current_exe() {
         exe_path.pop();
         exe_path.push(LOG_FILENAME);

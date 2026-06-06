@@ -15,6 +15,28 @@ pub fn launch_game(
     force: bool,
     advanced_mode: bool,
 ) -> Result<u32, AccountError> {
+    // [PERF] Phase-level instrumentation. Grep "[PERF]" in logs to see the
+    // per-phase breakdown of a cross-user launch. Baseline before optimization.
+    let __perf_start = std::time::Instant::now();
+    let mut __perf_mark = __perf_start;
+    macro_rules! perf {
+        ($label:expr) => {{
+            let now = std::time::Instant::now();
+            // Phase timing is debug-only: release builds stay clean (the branch
+            // is compiled but optimized away when debug_assertions is off).
+            if cfg!(debug_assertions) {
+                crate::modules::logger::log(
+                    Some(app),
+                    "info",
+                    None,
+                    None,
+                    &format!("[PERF] {:<16} {:>6} ms", $label, now.duration_since(__perf_mark).as_millis()),
+                );
+            }
+            __perf_mark = now;
+        }};
+    }
+
     // 0. Pre-Maintenance Audit: Look for "Double-Online" accounts to backup
     if !advanced_mode {
         logger::log_localized(Some(app), "info", "logs.launcher.scanning_env", None, "Scanning environment (Anchor verification)...");
@@ -75,22 +97,29 @@ pub fn launch_game(
     }
 
     state.refresh_game_processes();
-    
+    perf!("P1.refresh");
+
     let sys = state.sys_lock();
     let users = state.users_lock();
 
     // Map: Username -> (HasBnet, HasD2R, D2RPath)
     let mut user_states: std::collections::HashMap<String, (bool, bool, Option<PathBuf>)> = std::collections::HashMap::new();
+    // D2R PIDs discovered here are reused by the mutex phase, so it doesn't need
+    // to spin up its own System + full with_exe refresh again.
+    let mut d2r_pids: Vec<u32> = Vec::new();
 
-    for (_pid, process) in sys.processes() {
+    for (pid, process) in sys.processes() {
         let name_os = process.name();
         let name = name_os.to_string_lossy().to_lowercase();
         if name == "d2r.exe" || name == "battle.net.exe" || name == "d2r" || name == "battle.net" {
+            if name.contains("d2r") {
+                d2r_pids.push(pid.as_u32());
+            }
             if let Some(user_id) = process.user_id() {
                 if let Some(user) = users.get_user_by_id(user_id) {
                     let username = user.name().to_string().to_lowercase();
                     let state = user_states.entry(username).or_insert((false, false, None));
-                    
+
                     if name.contains("battle.net") {
                         state.0 = true;
                     } else if name.contains("d2r") {
@@ -112,8 +141,8 @@ pub fn launch_game(
 
     if !advanced_mode {
         let mut current_config = state.config_lock();
-        let _ = current_config.save(app);
-        
+        // (Removed a redundant unconditional save here: it persisted the config
+        // before any mutation. The conditional save below covers real changes.)
         let mut config_changed = false;
         
         for acc in &mut current_config.accounts {
@@ -158,29 +187,77 @@ pub fn launch_game(
         }
     }
 
+    perf!("P1.audit_save");
+
     // 2. Cleanup (Kill Bnet/D2R, Mutexes)
     logger::log_localized(Some(app), "info", "logs.launcher.clearing_env", None, "Clearing environment...");
 
+    let __kill_t = std::time::Instant::now();
     let killed = {
         let mut sys_lock = state.sys_lock();
-        // Since we already refreshed at start, we might not need a full refresh here, 
-        // but for safety in "Kill" phase, we do a quick one.
+        // Name-based kill: no with_exe/with_user needed (matches on process name),
+        // which makes this refresh meaningfully cheaper than the old with_exe scan.
         sys_lock.refresh_processes_specifics(
             ProcessesToUpdate::All,
             true,
-            ProcessRefreshKind::nothing().with_exe(sysinfo::UpdateKind::Always)
+            ProcessRefreshKind::nothing()
         );
-        process_killer::kill_battle_net_processes_with_sys(&mut sys_lock)
+        process_killer::force_kill_bnet_stack(&mut sys_lock)
     };
+    if cfg!(debug_assertions) {
+        crate::modules::logger::log(Some(app), "info", None, None,
+            &format!("[PERF]   kill.force   {:>5} ms (killed {})", __kill_t.elapsed().as_millis(), killed));
+    }
 
     if killed > 0 {
         logger::log_localized(Some(app), "success", "logs.launcher.killed_processes", Some(serde_json::json!({ "count": killed })),
             &format!("Terminated {} related processes", killed));
     }
 
+    // Confirm product.db is actually writable before we overwrite it. This
+    // replaces the old blind ~1500ms graceful-poll: TerminateProcess releases
+    // the file handle near-instantly, so we just spin briefly with a short
+    // backoff. Respawn insurance: since Battle.net.exe is Agent's resurrector,
+    // if the lock is somehow still held we re-scan Agent/BN by name once and
+    // kill again. We never hold sys_lock across the sleep (avoids starving the
+    // background status poller).
+    {
+        use std::time::{Duration, Instant};
+        let __verify_t = Instant::now();
+        let deadline = Instant::now() + Duration::from_millis(1000);
+        let mut rescued = false;
+        let mut iters = 0u32;
+        while file_swap::verify_config_writable().is_err() {
+            if Instant::now() >= deadline {
+                break;
+            }
+            iters += 1;
+            if !rescued {
+                let mut s = state.sys_lock();
+                s.refresh_processes_specifics(
+                    ProcessesToUpdate::All,
+                    true,
+                    ProcessRefreshKind::nothing(),
+                );
+                let _ = process_killer::force_kill_names(&mut s, &["Battle.net.exe", "Agent.exe"]);
+                rescued = true;
+            }
+            std::thread::sleep(Duration::from_millis(25));
+        }
+        if cfg!(debug_assertions) {
+            let final_writable = file_swap::verify_config_writable().is_ok();
+            crate::modules::logger::log(Some(app), "info", None, None,
+                &format!("[PERF]   kill.verify  {:>5} ms (iters {}, rescued {}, writable {})",
+                    __verify_t.elapsed().as_millis(), iters, rescued, final_writable));
+        }
+    }
+    perf!("P2.kill");
+
     if !bnet_only && !advanced_mode {
         if win_admin::enable_debug_privilege() {
-            match mutex::close_d2r_mutexes(app) {
+            // Reuse the D2R PIDs found during the pre-flight audit instead of
+            // letting the mutex phase do its own System + full with_exe refresh.
+            match mutex::close_d2r_mutexes_with_pids(app, &d2r_pids) {
                 Ok(count) if count > 0 => {
                     logger::log_localized(Some(app), "success", "logs.launcher.closed_mutexes", Some(serde_json::json!({ "count": count })),
                         &format!("Closed {} kernel mutexes", count));
@@ -189,6 +266,8 @@ pub fn launch_game(
             }
         }
     }
+
+    perf!("P2.mutex");
 
     // 3. Environment Injection (Restore Target Snapshot)
     logger::log_localized(Some(app), "info", "logs.launcher.verifying_permissions", None, "Verifying file access permissions (Atomic lock)...");
@@ -222,6 +301,8 @@ pub fn launch_game(
         }
     }
 
+    perf!("P3.fileswap");
+
     // 4. Execution
     let bnet_path_buf = get_bnet_path().ok_or(AccountError::InvalidPath)?;
     let bnet_path = bnet_path_buf.to_string_lossy().to_string();
@@ -240,6 +321,11 @@ pub fn launch_game(
         let child = cmd.spawn().map_err(|e| anyhow::anyhow!("Failed to spawn: {}", e))?;
         logger::log_localized(Some(app), "success", "logs.launcher.launch_success", Some(serde_json::json!({ "pid": child.id() })),
             &format!("Launched Battle.net (PID: {})", child.id()));
+        perf!("P4.spawn_host");
+        if cfg!(debug_assertions) {
+            crate::modules::logger::log(Some(app), "info", None, None,
+                &format!("[PERF] {:<16} {:>6} ms", "TOTAL", __perf_start.elapsed().as_millis()));
+        }
         Ok(child.id())
     } else {
         // Sandbox launch with credentials
@@ -268,7 +354,12 @@ pub fn launch_game(
             None,
             working_dir.as_deref(),
         )?;
-        
+        perf!("P4.logon_spawn");
+        if cfg!(debug_assertions) {
+            crate::modules::logger::log(Some(app), "info", None, None,
+                &format!("[PERF] {:<16} {:>6} ms", "TOTAL", __perf_start.elapsed().as_millis()));
+        }
+
         let _ = app.emit(
             "launch-log",
             LaunchLogPayload {

@@ -20,13 +20,33 @@ export function useManualTools(accounts: API.Account[], selectedAccountId: strin
     const [showDiagModal, setShowDiagModal] = useState(false);
 
     const addLog = useCallback((message: string, level: LogEntry['level'] = 'info') => {
+        // Backend commands return i18n payloads as "key|{json}" (e.g.
+        // "logs.game.mutex_killed|{\"count\":1}") or a bare "key". The dashboard
+        // log is pre-translated by the Rust side, but these standalone-tool
+        // results are not — so translate here. The regex guard ensures
+        // already-translated text, paths, and free-form strings pass through
+        // untouched (only dotted ASCII keys are translated).
+        const isKey = (s: string) => /^[a-zA-Z0-9_.]+$/.test(s);
+        let text = message;
+        const idx = message.indexOf('|');
+        if (idx > 0 && isKey(message.slice(0, idx))) {
+            const key = message.slice(0, idx);
+            try {
+                text = t(key, JSON.parse(message.slice(idx + 1))) as string;
+            } catch {
+                text = t(key) as string;
+            }
+        } else if (isKey(message)) {
+            text = t(message) as string;
+        }
+
         setLogs(prev => [{
             id: Date.now(),
             time: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
-            message,
+            message: text,
             level
         }, ...prev].slice(0, 50));
-    }, []);
+    }, [t]);
 
     const runSystemDiag = async () => {
         setIsDiagnosing(true);

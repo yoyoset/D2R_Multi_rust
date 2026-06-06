@@ -72,12 +72,37 @@ impl AppState {
 
     pub fn refresh_game_processes(&self) {
         let mut sys = self.sys.lock();
+
+        // Pass A: cheap name+pid refresh of every process — no SID->name or
+        // exe-path resolution (those are the expensive bits).
         sys.refresh_processes_specifics(
             sysinfo::ProcessesToUpdate::All,
             true,
-            ProcessRefreshKind::nothing()
-                .with_user(sysinfo::UpdateKind::Always)
-                .with_exe(sysinfo::UpdateKind::Always),
+            ProcessRefreshKind::nothing(),
         );
+
+        // Find only the processes we actually care about (Battle.net / D2R).
+        let targets: Vec<sysinfo::Pid> = sys
+            .processes()
+            .iter()
+            .filter(|(_, p)| {
+                let n = p.name().to_string_lossy().to_lowercase();
+                n == "d2r.exe" || n == "battle.net.exe" || n == "d2r" || n == "battle.net"
+            })
+            .map(|(pid, _)| *pid)
+            .collect();
+
+        // Pass B: resolve owner + exe ONLY for those few. This avoids running
+        // SID->name resolution across every process on the system, which was
+        // the bulk of P1.refresh.
+        if !targets.is_empty() {
+            sys.refresh_processes_specifics(
+                sysinfo::ProcessesToUpdate::Some(&targets),
+                false,
+                ProcessRefreshKind::nothing()
+                    .with_user(sysinfo::UpdateKind::Always)
+                    .with_exe(sysinfo::UpdateKind::Always),
+            );
+        }
     }
 }

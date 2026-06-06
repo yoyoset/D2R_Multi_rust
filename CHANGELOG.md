@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.6] - 2026-06-07
+
+### Performance (性能)
+- **Cross-User Launch ~8× Faster / 跨用户启动提速约 8 倍**: A cross-user (guest account) launch dropped from ~2.4s to ~0.3s. Per-phase profiling pinpointed the waste and removed it. (一次跨用户/访客账号启动从约 2.4 秒降到约 0.3 秒；通过对每个阶段埋点测量定位并消除了浪费)
+- **Process Kill / 杀进程**: Replaced sysinfo's `kill()` — which blocks ~500ms per process waiting for exit — with a direct, non-blocking `TerminateProcess`, and removed the old fixed ~1.5s graceful-close poll. Kill is now an ordered force-kill (Battle.net before Agent, since Battle.net respawns Agent) that confirms completion by polling `product.db` writability instead of blind waiting. This phase went from ~2000ms to ~15ms. (用直接、非阻塞的 `TerminateProcess` 取代 sysinfo 的 `kill()`（后者每进程等退出约 500ms），并移除旧的固定约 1.5 秒优雅关闭轮询。改为有序强杀——先战网后 Agent，因战网会拉起 Agent——并以 `product.db` 是否可写为完成判据；该阶段从约 2000ms 降到约 15ms)
+- **Mutex Sweep / 互斥锁清理**: The system-handle enumeration now starts with a large buffer (one pass instead of re-enumerating ~200k handles 4–5 times as a small buffer doubled); the cross-session global scan is gated and skipped on normal launches. (系统句柄枚举改为一次性大缓冲，不再因小缓冲翻倍而把约 20 万句柄重复枚举 4–5 次；跨会话全局扫描改为门控，正常启动时跳过)
+- **Process Refresh / 进程刷新**: The pre-launch scan resolves owner/exe only for Battle.net/D2R processes instead of every process on the system. (启动前扫描只对战网/D2R 进程解析所有者与路径，不再遍历系统全部进程)
+
+### Fixed (修复)
+- **D2R Instance Lock Detection / D2R 实例锁识别**: The "DiabloII Check For Other Instances" lock is an **Event** object, not a Mutant; handle-type filtering now correctly includes Event so multi-boxing reliably clears it. (“DiabloII Check For Other Instances”锁是 **Event** 类型而非 Mutant；句柄类型过滤现已正确包含 Event，多开可稳定清除)
+- **Log File Location / 日志文件位置**: The system log now follows the configured data directory (`<data>\logs\`) instead of being hard-coded next to the exe. (系统日志现跟随所设置的数据目录 `<data>\logs\`，不再硬编码写在 exe 旁)
+- **Untranslated Tool Logs / 工具日志未翻译**: Standalone tools (clean mutex, force-kill, reset, cleanup, force-launch) now show translated messages instead of raw i18n keys like `LOGS.GAME.MUTEX_KILLED`. (独立工具——清理互斥锁、强制杀进程、复位、清理、强制启动——的日志现显示翻译文案，不再是 `LOGS.GAME.MUTEX_KILLED` 这样的原始键)
+
+---
+
 ## [0.6.5] - 2026-06-05
 
 ### Fixed (修复)
