@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.7] - 2026-06-10
+
+### Added (新增)
+- **Snapshot Reminder / 快照提醒**: A collapsible one-line banner on the Dashboard and Account Manager reminds you that the **last launched account must be snapshotted manually** (auto-backup only happens at the next launch). Expand for the full explanation; dismiss by typing "yes"; re-enable any time via Settings → "Show snapshot reminder banner". Contextual notes were also added to the Add/Edit Account modal and the Sequence editor. (仪表盘与账号管理顶部新增可折叠的一行提醒：最后启动的账号需手动保存快照——自动备份只在下次启动时发生。点击展开详情；输入 yes 关闭；可随时在「设置 → 显示快照提醒横幅」重新开启。账号编辑弹窗与序列编辑器也加入了对应说明)
+- **Sequencer "Finish & Back Up" / 序列「完成并备份」**: When a sequence finishes, the mini-window button becomes a green **Finish & Back Up** — click it (once you're done adjusting settings) to save the last account's snapshot and close; clicking ✕ closes without backing up. Safety guard: if another account's Battle.net is detected running (path data already swapped), the backup is refused with a warning; failures keep the window open and show an error instead of closing silently. (序列完成后迷你窗按钮变为绿色「完成并备份」——调整好设置后点击即保存最后账号的快照并关窗；点 ✕ 则不备份仅关窗。安全防护：若检测到其他账号的战网已在运行（路径数据已被换走）会拒绝备份并警告；备份失败时保留窗口并报错，不再静默关闭)
+
+### Fixed (修复)
+- **Diagnostic Result Colors / 诊断结果配色**: PASS results showed a yellow warning icon and the raw key `STATUS_PASS`; status values are now matched and translated correctly, and the missing Tailwind 400/500/600 semantic-color shades were defined so diagnostic (and other) panels no longer render all-white. (诊断 PASS 项曾显示黄色叹号与原始键 STATUS_PASS；现已正确匹配并翻译状态值，并补全了 Tailwind 400/500/600 语义色阶——诊断等面板不再整体发白)
+- **Sequencer Mini-Window Text / 序列迷你窗文案**: The finished state showed the untranslated "ALL_DONE", and the progress title contained a garbled "?" separator; both fixed across all five languages. (完成态曾显示未翻译的 ALL_DONE，进度标题分隔符为乱码“?”；五种语言均已修复)
+- **Dashboard Spacing / 仪表盘间距**: The sticky section header no longer covers the banner above it; spacing between the section title, sequence presets, launch buttons, and account cards was tightened. (吸顶表头不再遮挡其上方的横幅；账号营地、序列预设、启动按钮与账号卡片之间的间距已收紧)
+
+### Documentation (文档)
+- **Illustrated User Guide / 图文使用手册**: `User_Guide.md` (bilingual) now ships with real screenshots in `doc/images/` and documents the new Save-Snapshot / Finish & Back Up flow; both READMEs were rewritten around the screenshots with a Quick Start; the in-app guide gained the snapshot-flow section with embedded images; a ready-to-post forum introduction draft was added (`doc/forum_post_kanezhijiao.md`). (双语手册配齐实拍截图并写入新的保存快照/完成并备份流程；中英 README 围绕截图重写并新增快速开始；程序内指南加入内嵌截图的快照流程区块；新增凯恩之角发帖稿)
+
+---
+
 ## [0.6.6] - 2026-06-07
 
 ### Performance (性能)

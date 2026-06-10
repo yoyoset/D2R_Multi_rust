@@ -1,6 +1,6 @@
 [package]
 name = "d2r-rust"
-version = "0.6.6"
+version = "0.6.7"
 description = "A Tauri App"
 authors = ["SquareUncle"]
 edition = "2021"
