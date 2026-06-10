@@ -56,6 +56,6 @@ pub enum AccountError {
 pub struct DiagnosticResult {
     pub category: String,
     pub name: String,
-    pub status: String, // "Pass", "Warning", "Fail"
+    pub status: String, // i18n keys: "status_pass" | "status_warning" | "status_fail"
     pub message: String,
 }

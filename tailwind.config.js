@@ -22,17 +22,58 @@ export default {
                     dim: 'rgb(var(--c-text-dim) / <alpha-value>)',
                     faint: 'rgb(var(--c-text-faint) / <alpha-value>)',
                 },
+                // Each semantic color exposes 400/500/600 shades that all resolve
+                // to the same CSS-var hue. Many components were written with
+                // -400/-500/-600 shades (pre-migration); without these keys those
+                // utilities resolve to nothing and render as the inherited (white)
+                // color. Visual hierarchy comes from the opacity modifiers
+                // (/5, /10, /20), not the shade number.
                 gold: {
                     DEFAULT: 'rgb(var(--c-gold) / <alpha-value>)',
+                    400: 'rgb(var(--c-gold) / <alpha-value>)',
+                    500: 'rgb(var(--c-gold) / <alpha-value>)',
+                    600: 'rgb(var(--c-gold) / <alpha-value>)',
                     bright: 'rgb(var(--c-gold-bright) / <alpha-value>)',
                     deep: 'rgb(var(--c-gold-deep) / <alpha-value>)',
                 },
-                ember: 'rgb(var(--c-ember) / <alpha-value>)',
-                player: { DEFAULT: 'rgb(var(--c-player) / <alpha-value>)', deep: '#1f5e3a' },
-                net: { DEFAULT: 'rgb(var(--c-net) / <alpha-value>)', deep: '#244a73' },
-                ok: 'rgb(var(--c-ok) / <alpha-value>)',
-                warn: 'rgb(var(--c-warn) / <alpha-value>)',
-                danger: 'rgb(var(--c-danger) / <alpha-value>)',
+                ember: {
+                    DEFAULT: 'rgb(var(--c-ember) / <alpha-value>)',
+                    400: 'rgb(var(--c-ember) / <alpha-value>)',
+                    500: 'rgb(var(--c-ember) / <alpha-value>)',
+                    600: 'rgb(var(--c-ember) / <alpha-value>)',
+                },
+                player: {
+                    DEFAULT: 'rgb(var(--c-player) / <alpha-value>)',
+                    400: 'rgb(var(--c-player) / <alpha-value>)',
+                    500: 'rgb(var(--c-player) / <alpha-value>)',
+                    600: 'rgb(var(--c-player) / <alpha-value>)',
+                    deep: '#1f5e3a',
+                },
+                net: {
+                    DEFAULT: 'rgb(var(--c-net) / <alpha-value>)',
+                    400: 'rgb(var(--c-net) / <alpha-value>)',
+                    500: 'rgb(var(--c-net) / <alpha-value>)',
+                    600: 'rgb(var(--c-net) / <alpha-value>)',
+                    deep: '#244a73',
+                },
+                ok: {
+                    DEFAULT: 'rgb(var(--c-ok) / <alpha-value>)',
+                    400: 'rgb(var(--c-ok) / <alpha-value>)',
+                    500: 'rgb(var(--c-ok) / <alpha-value>)',
+                    600: 'rgb(var(--c-ok) / <alpha-value>)',
+                },
+                warn: {
+                    DEFAULT: 'rgb(var(--c-warn) / <alpha-value>)',
+                    400: 'rgb(var(--c-warn) / <alpha-value>)',
+                    500: 'rgb(var(--c-warn) / <alpha-value>)',
+                    600: 'rgb(var(--c-warn) / <alpha-value>)',
+                },
+                danger: {
+                    DEFAULT: 'rgb(var(--c-danger) / <alpha-value>)',
+                    400: 'rgb(var(--c-danger) / <alpha-value>)',
+                    500: 'rgb(var(--c-danger) / <alpha-value>)',
+                    600: 'rgb(var(--c-danger) / <alpha-value>)',
+                },
                 line: 'rgb(var(--c-line) / <alpha-value>)',
                 // Legacy (a few un-migrated modal components still reference these)
                 void: "#09090b",
