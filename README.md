@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.6.1-orange)
+![Version](https://img.shields.io/badge/version-0.6.6-orange)
 ![Backend](https://img.shields.io/badge/backend-Rust-red)
 ![Framework](https://img.shields.io/badge/framework-Tauri_v2-blue)
 
@@ -11,122 +11,88 @@
 
 </div>
 
-D2R Multi is a secure, high-performance multi-boxing manager for *Diablo II: Resurrected*, built with **Rust + Tauri v2** using native Windows APIs for process-level isolation and automation.
+D2R Multi is a secure, high-performance **multi-boxing / multi-account manager** for *Diablo II: Resurrected*, built with **Rust + Tauri v2** using native Windows APIs for process-level isolation and automation.
+
+![Dashboard](doc/images/01-overview.jpg)
+
+> 📖 Full illustrated guide: [**User_Guide.md**](./User_Guide.md) (bilingual, EN/CN).
 
 ---
 
-## How It Works
+## What It Does
 
-### 1. Login Persistence — Windows Multi-User Isolation
+- **Multi-box on one PC**: run several D2R instances simultaneously.
+- **One-click account switching**: log into each Battle.net account once, then launch on demand — persistent logins, zero cross-contamination.
+- **Sequenced auto-launch**: save a launch order as a preset and bring up all accounts in one click.
+- **Clean isolation**: each account is bound to its own Windows user; login state, config, and cache stay separate.
 
-Battle.net stores login credentials (tokens, cookies, etc.) within each Windows user's profile directory. Different Windows users naturally maintain completely independent Battle.net login states.
+### Launch & status at a glance
 
-**This tool leverages that behavior:**
+The dashboard manages every account in card or list view. Blue dot = Battle.net online, green dot = D2R online; when a conflict is detected the buttons switch to an amber **Force** mode.
 
-1. **Create Local Users** — A standard Windows local account is created for each multi-box slot.
-2. **Cross-User Launch** — Battle.net is launched under the target user's identity via the Win32 API `CreateProcessWithLogonW`.
-3. **Natural Isolation** — Battle.net automatically reads that user's own credential store. No extra handling needed.
+![List view](doc/images/08-dashboard-list.jpg)
 
-> **Result**: Each account only needs to log into Battle.net once, then stays logged in long-term. Credentials are automatically protected by Windows user isolation — truly persistent, zero-maintenance memory.
+![Launch buttons](doc/images/09-launch-buttons.jpg)
 
----
+### Sequenced auto-launch
 
-### 2. Why Local Accounts Only
+Store your usual order as a preset (P1–P3) and hit play: accounts launch in queue order while an always-on-top mini window tracks progress. When everything is up, one click on **Finish & Back Up** snapshots the last account.
 
-This tool uses `CreateProcessWithLogonW` / `LogonUserW` to launch processes under a different user identity. These APIs rely on Windows Local Security (SAM) and have strict account type requirements:
+![Sequence presets](doc/images/10-sequence-presets.jpg)
 
-| Account Type | Supported | Reason |
-|-------------|-----------|--------|
-| **Local Account** | ✅ Fully supported | Password stored in Local SAM database, directly verifiable by the API |
-| **Microsoft Account** | ❌ Not supported | Password managed in the cloud. Microsoft has confirmed known compatibility issues with `CreateProcessWithLogonW` for MSA |
-| **Domain Account** | ❌ Not supported | Requires an online Domain Controller (DC) for Kerberos authentication, unavailable in home environments |
+![Finish & Back Up](doc/images/20-sequencer-save.jpg)
 
-**In short**: Windows cross-user launch APIs are designed for local accounts only. Microsoft and domain account authentication flows are incompatible.
+### A complete manual toolbox
 
----
+For the edge cases automation can't reach (leftover handles, broken ACLs, stuck processes): a handle-level process explorer, instance-lock cleanup, folder-permission repair, environment diagnostics, and more.
 
-### 3. Multi-Boxing Mechanics
-
-D2R restricts a single game instance per machine by default. This tool bypasses the restriction through two core operations:
-
-#### 3.1 Mutex Cleanup
-
-D2R creates a system-level mutex named `DiabloII Check For Other Instances` on launch. A second instance detects this lock and refuses to start.
-
-**What we do**: Before each new launch, scan and close existing D2R mutex handles so the new instance believes it is the first.
-
-#### 3.2 Game Config (product.db) Rotation
-
-`product.db` is a Battle.net file that stores game installation paths and configuration. Unlike login credentials, **this file is globally shared** — it does not follow Windows user profiles. Without handling it, multiple instances would conflict.
-
-**Launch sequence:**
-
-```
-1. Backup   → Snapshot the previous account's product.db
-2. Clean    → Delete the current global product.db
-3. Restore  → Restore the target account's snapshot to the global location
-4. Launch   → Start Battle.net under the target Windows user identity
-```
-
-> Each account's `product.db` snapshot is managed independently. The tool auto-rotates on every switch, keeping game path configs isolated.
+![Tools](doc/images/13-tools-overview.jpg)
 
 ---
 
-### 4. Toolbox — When Automation Hits Edge Cases
+## Quick Start
 
-The automated launch sequence handles the vast majority of scenarios. However, in complex Windows environments, edge cases can arise (e.g., handles locked by kernel, orphaned processes, corrupted permissions). For these situations, the tool provides a complete set of standalone utilities:
+1. **Prepare**: Windows 10/11 x64; Battle.net installed at the default `C:\Program Files (x86)\Battle.net` with "install for all users" checked.
+2. **Run**: right-click `d2r-rust.exe` → "Run as administrator".
+3. **Add accounts**: Accounts → Add; bind (or create) a local Windows user and enter its password.
+4. **Launch**: back on the dashboard, select an account → "Launch Game". Log into Battle.net once on first launch; it persists afterwards.
+5. **Multi-box**: select another account and launch again — the instance lock is cleared automatically.
 
-#### Diagnostics (Pre-Launch Checks)
+> ⚠️ **The last account you launch needs a manual "Save Snapshot"** (auto-backup only happens at the *next* launch, and the last one has none). See the guide's [§4.5](./User_Guide.md).
 
-| Tool | Description |
-|------|-------------|
-| **Multi-User Env Eval** | Scans Windows user profiles, checks initialization status, and detects Microsoft account conflicts |
-| **Permission Health Check** | Verifies game directory ACLs, Battle.net path accessibility, and sandbox readiness |
-
-#### Standalone Tools
-
-| Tool | Description |
-|------|-------------|
-| **Mutex Cleanup** | Manually scan and close D2R instance-lock handles |
-| **Process Explorer** | Full handle-level inspector — browse all running processes, filter by D2R, and force-close specific handles |
-| **Archive Cleanup** | Purge orphaned `product.db` snapshots |
-| **Stop Battle.net** | Kill all Battle.net processes while preserving running game instances |
-| **Fix Permissions** | Reset game directory ACLs to ensure all local users have proper access |
-| **Mirror Manager** | Create directory junctions for client isolation in advanced multi-box setups |
-| **Force Launch** | Bypass all safety checks and attempt a raw launch for debugging |
-| **Nuke Reset** | Full factory reset — wipe all configs and snapshots |
-
-#### Windows System Shortcuts
-
-| Shortcut | Target |
-|----------|--------|
-| **Local Users** | Opens `lusrmgr.msc` — manage Windows local users and groups |
-| **Advanced Users** | Opens `netplwiz` — configure auto-login and user-level permissions |
-| **Switch User** | Triggers `tsdiscon` — fast-switch to another Windows session for account initialization |
-
-> These tools are designed so that any edge case the automation cannot handle can be resolved manually, with zero technical barrier.
+![Account manager](doc/images/05-account-manage.jpg)
 
 ---
 
-### 5. Data Persistence & Redirection — Solving C-Drive Reset Issues
+## How It Works (Short Version)
 
-In some high-control environments (like cybercafés or certain managed PCs), the C-drive (System) resets on reboot, causing loss of configurations, account snapshots, and Vault credentials.
+### 1. Login persistence — Windows multi-user isolation
 
-**This tool provides an industrial-grade solution:**
+Battle.net stores credentials inside each Windows user's profile. The tool binds each slot to a local user and starts Battle.net as that user via `CreateProcessWithLogonW` — credentials stay isolated and persistent by construction.
 
-1.  **Data Root Redirection**: Supports creating a `data_path.txt` next to the executable to point to a non-system drive (e.g., D: drive), or migrating directly via the Settings panel.
-2.  **Bootstrap Priority**: On launch, the system automatically locates the data source using a priority of `Side-by-side data_path.txt > AppData`.
-3.  **Credential Migration Engine**: Since Windows DPAPI encryption is bound to the User SID, simple file copying cannot migrate passwords. This tool features an atomic re-encryption engine that ensures all account passwords remain secure and usable when moving across drives.
-4.  **Vault Health Monitoring**: The dashboard provides real-time monitoring of credential integrity. If environment changes invalidate the credentials, the system immediately alerts the user.
+### 2. Why local accounts only
+
+Cross-user launch APIs authenticate against the local SAM: **local accounts ✅**; Microsoft accounts ❌ (cloud auth is incompatible); domain accounts ❌ (no domain controller at home).
+
+### 3. The two multi-boxing moves
+
+- **Instance-lock cleanup**: on launch D2R creates a kernel object named `DiabloII Check For Other Instances` (an **Event**) to block second instances; the tool closes it before each new launch.
+- **product.db snapshot rotation**: that file is **machine-global** (read live by Battle.net's Agent) and does not follow users. Launch sequence: `back up current snapshot → kill Battle.net + Agent → inject the target account's snapshot → start Battle.net as the target user`, keeping path configs from cross-contaminating.
+
+### 4. Data persistence & redirection
+
+The data root can be redirected off the system drive (`data_path.txt` or via Settings), with a DPAPI credential re-encryption migration engine and Vault health monitoring — built for cybercafé-style C-drive-reset environments.
+
+> Deeper mechanics (double-online, managed vs advanced mode, diagnostics) are in [Chapter 4 of the guide](./User_Guide.md).
 
 ---
 
 ## Requirements
 
 - Windows 10/11 (x64)
-- **Administrator privileges** (required for user creation and cross-user launches)
-- Battle.net must be installed at `C:\Program Files (x86)\Battle.net` with "Install for all users" enabled
-- Multi-box slots must use **standard local Windows accounts** (Microsoft and domain accounts are not supported)
+- **Administrator privileges** (user creation and cross-user launches)
+- Battle.net at the default path, installed "for all users"
+- Multi-box slots must use **standard local Windows accounts** (no Microsoft/domain accounts)
 
 ---
 
@@ -134,20 +100,14 @@ In some high-control environments (like cybercafés or certain managed PCs), the
 
 For developers and AI agents, this repository contains a comprehensive **Digital Twin** of the system architecture and operational protocols.
 
-Detail technical specifications can be found in the [**Technical State Manifest (doc/state/MANIFEST.md)**](./doc/state/MANIFEST.md), including:
-- **Architecture**: Concurrency models and Win32 abstraction.
-- **Security**: DPAPI encryption and memory redaction.
-- **Protocols**: Atomic Swap (File Alignment) and Mutex Scavenging.
-- **Orchestration**: Launch State Machine and Anchor Learning.
-
----
+Detailed specifications live in the [**Technical State Manifest (doc/state/MANIFEST.md)**](./doc/state/MANIFEST.md): architecture (concurrency models and Win32 abstraction), security (DPAPI encryption and memory redaction), protocols (Atomic Swap and lock scavenging), and orchestration (launch state machine and anchor learning).
 
 ## Tech Stack
 
 - **Backend**: Rust — native Win32 API (windows-rs)
 - **Frontend**: React 19 + TypeScript + TailwindCSS
 - **Framework**: Tauri v2
-- **Core**: Cross-user process bridge, mutex probe engine, config snapshot rotation
+- **Core**: cross-user process bridge, instance-lock probe, config snapshot rotation
 
 ## Disclaimer
 
