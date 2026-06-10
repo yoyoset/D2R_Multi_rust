@@ -10,6 +10,7 @@ import { PasswordSection } from "./sub-components/PasswordSection";
 import { AvatarSection } from "./sub-components/AvatarSection";
 import { MetadataSection } from "./sub-components/MetadataSection";
 import { PolicySection } from "./sub-components/PolicySection";
+import { SnapshotReminder } from "../../ui/SnapshotReminder";
 
 export { ClassAvatar } from "./sub-components/AvatarSection";
 
@@ -40,6 +41,7 @@ export function AccountModal(props: AccountModalProps) {
 
                 <ModalBody>
                     <div className="space-y-4">
+                        <SnapshotReminder variant="note" />
                         <UserBindingSection
                             editingAccount={!!props.editingAccount}
                             isManualInput={form.isManualInput}

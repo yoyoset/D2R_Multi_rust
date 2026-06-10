@@ -32,6 +32,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
     const [enableLogging, setEnableLogging] = useState(config.enable_logging ?? false);
     const [enableWindowRename, setEnableWindowRename] = useState(config.enable_window_rename ?? false);
     const [windowRenameFormat, setWindowRenameFormat] = useState(config.window_rename_format || 'note');
+    const [showSnapshotReminder, setShowSnapshotReminder] = useState(!(config.snapshot_reminder_dismissed ?? false));
     const [isSaving, setIsSaving] = useState(false);
     const clearLogs = useLogs(state => state.clearLogs);
     const { addNotification } = useNotification();
@@ -141,6 +142,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
         setEnableLogging(config.enable_logging ?? false);
         setEnableWindowRename(config.enable_window_rename ?? false);
         setWindowRenameFormat(config.window_rename_format || 'note');
+        setShowSnapshotReminder(!(config.snapshot_reminder_dismissed ?? false));
     }, [config]);
 
     const handleCancel = () => {
@@ -156,6 +158,7 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                 enable_logging: enableLogging,
                 enable_window_rename: enableWindowRename,
                 window_rename_format: windowRenameFormat,
+                snapshot_reminder_dismissed: !showSnapshotReminder,
             };
             await saveConfig(newConfig);
             onSave(newConfig);
@@ -235,6 +238,13 @@ export function SettingsModal({ isOpen, onClose, config, onSave, initialUpdate, 
                                 description={t('setting_enable_logging_desc')}
                                 checked={enableLogging}
                                 onChange={setEnableLogging}
+                            />
+
+                            <Switch
+                                label={t('setting_show_snapshot_reminder')}
+                                description={t('setting_show_snapshot_reminder_desc')}
+                                checked={showSnapshotReminder}
+                                onChange={setShowSnapshotReminder}
                             />
                         </div>
 

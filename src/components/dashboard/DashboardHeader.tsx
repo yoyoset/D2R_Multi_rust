@@ -40,7 +40,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     const { t } = useTranslation();
 
     return (
-        <div className="sticky top-0 z-30 w-full flex flex-col -mt-4 pt-4 pb-1 bg-bg">
+        <div className="sticky top-0 z-30 w-full flex flex-col -mt-2 pt-2 pb-0.5 bg-bg">
             {/* Section Header */}
             <div>
                 <div className="sec-head">

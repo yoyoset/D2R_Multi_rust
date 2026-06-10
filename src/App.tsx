@@ -3,6 +3,7 @@ import AccountManager from "./components/views/AccountManager";
 import ManualTools from "./components/views/ManualTools";
 import SequencerMini from "./components/views/SequencerMini";
 import { ToastContainer } from "./components/ui/Toast";
+import { SnapshotReminder } from "./components/ui/SnapshotReminder";
 import TitleBar from "./components/ui/TitleBar";
 import { useAppCore } from "./hooks/useAppCore";
 import { AppHeader } from "./components/layout/AppHeader";
@@ -70,6 +71,12 @@ function App() {
             <div className="content">
                 <div className="page">
                     {core.currentView === 'dashboard' && (
+                        <>
+                        <SnapshotReminder
+                            dismissed={core.config.snapshot_reminder_dismissed}
+                            onDismiss={core.handleDismissSnapshotReminder}
+                            className="mb-3"
+                        />
                         <Dashboard
                         config={core.config}
                         accounts={core.config.accounts}
@@ -94,8 +101,15 @@ function App() {
                             core.setIsEditSequenceModalOpen(true);
                         }}
                     />
+                        </>
                 )}
                 {core.currentView === 'accounts' && (
+                    <>
+                    <SnapshotReminder
+                        dismissed={core.config.snapshot_reminder_dismissed}
+                        onDismiss={core.handleDismissSnapshotReminder}
+                        className="mb-3"
+                    />
                     <AccountManager
                         accounts={core.config.accounts}
                         invalidAccountIds={core.invalidAccountIds}
@@ -105,6 +119,7 @@ function App() {
                         onDelete={core.handleDeleteAccount}
                         onRefreshPaths={core.handleRefreshPaths}
                     />
+                    </>
                 )}
                 {core.currentView === 'manual' && (
                     <ManualTools

@@ -80,6 +80,7 @@ export interface AppConfig {
     window_rename_format?: 'note' | 'bnet' | 'username' | 'full';
     sequence_presets: (SequencePreset | null)[];
     active_sequence?: ActiveSequenceState;
+    snapshot_reminder_dismissed?: boolean;
 }
 
 export interface WindowsUser {

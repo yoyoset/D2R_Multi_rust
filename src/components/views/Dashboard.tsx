@@ -110,7 +110,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 onEditSequencePreset={onEditSequencePreset}
             />
 
-            <div className="w-full shrink-0 pt-2 pb-10">
+            <div className="w-full shrink-0 pt-0 pb-10">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <div className={cn(
                         "w-full",

@@ -291,7 +291,7 @@ body{
 [data-density="compact"] .sec-tick{ height:15px; }
 
 /* section header */
-.sec-head{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+.sec-head{ display:flex; align-items:center; gap:12px; margin-bottom:7px; }
 .sec-title{ display:flex; align-items:center; gap:10px; }
 .sec-tick{ width:3px; height:18px; border-radius:2px; background:linear-gradient(180deg,var(--gold-bright),var(--gold-deep)); box-shadow:0 0 10px rgb(var(--c-gold) / 0.5); }
 .sec-title h1{ font-family:var(--font-display); font-weight:700; font-size:19px; letter-spacing:.05em; color:var(--text); }
@@ -311,7 +311,7 @@ body{
 .seg button.on{ color:var(--gold); background:rgb(var(--c-gold) / 0.12); }
 
 /* sequence presets */
-.preset-bar{ display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:11px 14px; border:1px dashed var(--line-2); border-radius:var(--radius); background:rgba(0,0,0,0.18); }
+.preset-bar{ display:flex; align-items:center; gap:12px; margin-bottom:7px; padding:11px 14px; border:1px dashed var(--line-2); border-radius:var(--radius); background:rgba(0,0,0,0.18); }
 .preset-label{ display:flex; align-items:center; gap:7px; font-size:11px; font-weight:600; color:var(--text-dim); padding-right:2px; }
 .preset-label svg{ color:var(--gold); width:14px; height:14px; }
 .preset-chips{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
@@ -325,7 +325,7 @@ body{
 .preset-chip .pc-edit:hover{ color:var(--gold); }
 
 /* launch buttons */
-.launch-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
+.launch-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px; }
 .launch{
   position:relative; display:flex; align-items:center; gap:13px;
   padding:14px 18px; border-radius:var(--radius-lg); cursor:pointer; overflow:hidden;

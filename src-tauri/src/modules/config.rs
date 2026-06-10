@@ -39,6 +39,10 @@ pub struct AppConfig {
     pub active_sequence: Option<ActiveSequenceState>,
     #[serde(default)]
     pub snapshot_migration_v060: Option<bool>,
+    /// Whether the user has dismissed the "remember to save the last account's
+    /// snapshot manually" reminder banner (acknowledged by typing "yes").
+    #[serde(default)]
+    pub snapshot_reminder_dismissed: Option<bool>,
 }
 
 #[derive(thiserror::Error, Debug)]

@@ -222,6 +222,13 @@ export function useAppCore() {
         }
     }, [t, addLog]);
 
+    const handleDismissSnapshotReminder = useCallback(async () => {
+        if (config.snapshot_reminder_dismissed) return;
+        const newConfig = { ...config, snapshot_reminder_dismissed: true };
+        setConfig(newConfig);
+        try { await saveConfig(newConfig); } catch (e) { console.error("Failed to save snapshot reminder dismiss", e); }
+    }, [config]);
+
     const handleCloseGuide = useCallback(async (dontShowAgain?: boolean) => {
         setIsGuideOpen(false);
         if (dontShowAgain === true && !config.has_shown_guide) {
@@ -326,6 +333,6 @@ export function useAppCore() {
         // Handlers
         handleLaunch, handleAddAccount, handleEditAccount, handleDeleteAccount,
         handleReorder, handleViewModeChange, handleRefreshPaths, handleSaveSnapshot,
-        handleCloseGuide, clearLogs, validateVault
+        handleCloseGuide, handleDismissSnapshotReminder, clearLogs, validateVault
     };
 }

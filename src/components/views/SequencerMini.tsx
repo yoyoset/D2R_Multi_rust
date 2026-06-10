@@ -1,9 +1,10 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GripVertical, X, CheckCircle2, Loader2, PlayCircle, ChevronDown, ChevronUp, Circle, Flag } from 'lucide-react';
-import { getConfig, AppConfig, ActiveSequenceState, requestSequenceSync, interruptSequence, nextSequenceStep } from '../../lib/api';
+import { getConfig, AppConfig, ActiveSequenceState, requestSequenceSync, interruptSequence, nextSequenceStep, manualBackupSave, getAccountsProcessStatus } from '../../lib/api';
 import { listen } from '@tauri-apps/api/event';
 import { cn } from '../../lib/utils';
+import { useNotification } from '../../store/useNotification';
 import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window';
 
 const SequencerMini: React.FC = () => {
@@ -13,6 +14,7 @@ const SequencerMini: React.FC = () => {
     const [isFinished, setIsFinished] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const { addNotification } = useNotification();
 
     // Resilient Sync Pump: Polling for state if null during initial 1s
     const pullState = async (attemptsLeft: number) => {
@@ -118,6 +120,50 @@ const SequencerMini: React.FC = () => {
         getCurrentWindow().close().catch(console.error);
     };
 
+    // Finish: back up the LAST account's snapshot (deliberate, final capture),
+    // then close. This is the only path that backs up the last account — the
+    // sequence engine no longer does it automatically at launch time.
+    const handleFinishAndBackup = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isProcessing) return;
+        const lastId = state?.queue?.[state.queue.length - 1];
+        const lastAcc = lastId ? config?.accounts.find(a => a.id === lastId) : undefined;
+        if (!lastAcc) {
+            getCurrentWindow().close().catch(console.error);
+            return;
+        }
+        // Manual-snapshot mode accounts opted out of product.db sync entirely.
+        if (lastAcc.skip_config_sync) {
+            getCurrentWindow().close().catch(console.error);
+            return;
+        }
+        setIsProcessing(true);
+        try {
+            // Guard: rotate_save copies the machine-global product.db. If some
+            // OTHER account's Battle.net is running, the file has been swapped
+            // since this sequence ended — saving now would store that account's
+            // data into lastAcc's snapshot slot. Refuse and keep the window open
+            // (✕ still closes without backing up).
+            const others = config!.accounts.filter(a => a.id !== lastAcc.id).map(a => a.win_user);
+            if (others.length > 0) {
+                const status = await getAccountsProcessStatus(others);
+                const hijacked = Object.entries(status).find(([, s]) => s.bnet_active);
+                if (hijacked) {
+                    addNotification('warning', t('seq_backup_stale', { user: lastAcc.win_user, other: hijacked[0] }) as string, 8000);
+                    setIsProcessing(false);
+                    return;
+                }
+            }
+            await manualBackupSave(lastAcc.id);
+            addNotification('success', t('seq_backup_done', { user: lastAcc.win_user }) as string);
+            // Leave the toast on screen briefly before the window goes away.
+            setTimeout(() => getCurrentWindow().close().catch(console.error), 1200);
+        } catch (err) {
+            addNotification('error', t('seq_backup_failed', { error: String(err) }) as string, 8000);
+            setIsProcessing(false);
+        }
+    };
+
     if (!config) return null;
 
     const currentAccountId = state ? state.queue[state.current_index] : null;
@@ -153,7 +199,7 @@ const SequencerMini: React.FC = () => {
                             </div>
                             <div className="flex flex-col min-w-0" data-tauri-drag-region>
                                 <span className="text-[10px] text-text-dim font-mono leading-none tracking-tighter uppercase truncate opacity-70">
-                                    {state ? `${state.preset_name} ? ${state.current_index + 1}/${state.queue.length}` : t('syncing_caps')}
+                                    {state ? `${state.preset_name} · ${state.current_index + 1}/${state.queue.length}` : t('syncing_caps')}
                                 </span>
                                 <span className={cn(
                                     "text-[10px] font-black truncate leading-tight tracking-tight drop-shadow-sm",
@@ -170,13 +216,14 @@ const SequencerMini: React.FC = () => {
                 <div className="flex items-center h-full pr-1 border-l border-line pointer-events-auto">
                     {state && (
                         <button
-                            onClick={isFinished ? handleClose : handleNext}
+                            onClick={isFinished ? handleFinishAndBackup : handleNext}
                             disabled={isProcessing}
+                            title={isFinished ? t('seq_finish_backup_hint') : undefined}
                             className={cn(
                                 "h-8 px-3 rounded-sm flex items-center gap-1.5 transition-all active:scale-95 mx-1",
-                                isProcessing 
-                                    ? "bg-surface text-text-dim cursor-not-allowed" 
-                                    : isFinished 
+                                isProcessing
+                                    ? "bg-surface text-text-dim cursor-not-allowed"
+                                    : isFinished
                                         ? "bg-player-500 text-text hover:bg-player-600 font-black shadow-[0_0_15px_rgba(16,185,129,0.3)]"
                                         : "bg-gold text-black hover:bg-gold/80 font-black shadow-[0_0_15px_rgb(var(--c-gold)/0.3)]"
                             )}
@@ -189,7 +236,7 @@ const SequencerMini: React.FC = () => {
                                 <PlayCircle size={11} fill="currentColor" />
                             )}
                             <span className="text-[10px] uppercase font-black">
-                                {isProcessing ? t('launching') : isFinished ? t('finished') : t('launch')}
+                                {isProcessing ? (isFinished ? t('saving') : t('launching')) : isFinished ? t('seq_finish_backup') : t('launch')}
                             </span>
                         </button>
                     )}
