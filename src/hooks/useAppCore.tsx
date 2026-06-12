@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { getConfig, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers, getRunningGamePaths, checkVaultIntegrity, VaultIssue, validateAllVaultEntries } from "../lib/api";
+import { getConfig, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers, getRunningGamePaths, checkVaultIntegrity, VaultIssue, validateAllVaultEntries, verifyWindowsPassword } from "../lib/api";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useTranslation } from "react-i18next";
 import { useLogs } from "../store/useLogs";
 import { useBlockingNotification } from "../store/useBlockingNotification";
+import { useNotification } from "../store/useNotification";
 import { useLaunchSequence } from "./useLaunchSequence";
 import { getVersion } from "@tauri-apps/api/app";
 import { check } from "@tauri-apps/plugin-updater";
@@ -23,6 +24,7 @@ export function useAppCore() {
     const [currentView, setCurrentView] = useState<View>('dashboard');
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
     const [vaultHealthIssues, setVaultHealthIssues] = useState<VaultIssue[]>([]);
+    const [isAuditingVault, setIsAuditingVault] = useState(false);
 
     // Modal States
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -40,6 +42,7 @@ export function useAppCore() {
     const launchLogs = useLogs((state) => state.logs);
     const clearLogs = useLogs((state) => state.clearLogs);
     const { show: showBlocking } = useBlockingNotification();
+    const { addNotification } = useNotification();
     const { isLaunching, performLaunch } = useLaunchSequence();
 
     // Logic Helpers
@@ -143,17 +146,70 @@ export function useAppCore() {
         return null;
     }, []);
 
-    const validateVault = useCallback(async () => {
+    const validateVault = useCallback(async (deep = false) => {
+        if (deep) setIsAuditingVault(true);
         try {
             const missing = await checkVaultIntegrity();
             setMissingCredentialIds(new Set(missing));
-            
+
             const issues = await validateAllVaultEntries();
             setVaultHealthIssues(issues);
+
+            if (deep) {
+                // Verify each account's stored password with a real Windows logon.
+                // Read accounts fresh so this callback stays referentially stable
+                // (the init effect depends on it).
+                const accounts = (await getConfig()).accounts;
+                const vaultErrors: VaultIssue[] = [];
+
+                for (const acc of accounts) {
+                    if (missing.includes(acc.id)) {
+                        vaultErrors.push({
+                            id: acc.id,
+                            win_user: acc.win_user,
+                            reason: 'error.vault.missing'
+                        });
+                        continue;
+                    }
+                    try {
+                        const isValid = await verifyWindowsPassword(acc.win_user, '********', acc.id);
+                        if (!isValid) {
+                            vaultErrors.push({
+                                id: acc.id,
+                                win_user: acc.win_user,
+                                reason: 'error.vault.password_mismatch'
+                            });
+                        }
+                    } catch (err) {
+                        vaultErrors.push({
+                            id: acc.id,
+                            win_user: acc.win_user,
+                            reason: String(err).replace(/^Error: /, '')
+                        });
+                    }
+                }
+
+                setVaultHealthIssues([...issues, ...vaultErrors]);
+
+                if (vaultErrors.length === 0) {
+                    addNotification('success', t('vault_audit_ok') as string, 4000);
+                } else {
+                    const users = vaultErrors.map(v => v.win_user).join(', ');
+                    addNotification('warning',
+                        t('vault_audit_issues', { count: vaultErrors.length, users }) as string,
+                        8000);
+                }
+            }
         } catch (e) {
-            console.error("Failed to check vault integrity:", e);
+            if (deep) {
+                addNotification('error', t('vault_audit_failed', { error: String(e) }) as string, 8000);
+            } else {
+                console.error("Failed to check vault integrity:", e);
+            }
+        } finally {
+            if (deep) setIsAuditingVault(false);
         }
-    }, []);
+    }, [t, addNotification]);
 
     // Handlers
     const handleAddAccount = useCallback(() => {
@@ -323,7 +379,7 @@ export function useAppCore() {
     return {
         // State
         windowLabel, config, setConfig, invalidAccountIds, missingCredentialIds, isAdmin, currentView, setCurrentView,
-        selectedAccountId, setSelectedAccountId, isLaunching, launchLogs, vaultHealthIssues,
+        selectedAccountId, setSelectedAccountId, isLaunching, launchLogs, vaultHealthIssues, isAuditingVault,
         // Modal States
         isSettingsOpen, setIsSettingsOpen, isAccountModalOpen, setIsAccountModalOpen,
         isGuideOpen, setIsGuideOpen, isDonateOpen, setIsDonateOpen,

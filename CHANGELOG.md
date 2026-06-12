@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.8] - 2026-06-12
+
+### Changed (变更)
+- **Audit Vault Now Verifies Passwords / 审计凭据现在真实验证密码**: The Dashboard's "Audit Vault" button previously only checked that vault entries existed and could be decrypted — a wrong Windows password passed silently, and the button gave no feedback at all, appearing dead. It now performs a real Windows logon check (LogonUser) for every account's stored password, shows a spinner while auditing, and reports the result as a notification: success when all passwords verify, or a warning naming each account with a wrong password or missing credential. (仪表盘「审计凭据」此前只检查凭据条目是否存在、能否解密——Windows 密码错误也不会被发现，且点击后毫无反馈，看起来像没反应。现在会对每个账号存储的密码执行真实的 Windows 登录校验（LogonUser），审计期间按钮显示转圈，完成后弹出通知：全部通过报成功，否则点名列出密码错误或凭据缺失的账号)
+
+### Fixed (修复)
+- **Sequencer Launch Button Cool-down Removed / 移除序列启动按钮多余冷却**: After the backend finished launching an account, the mini-window's launch button stayed locked in "Launching..." for an extra hard-coded 3 seconds. The backend already serializes account switching safely (it kills the previous stack and waits for product.db to unlock before launching), so the button now unlocks the moment the launch call returns. (后端启动完成后，迷你窗的启动按钮还会额外硬等 3 秒才解锁。账号切换的安全性本就由后端保证——启动前会先杀掉上一账号的进程并等待 product.db 解锁——现在启动调用一返回按钮立即可用)
+
+---
+
 ## [0.6.7] - 2026-06-10
 
 ### Added (新增)

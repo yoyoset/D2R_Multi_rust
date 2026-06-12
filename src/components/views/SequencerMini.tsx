@@ -51,13 +51,10 @@ const SequencerMini: React.FC = () => {
         const unlisten = listen<ActiveSequenceState | null>('sequence-state-changed', (event) => {
             const newState = event.payload;
             if (!newState) {
-                // Wait for the 3s ritual delay before showing finished state? 
-                // Actually, the button render logic will handle the delay overlap.
                 setIsFinished(true);
             } else {
                 setState(newState);
                 setIsFinished(false);
-                // Removed immediate setIsProcessing(false) to enforce the 3s button cool-down
             }
         });
 
@@ -99,10 +96,7 @@ const SequencerMini: React.FC = () => {
         setIsProcessing(true);
         try {
             await nextSequenceStep();
-            // INDUSTRIAL RITUAL: 3-second enforced delay for account switching
-            setTimeout(() => {
-                setIsProcessing(false);
-            }, 3000);
+            setIsProcessing(false);
         } catch (e) {
             console.error(e);
             setIsProcessing(false);

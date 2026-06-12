@@ -94,7 +94,8 @@ function App() {
                         viewMode={core.config.dashboard_view_mode || 'card'}
                         onViewModeChange={core.handleViewModeChange}
                         onRefreshPaths={core.handleRefreshPaths}
-                        onAuditVault={core.validateVault}
+                        onAuditVault={() => core.validateVault(true)}
+                        isAuditingVault={core.isAuditingVault}
                         onSaveSnapshot={core.handleSaveSnapshot}
                         onEditSequencePreset={(index) => {
                             core.setCurrentPresetIndex(index);

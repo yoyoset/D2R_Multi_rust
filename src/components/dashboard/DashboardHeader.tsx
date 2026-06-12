@@ -19,6 +19,7 @@ interface DashboardHeaderProps {
     isRefreshing: boolean;
     onRefreshPaths?: () => void;
     onAuditVault?: () => void;
+    isAuditingVault?: boolean;
     onEditSequencePreset: (index: number) => void;
 }
 
@@ -35,6 +36,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     isRefreshing,
     onRefreshPaths,
     onAuditVault,
+    isAuditingVault,
     onEditSequencePreset,
 }) => {
     const { t } = useTranslation();
@@ -79,11 +81,12 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 e.stopPropagation();
                                 if (onAuditVault) onAuditVault();
                             }}
-                            className="ghost-btn"
+                            className={cn("ghost-btn", isAuditingVault && "opacity-60 cursor-default")}
+                            disabled={isAuditingVault}
                             title={t('audit_vault')}
                         >
-                            <RefreshCw size={15} />
-                            <span>{t('audit_vault')}</span>
+                            <RefreshCw size={15} className={cn(isAuditingVault && "animate-spin")} />
+                            <span>{isAuditingVault ? t('auditing') : t('audit_vault')}</span>
                         </button>
 
                         <div className="seg">

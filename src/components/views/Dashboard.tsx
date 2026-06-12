@@ -44,6 +44,7 @@ interface DashboardProps {
     onViewModeChange: (mode: 'card' | 'list') => void;
     onRefreshPaths?: () => void;
     onAuditVault?: () => void;
+    isAuditingVault?: boolean;
     onEditSequencePreset: (index: number) => void;
 }
 
@@ -66,6 +67,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     onViewModeChange,
     onRefreshPaths,
     onAuditVault,
+    isAuditingVault,
     onEditSequencePreset
 }) => {
     const { t } = useTranslation();
@@ -107,6 +109,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 isRefreshing={isRefreshing}
                 onRefreshPaths={onRefreshPaths}
                 onAuditVault={onAuditVault}
+                isAuditingVault={isAuditingVault}
                 onEditSequencePreset={onEditSequencePreset}
             />
 
