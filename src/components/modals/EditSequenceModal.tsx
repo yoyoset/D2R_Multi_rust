@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { X, Search, Plus, Trash2, ChevronUp, ChevronDown, Save, AlertCircle } from 'lucide-react';
 import { AppConfig, SequencePreset, saveSequencePreset } from '../../lib/api';
 import { cn } from '../../lib/utils';
-import { SnapshotReminder } from '../ui/SnapshotReminder';
 
 interface EditSequenceModalProps {
     isOpen: boolean;
@@ -89,8 +88,6 @@ export const EditSequenceModal: React.FC<EditSequenceModalProps> = ({
                         <X size={16} className="text-text-dim" />
                     </button>
                 </div>
-
-                <SnapshotReminder variant="note" bodyKey="snapshot_reminder_seq" className="m-3 mb-0" />
 
                 {/* Content */}
                 <div className="flex-1 min-h-0 flex overflow-hidden">

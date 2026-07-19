@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { invoke, Account, AppConfig, saveConfig, getWindowsUsers, createWindowsUser, getWhoami } from "../../../lib/api";
+import { invoke, Account, AppConfig, saveConfig, getWindowsUsers, createWindowsUser, getWhoami, getSnapshotGamePaths } from "../../../lib/api";
 import { useNotification } from "../../../store/useNotification";
 import { useLogs } from "../../../store/useLogs";
 import { useTranslation } from "react-i18next";
@@ -25,6 +25,11 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
     const [bnetAccount, setBnetAccount] = useState("");
     const [note, setNote] = useState("");
     const [gamePath, setGamePath] = useState<string | undefined>(undefined);
+    const [baselinePath, setBaselinePath] = useState("");
+    const [strictBaseline, setStrictBaseline] = useState(false);
+    const [isD2r, setIsD2r] = useState(true);
+    // Baseline suggestions extracted from the account's snapshot (configured paths)
+    const [snapshotPaths, setSnapshotPaths] = useState<string[]>([]);
     const [avatar, setAvatar] = useState<string | undefined>(undefined);
     const [applyPasswordPolicy, setApplyPasswordPolicy] = useState(true);
     const [skipConfigSync, setSkipConfigSync] = useState(false);
@@ -108,6 +113,14 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
                 setBnetAccount(editingAccount.bnet_account || "");
                 setNote(editingAccount.note || "");
                 setGamePath(editingAccount.game_path);
+                setBaselinePath(editingAccount.baseline_path || "");
+                setStrictBaseline(editingAccount.strict_baseline ?? false);
+                setIsD2r(editingAccount.is_d2r ?? true);
+                setSnapshotPaths([]);
+                // Suggest the configured path(s) found in this account's snapshot
+                getSnapshotGamePaths(editingAccount.id)
+                    .then(setSnapshotPaths)
+                    .catch(() => setSnapshotPaths([]));
                 setAvatar(editingAccount.avatar);
                 setApplyPasswordPolicy(editingAccount.auto_fix_password ?? true);
                 setSkipConfigSync(editingAccount.skip_config_sync ?? false);
@@ -120,6 +133,10 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
                 setBnetAccount("");
                 setNote("");
                 setGamePath(undefined);
+                setBaselinePath("");
+                setStrictBaseline(false);
+                setIsD2r(true);
+                setSnapshotPaths([]);
                 setAvatar(undefined);
                 setApplyPasswordPolicy(true);
                 setSkipConfigSync(false);
@@ -184,8 +201,69 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
         }
     };
 
-    const handleSave = async (forceSystemSync: boolean = false) => {
+    // Mirror of the backend's normalize_config_path — for the UI-side
+    // baseline/snapshot consistency hint only; the authoritative comparison
+    // lives in the backend gates.
+    const normalizePath = (s: string) => {
+        let p = s.trim().replace(/^["']+|["']+$/g, '').trim().toLowerCase().replace(/\\/g, '/');
+        p = p.replace(/\/+$/, '');
+        if (p.endsWith('/d2r.exe')) p = p.slice(0, -'/d2r.exe'.length);
+        return p;
+    };
+
+    const handleSave = async (forceSystemSync: boolean = false, resolvedBaseline?: string) => {
         if (!winUser.trim()) return;
+
+        const effectiveBaseline = (resolvedBaseline ?? baselinePath).trim();
+
+        // Required-field constraints for NEW accounts only (existing accounts
+        // stay editable for backward compatibility):
+        //  - baseline path is mandatory for D2R accounts (it is THE backup
+        //    criterion); non-D2R (pure Battle.net switching) accounts skip it;
+        //  - password is mandatory, EXCEPT when binding the current logged-in
+        //    user (Host is spawned directly, no CreateProcessWithLogonW).
+        if (!editingAccount) {
+            if (isD2r && !effectiveBaseline) {
+                addNotification('error', t('baseline_required') as string, 6000);
+                return;
+            }
+            const isHost = winUser.toLowerCase() === currentUser.toLowerCase();
+            if (!winPass && !isHost) {
+                addNotification('error', t('password_required') as string, 6000);
+                return;
+            }
+        }
+
+        // Baseline vs snapshot consistency interception: the typed baseline
+        // should normally appear among the paths recorded in the account's
+        // snapshot. A mismatch means either the user is deliberately declaring
+        // a new truth (game moved / mirror changed — snapshot needs re-saving
+        // later) or a typo. Let the user decide instead of saving silently.
+        // Skipped for non-D2R accounts: the baseline field is hidden but its
+        // value is retained, and it plays no role in their backup rule.
+        if (isD2r && resolvedBaseline === undefined && effectiveBaseline && snapshotPaths.length > 0) {
+            if (!snapshotPaths.includes(normalizePath(effectiveBaseline))) {
+                showBlocking(
+                    t('baseline_mismatch_title'),
+                    t('baseline_mismatch_desc', { baseline: effectiveBaseline, snapshot: snapshotPaths.join('  ·  ') }),
+                    [
+                        { label: t('cancel'), variant: 'outline', onClick: () => { } },
+                        {
+                            label: t('baseline_adopt_snapshot'),
+                            variant: 'primary',
+                            onClick: () => { setBaselinePath(snapshotPaths[0]); handleSave(forceSystemSync, snapshotPaths[0]); }
+                        },
+                        {
+                            label: t('baseline_use_mine'),
+                            variant: 'danger',
+                            onClick: () => handleSave(forceSystemSync, effectiveBaseline)
+                        }
+                    ],
+                    'warning'
+                );
+                return;
+            }
+        }
 
         // Check for duplicate Windows User (excluding the one we are editing)
         const isDuplicate = config.accounts.some(acc => 
@@ -218,7 +296,9 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
                         `${t('confirm_password_sync_desc')}\n\n!!${t('confirm_password_reset_instr')}!!`,
                         [
                             { label: t('cancel'), variant: 'outline', onClick: () => setIsSaving(false) },
-                            { label: t('confirm_and_sync'), variant: 'danger', onClick: () => handleSave(true) }
+                            // Thread the resolved baseline through so the
+                            // consistency dialog doesn't fire a second time.
+                            { label: t('confirm_and_sync'), variant: 'danger', onClick: () => handleSave(true, effectiveBaseline) }
                         ],
                         'error',
                         'yes'
@@ -271,6 +351,9 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
                 note: note || undefined,
                 avatar: avatar,
                 game_path: gamePath,
+                is_d2r: isD2r,
+                baseline_path: effectiveBaseline || undefined,
+                strict_baseline: strictBaseline,
                 auto_fix_password: applyPasswordPolicy,
                 skip_config_sync: skipConfigSync,
             };
@@ -324,6 +407,10 @@ export function useAccountForm({ isOpen, onClose, config, onSave, editingAccount
         bnetAccount, setBnetAccount,
         note, setNote,
         gamePath, setGamePath,
+        baselinePath, setBaselinePath,
+        strictBaseline, setStrictBaseline,
+        isD2r, setIsD2r,
+        snapshotPaths,
         avatar, setAvatar,
         applyPasswordPolicy, setApplyPasswordPolicy,
         skipConfigSync,

@@ -2,10 +2,8 @@
 import { useTranslation } from 'react-i18next';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { AlertCircle, Download, CheckCircle2, Save } from 'lucide-react';
+import { AlertCircle, Download, CheckCircle2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import saveSnapshotImg from '../../assets/guide/19-save.jpg';
-import sequencerSaveImg from '../../assets/guide/20-sequencer-save.jpg';
 
 interface GuideModalProps {
     isOpen: boolean;
@@ -76,27 +74,6 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                                 <h4 className="text-[10px] font-bold text-net-300/90">{t('guide_launch_advanced_title')}</h4>
                                 <p className="text-[13px] text-text-dim leading-relaxed font-light">{t('guide_launch_advanced_desc')}</p>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Snapshot Flow Section */}
-                    <div className="bg-warn/5 border border-warn/10 rounded-lg p-5 space-y-3">
-                        <div className="flex items-center gap-2 text-warn">
-                            <Save size={14} />
-                            <h3 className="font-bold text-[10px] uppercase tracking-widest">{t('snapshot_reminder_title')}</h3>
-                        </div>
-                        <p className="text-[13px] leading-relaxed text-text-dim">
-                            {t('snapshot_reminder_body')}
-                        </p>
-                        <div className="grid grid-cols-1 gap-3 pt-1">
-                            <figure className="space-y-1.5">
-                                <img src={saveSnapshotImg} alt="" className="w-full rounded-md border border-line" />
-                                <figcaption className="text-[10px] text-text-faint uppercase tracking-wider">{t('guide_fig_save_snapshot')}</figcaption>
-                            </figure>
-                            <figure className="space-y-1.5">
-                                <img src={sequencerSaveImg} alt="" className="w-full rounded-md border border-line" />
-                                <figcaption className="text-[10px] text-text-faint uppercase tracking-wider">{t('guide_fig_seq_finish')}</figcaption>
-                            </figure>
                         </div>
                     </div>
 

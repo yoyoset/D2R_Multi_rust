@@ -8,7 +8,10 @@ pub fn clear_logs() -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn nuke_reset(app: tauri::AppHandle) -> Result<String, String> {
+pub fn nuke_reset(
+    state: tauri::State<'_, state::AppState>,
+    app: tauri::AppHandle,
+) -> Result<String, String> {
     // 1. Kill everything
     let killed = modules::process_killer::kill_all_related_processes();
 
@@ -21,6 +24,8 @@ pub fn nuke_reset(app: tauri::AppHandle) -> Result<String, String> {
     // 4. Also cleanup archives for a true deep reset
     let _ = modules::file_swap::cleanup_bnet_archives();
 
+    state.set_live_db_owner(&app, None);
+
     Ok(format!(
         "Nuke complete: {} processes killed. All state and archives cleared.",
         killed
@@ -28,25 +33,49 @@ pub fn nuke_reset(app: tauri::AppHandle) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn cleanup_archives() -> Result<String, String> {
-    modules::file_swap::cleanup_bnet_archives().map_err(|e| e.to_string())
+pub fn cleanup_archives(
+    state: tauri::State<'_, state::AppState>,
+    app: tauri::AppHandle,
+) -> Result<String, String> {
+    let msg = modules::file_swap::cleanup_bnet_archives().map_err(|e| e.to_string())?;
+    // cleanup removes the live product.db, so nobody owns the slot anymore.
+    state.set_live_db_owner(&app, None);
+    Ok(msg)
 }
 
 #[tauri::command]
-pub fn manual_backup_save(app: tauri::AppHandle, account_id: String) -> Result<String, String> {
+pub fn manual_backup_save(
+    state: tauri::State<'_, state::AppState>,
+    app: tauri::AppHandle,
+    account_id: String,
+) -> Result<String, String> {
     modules::file_swap::rotate_save(&app, &account_id).map_err(|e| e.to_string())?;
+    // A manual backup is the user declaring "the current live config is this
+    // account's" — record that so subsequent auto-backups stay authorized.
+    state.set_live_db_owner(&app, Some(account_id));
     Ok("Backup successful".to_string())
 }
 
 #[tauri::command]
-pub fn manual_delete_config() -> Result<String, String> {
+pub fn manual_delete_config(
+    state: tauri::State<'_, state::AppState>,
+    app: tauri::AppHandle,
+) -> Result<String, String> {
     modules::file_swap::delete_config().map_err(|e| e.to_string())?;
+    state.set_live_db_owner(&app, None);
     Ok("Config deleted".to_string())
 }
 
 #[tauri::command]
-pub fn manual_restore_config(app: tauri::AppHandle, account_id: String) -> Result<String, String> {
-    modules::file_swap::restore_snapshot(&app, &account_id).map_err(|e| e.to_string())?;
+pub fn manual_restore_config(
+    state: tauri::State<'_, state::AppState>,
+    app: tauri::AppHandle,
+    account_id: String,
+) -> Result<String, String> {
+    let restored = modules::file_swap::restore_snapshot(&app, &account_id).map_err(|e| e.to_string())?;
+    if restored {
+        state.set_live_db_owner(&app, Some(account_id));
+    }
     Ok("Restore successful".to_string())
 }
 

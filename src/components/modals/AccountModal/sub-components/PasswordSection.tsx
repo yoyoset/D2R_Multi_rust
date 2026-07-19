@@ -12,6 +12,7 @@ interface PasswordSectionProps {
     isValidatingPass: boolean;
     verifyWindowsPassword: (pass: string) => void;
     hasCredential?: boolean;
+    isRequired?: boolean;
 }
 
 export function PasswordSection({
@@ -23,7 +24,8 @@ export function PasswordSection({
     setPasswordError,
     isValidatingPass,
     verifyWindowsPassword,
-    hasCredential
+    hasCredential,
+    isRequired
 }: PasswordSectionProps) {
     const { t } = useTranslation();
 
@@ -31,7 +33,7 @@ export function PasswordSection({
         <div className="space-y-3">
             <div className="flex items-center gap-4">
                 <label className="text-[10px] font-black uppercase tracking-widest text-text-dim min-w-[3rem] whitespace-nowrap">
-                    {t('label_password')}
+                    {t('label_password')}{isRequired && <span className="text-danger-500 ml-1">*</span>}
                 </label>
                 <div className="relative flex-1 group/pass">
                     <input

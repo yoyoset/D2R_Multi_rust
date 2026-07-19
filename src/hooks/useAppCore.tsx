@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getConfig, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers, getRunningGamePaths, checkVaultIntegrity, VaultIssue, validateAllVaultEntries, verifyWindowsPassword } from "../lib/api";
+import { getConfig, saveConfig, AppConfig, Account, checkAdmin, getWindowsUsers, getRunningGamePaths, checkVaultIntegrity, VaultIssue, validateAllVaultEntries, verifyWindowsPassword, resolveBaselineConflict, rescanPendingConflicts, ackBaselineSeedReport } from "../lib/api";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -278,13 +278,6 @@ export function useAppCore() {
         }
     }, [t, addLog]);
 
-    const handleDismissSnapshotReminder = useCallback(async () => {
-        if (config.snapshot_reminder_dismissed) return;
-        const newConfig = { ...config, snapshot_reminder_dismissed: true };
-        setConfig(newConfig);
-        try { await saveConfig(newConfig); } catch (e) { console.error("Failed to save snapshot reminder dismiss", e); }
-    }, [config]);
-
     const handleCloseGuide = useCallback(async (dontShowAgain?: boolean) => {
         setIsGuideOpen(false);
         if (dontShowAgain === true && !config.has_shown_guide) {
@@ -331,6 +324,35 @@ export function useAppCore() {
             if (!cfg.has_shown_guide) {
                 setIsGuideOpen(true);
             }
+
+            // Baseline-seeding upgrade report: the migration ran during config
+            // load (before any frontend listener existed), so the result is
+            // persisted in config until acknowledged. Tell the user what was
+            // synced automatically and which accounts still need a manual
+            // baseline (computed live: D2R accounts without one).
+            if (cfg.baseline_seed_report && cfg.baseline_seed_report.length > 0) {
+                const manual = cfg.accounts
+                    .filter(a => (a.is_d2r ?? true) && !(a.baseline_path ?? '').trim())
+                    .map(a => a.win_user);
+                const body =
+                    t('baseline_seed_synced', { count: cfg.baseline_seed_report.length }) + '\n' +
+                    cfg.baseline_seed_report.join('\n') + '\n\n' +
+                    (manual.length > 0
+                        ? t('baseline_seed_manual_needed') + '\n' + manual.join(', ')
+                        : t('baseline_seed_all_done'));
+                showBlocking(
+                    t('baseline_seed_title'),
+                    body,
+                    [{
+                        label: t('got_it'),
+                        variant: 'primary',
+                        onClick: async () => {
+                            try { await ackBaselineSeedReport(); } catch (e) { console.error(e); }
+                        }
+                    }],
+                    'info'
+                );
+            }
         };
         init();
 
@@ -361,6 +383,64 @@ export function useAppCore() {
             setIsMigrationModalOpen(true);
         });
 
+        // Baseline-path mismatch detected at inject time (restored snapshot
+        // doesn't record the baseline — polluted/stale snapshot). Toast only;
+        // the fix (re-locate + re-save snapshot, or edit the baseline) lives
+        // in the account editor.
+        const unlistenBaseline = listen('baseline-mismatch', (event: any) => {
+            const user = event.payload?.user ?? '?';
+            addNotification('warning', t('baseline_mismatch_toast', { user }) as string, 10000);
+        });
+
+        // Baseline conflict arbitration: the launcher found the live config's
+        // path differing from the ledger owner's baseline, stashed the
+        // disputed copy to pending_{id}.db and skipped the backup. The user
+        // rules on the frozen copy — cancel the backup, or adopt the new path
+        // as baseline and complete the backup with the disputed bytes.
+        const unlistenConflict = listen('baseline-conflict', (event: any) => {
+            const p = event.payload ?? {};
+            const accountId: string = p.account_id ?? '';
+            const user: string = p.user ?? '?';
+            const baseline: string = p.baseline ?? '';
+            const livePaths: string[] = Array.isArray(p.live_paths) ? p.live_paths : [];
+            if (!accountId) return;
+
+            const canAdopt = livePaths.length === 1;
+            const desc = t('baseline_conflict_desc', {
+                user,
+                baseline: baseline || '—',
+                live: livePaths.length > 0 ? livePaths.join('  ·  ') : '?',
+            }) + (canAdopt ? '' : `\n\n${t('baseline_conflict_multi_hint')}`);
+
+            const actions = [
+                {
+                    label: t('baseline_conflict_discard'),
+                    variant: 'outline' as const,
+                    onClick: async () => {
+                        try {
+                            await resolveBaselineConflict(accountId, 'discard');
+                        } catch (e) {
+                            addNotification('error', t('baseline_conflict_failed', { error: String(e) }) as string, 8000);
+                        }
+                    }
+                },
+                ...(canAdopt ? [{
+                    label: t('baseline_conflict_adopt'),
+                    variant: 'primary' as const,
+                    onClick: async () => {
+                        try {
+                            const adopted = await resolveBaselineConflict(accountId, 'adopt');
+                            addNotification('success', t('baseline_conflict_resolved', { user, path: adopted ?? '' }) as string, 6000);
+                        } catch (e) {
+                            addNotification('error', t('baseline_conflict_failed', { error: String(e) }) as string, 8000);
+                        }
+                    }
+                }] : [])
+            ];
+
+            showBlocking(t('baseline_conflict_title'), desc, actions, 'warning');
+        });
+
         const unlistenConfig = listen('config-updated', async () => {
             console.log("[Config] Update Event Received");
             const cfg = await getConfig();
@@ -368,13 +448,22 @@ export function useAppCore() {
             validateVault();
         });
 
+        // Re-surface conflicts whose dialogs died with a previous app process
+        // (pending files survive on disk). Slight delay so listeners are live.
+        const rescanTimer = setTimeout(() => {
+            rescanPendingConflicts().catch(console.error);
+        }, 1500);
+
         return () => {
+            clearTimeout(rescanTimer);
             unlisten.then(f => f());
             unlistenResumption.then(f => f());
             unlistenMigration.then(f => f());
+            unlistenBaseline.then(f => f());
+            unlistenConflict.then(f => f());
             unlistenConfig.then(f => f());
         };
-    }, [checkAdminStatus, checkUpdateOnLaunch, validateAccounts, checkVersionUpdate, addLog, showBlocking, t, config.active_sequence?.preset_index, validateVault]);
+    }, [checkAdminStatus, checkUpdateOnLaunch, validateAccounts, checkVersionUpdate, addLog, addNotification, showBlocking, t, config.active_sequence?.preset_index, validateVault]);
 
     return {
         // State
@@ -389,6 +478,6 @@ export function useAppCore() {
         // Handlers
         handleLaunch, handleAddAccount, handleEditAccount, handleDeleteAccount,
         handleReorder, handleViewModeChange, handleRefreshPaths, handleSaveSnapshot,
-        handleCloseGuide, handleDismissSnapshotReminder, clearLogs, validateVault
+        handleCloseGuide, clearLogs, validateVault
     };
 }

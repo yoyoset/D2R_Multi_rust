@@ -70,6 +70,19 @@ impl AppState {
         self.last_launch.lock()
     }
 
+    /// Record (or clear) which account the machine-global Battle.net product.db
+    /// belongs to. Every code path that injects, captures, or deletes the live
+    /// file must keep this in sync — the pre-launch auto-backup uses it to
+    /// decide whether capturing the live file into a snapshot is safe
+    /// (anti path-contamination; see `AppConfig::live_db_owner`).
+    pub fn set_live_db_owner(&self, app: &tauri::AppHandle, owner: Option<String>) {
+        let mut config = self.config.lock();
+        if config.live_db_owner != owner {
+            config.live_db_owner = owner;
+            let _ = config.save(app);
+        }
+    }
+
     pub fn refresh_game_processes(&self) {
         let mut sys = self.sys.lock();
 

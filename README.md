@@ -52,13 +52,11 @@ For the edge cases automation can't reach (leftover handles, broken ACLs, stuck 
 
 ## Quick Start
 
-1. **Prepare**: Windows 10/11 x64; Battle.net installed at the default `C:\Program Files (x86)\Battle.net` with "install for all users" checked.
+1. **Prepare**: Windows 10/11 x64; Battle.net installed at the default `C:\Program Files (x86)\Battle.net` with "install for all users" checked; the game/mirror partition must be NTFS (required by directory junctions).
 2. **Run**: right-click `d2r-rust.exe` → "Run as administrator".
-3. **Add accounts**: Accounts → Add; bind (or create) a local Windows user and enter its password.
-4. **Launch**: back on the dashboard, select an account → "Launch Game". Log into Battle.net once on first launch; it persists afterwards.
-5. **Multi-box**: select another account and launch again — the instance lock is cleared automatically.
-
-> ⚠️ **The last account you launch needs a manual "Save Snapshot"** (auto-backup only happens at the *next* launch, and the last one has none). See the guide's [§4.5](./User_Guide.md).
+3. **Add accounts**: Accounts → Add; bind (or create) a local Windows user, enter its password, and confirm the **baseline path** (the game directory configured in Battle.net; one-click snapshot suggestions available) — it's what auto-backup verifies against. Accounts that only switch Battle.net logins and never multibox D2R can tick "Non-D2R account" and skip it.
+4. **Launch**: back on the dashboard, select an account → "Launch Game". Log into Battle.net once on first launch; it persists afterwards (the login credentials are keyed to that Windows user's password — **don't change it**; tick "password never expires").
+5. **Multi-box**: select another account and launch again — the instance lock is cleared automatically, and snapshots rotate-back-up before every launch.
 
 ![Account manager](doc/images/05-account-manage.jpg)
 

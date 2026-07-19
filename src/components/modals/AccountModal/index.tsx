@@ -10,7 +10,6 @@ import { PasswordSection } from "./sub-components/PasswordSection";
 import { AvatarSection } from "./sub-components/AvatarSection";
 import { MetadataSection } from "./sub-components/MetadataSection";
 import { PolicySection } from "./sub-components/PolicySection";
-import { SnapshotReminder } from "../../ui/SnapshotReminder";
 
 export { ClassAvatar } from "./sub-components/AvatarSection";
 
@@ -41,7 +40,6 @@ export function AccountModal(props: AccountModalProps) {
 
                 <ModalBody>
                     <div className="space-y-4">
-                        <SnapshotReminder variant="note" />
                         <UserBindingSection
                             editingAccount={!!props.editingAccount}
                             isManualInput={form.isManualInput}
@@ -70,6 +68,7 @@ export function AccountModal(props: AccountModalProps) {
                                     isValidatingPass={form.isValidatingPass}
                                     verifyWindowsPassword={form.verifyWindowsPassword}
                                     hasCredential={!!props.editingAccount && !props.missingCredentialIds.has(props.editingAccount.id)}
+                                    isRequired={!props.editingAccount && !isHost}
                                 />
 
                                 <PolicySection
@@ -97,6 +96,14 @@ export function AccountModal(props: AccountModalProps) {
                             note={form.note}
                             setNote={form.setNote}
                             gamePath={form.gamePath}
+                            baselinePath={form.baselinePath}
+                            setBaselinePath={form.setBaselinePath}
+                            strictBaseline={form.strictBaseline}
+                            setStrictBaseline={form.setStrictBaseline}
+                            isD2r={form.isD2r}
+                            setIsD2r={form.setIsD2r}
+                            snapshotPaths={form.snapshotPaths}
+                            isNewAccount={!props.editingAccount}
                         />
                     </div>
                 </ModalBody>

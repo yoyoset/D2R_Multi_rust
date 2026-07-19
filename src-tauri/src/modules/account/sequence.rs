@@ -141,10 +141,9 @@ pub async fn next_sequence_step(
         // here automatically: at this moment the user has only just been logged in
         // and may still be adjusting Battle.net / game settings before they are
         // "done". Auto-capturing the launch-time product.db now would freeze a
-        // half-finished state. Instead, the sequencer mini-window shows a "Finish &
-        // back up" button — the user clicks it once they are truly done, which then
-        // calls `manual_backup_save` on the last account (the deliberate, final
-        // capture). Clicking the window's X instead just closes it with no backup.
+        // half-finished state. The mini-window offers an optional "Finish & back
+        // up" button for an immediate deliberate capture; skipping it is safe —
+        // the baseline rotation backs the account up at the next launch.
 
         // Clear states
         let mut active = state.sequence_lock();

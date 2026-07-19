@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GripVertical, X, CheckCircle2, Loader2, PlayCircle, ChevronDown, ChevronUp, Circle, Flag } from 'lucide-react';
-import { getConfig, AppConfig, ActiveSequenceState, requestSequenceSync, interruptSequence, nextSequenceStep, manualBackupSave, getAccountsProcessStatus } from '../../lib/api';
+import { getConfig, AppConfig, ActiveSequenceState, requestSequenceSync, interruptSequence, nextSequenceStep, manualBackupSave, getAccountsProcessStatus, verifyLiveConfig } from '../../lib/api';
 import { listen } from '@tauri-apps/api/event';
 import { cn } from '../../lib/utils';
 import { useNotification } from '../../store/useNotification';
@@ -114,9 +114,9 @@ const SequencerMini: React.FC = () => {
         getCurrentWindow().close().catch(console.error);
     };
 
-    // Finish: back up the LAST account's snapshot (deliberate, final capture),
-    // then close. This is the only path that backs up the last account — the
-    // sequence engine no longer does it automatically at launch time.
+    // Finish: back up the LAST account's snapshot (deliberate, immediate
+    // capture), then close. Optional — skipping it is safe: the baseline
+    // rotation backs the account up at the next launch anyway.
     const handleFinishAndBackup = async (e: React.MouseEvent) => {
         e.stopPropagation();
         if (isProcessing) return;
@@ -133,12 +133,19 @@ const SequencerMini: React.FC = () => {
         }
         setIsProcessing(true);
         try {
-            // Guard: rotate_save copies the machine-global product.db. If some
-            // OTHER account's Battle.net is running, the file has been swapped
-            // since this sequence ended — saving now would store that account's
-            // data into lastAcc's snapshot slot. Refuse and keep the window open
-            // (✕ still closes without backing up).
-            const others = config!.accounts.filter(a => a.id !== lastAcc.id).map(a => a.win_user);
+            // Guard: rotate_save copies the machine-global product.db. If the
+            // file has been swapped since this sequence ended (another account
+            // launched, or some OTHER account's Battle.net is running), saving
+            // now would store that account's data into lastAcc's snapshot slot.
+            // Refuse and keep the window open (✕ still closes without backing up).
+            const freshCfg = await getConfig();
+            if (freshCfg.live_db_owner && freshCfg.live_db_owner !== lastAcc.id) {
+                const owner = freshCfg.accounts.find(a => a.id === freshCfg.live_db_owner);
+                addNotification('warning', t('seq_backup_stale', { user: lastAcc.win_user, other: owner?.win_user ?? '?' }) as string, 8000);
+                setIsProcessing(false);
+                return;
+            }
+            const others = freshCfg.accounts.filter(a => a.id !== lastAcc.id).map(a => a.win_user);
             if (others.length > 0) {
                 const status = await getAccountsProcessStatus(others);
                 const hijacked = Object.entries(status).find(([, s]) => s.bnet_active);
@@ -147,6 +154,16 @@ const SequencerMini: React.FC = () => {
                     setIsProcessing(false);
                     return;
                 }
+            }
+            // Content check: an out-of-band Battle.net may have rewritten the
+            // live file and already closed — no running process, ownership
+            // unchanged, yet the content no longer belongs to lastAcc. Verify
+            // against the baseline path (or snapshot) before capturing.
+            const contentVerdict = await verifyLiveConfig(lastAcc.id);
+            if (contentVerdict === 'mismatch') {
+                addNotification('warning', t('seq_backup_content_mismatch', { user: lastAcc.win_user }) as string, 8000);
+                setIsProcessing(false);
+                return;
             }
             await manualBackupSave(lastAcc.id);
             addNotification('success', t('seq_backup_done', { user: lastAcc.win_user }) as string);

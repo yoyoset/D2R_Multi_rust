@@ -141,10 +141,11 @@ pub fn launch_game(
 
     if !advanced_mode {
         let mut current_config = state.config_lock();
-        // (Removed a redundant unconditional save here: it persisted the config
-        // before any mutation. The conditional save below covers real changes.)
         let mut config_changed = false;
-        
+
+        // A. Path Auto-Learning (display/diagnostics only). The double-online
+        // process scan feeds ONLY this — it plays no role in backup decisions
+        // anymore.
         for acc in &mut current_config.accounts {
             let normalized_win_user = if let Some(pos) = acc.win_user.find('\\') {
                 acc.win_user[pos+1..].to_lowercase()
@@ -154,14 +155,11 @@ pub fn launch_game(
 
             if let Some((has_bnet, has_d2r, d2r_path)) = user_states.get(&normalized_win_user) {
                 if *has_bnet && *has_d2r {
-                    // Valid Double-Online Anchor Found!
-                    
-                    // A. Record Path (Auto-Learning)
                     if let Some(path) = d2r_path {
                         let path_str = path.to_string_lossy().to_string();
                         logger::log_localized(Some(app), "info", "logs.launcher.anchor_found", Some(serde_json::json!({ "user": acc.win_user, "path": path_str })),
                             &format!("Account {} active, anchor path: {}", acc.win_user, path_str));
-                        
+
                         if acc.game_path != Some(path_str.clone()) {
                             acc.game_path = Some(path_str.clone());
                             config_changed = true;
@@ -169,15 +167,93 @@ pub fn launch_game(
                                 &format!("Captured latest game path for {}: {}", acc.win_user, path_str));
                         }
                     }
+                }
+            }
+        }
 
-                    // B. Rotate Save (Backup)
-                    if !acc.skip_config_sync {
-                        logger::log_localized(Some(app), "info", "logs.launcher.backing_up", Some(serde_json::json!({ "user": acc.win_user })),
-                            &format!("Account {} double-online detected, backing up snapshot...", acc.win_user));
-                        if let Err(e) = file_swap::rotate_save(app, &acc.id) {
-                            tracing::warn!("Backup failed for {}: {}", acc.win_user, e);
-                        }
+        // B. Unified backup rule — the baseline path is THE sole criterion.
+        //
+        //   live product.db exists AND the ledger names an existing account?
+        //     ├─ account has a baseline and live records it → back up (无感轮巡,
+        //     │  no process evidence needed: identity = ledger, validity = the
+        //     │  game path, the only field of product.db that does not self-
+        //     │  heal online once Battle.net logs in with valid credentials)
+        //     ├─ mismatch → strict_baseline (唯一基准): silently cancel + log;
+        //     │  otherwise: stash the DISPUTED live file to pending_{id}.db
+        //     │  (the injection below destroys the original before the user
+        //     │  can rule) and emit "baseline-conflict" for arbitration in the
+        //     │  main window (cancel backup / adopt as new baseline & back up)
+        //     ├─ no baseline → skip + hint (set a baseline to enable rotation)
+        //     └─ undetermined (no extractable path) → skip (never risk a bad
+        //        capture; a missed backup is recoverable, a wrong one is not)
+        //
+        // The ledger is ignored when it names a deleted account (orphan id
+        // from deletion/migration/hand-edits); the next injection rewrites it.
+        let live_owner = current_config.live_db_owner.clone().filter(|owner_id| {
+            current_config.accounts.iter().any(|a| a.id == *owner_id)
+        });
+
+        if let Some(owner_id) = live_owner.as_deref() {
+            let owner_acc = current_config.accounts.iter().find(|a| a.id == owner_id)
+                .cloned()
+                .expect("live_owner filtered against accounts above");
+
+            if !owner_acc.skip_config_sync {
+                if !owner_acc.is_d2r {
+                    // Pure Battle.net login-switching account (no D2R multibox):
+                    // such accounts share the same machine-wide game installs, so
+                    // product.db contents are homogeneous between them and path
+                    // cross-contamination cannot harm them. Ledger ownership
+                    // alone authorizes the backup — it preserves the "games
+                    // already located" state so Battle.net doesn't keep asking.
+                    logger::log_localized(Some(app), "info", "logs.launcher.backing_up_owner_plain", Some(serde_json::json!({ "user": owner_acc.win_user })),
+                        &format!("Ledger ownership confirmed — backing up previous account {}'s snapshot (non-D2R account)", owner_acc.win_user));
+                    if let Err(e) = file_swap::rotate_save(app, owner_id) {
+                        tracing::warn!("Rotation backup failed for {}: {}", owner_acc.win_user, e);
                     }
+                } else {
+                match owner_acc.baseline_path.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
+                    None => {
+                        logger::log_localized(Some(app), "info", "logs.launcher.backup_skipped_no_baseline", Some(serde_json::json!({ "user": owner_acc.win_user })),
+                            &format!("No baseline path set for {} — auto-backup skipped. Confirm a baseline in the account editor to enable seamless rotation backups.", owner_acc.win_user));
+                    }
+                    Some(baseline) => match file_swap::live_config_contains_path(baseline) {
+                        Some(true) => {
+                            logger::log_localized(Some(app), "info", "logs.launcher.backing_up_owner", Some(serde_json::json!({ "user": owner_acc.win_user })),
+                                &format!("Ledger + baseline verified — backing up previous account {}'s snapshot (seamless rotation)", owner_acc.win_user));
+                            if let Err(e) = file_swap::rotate_save(app, owner_id) {
+                                tracing::warn!("Rotation backup failed for {}: {}", owner_acc.win_user, e);
+                            }
+                        }
+                        Some(false) => {
+                            logger::log_localized(Some(app), "warn", "logs.launcher.backup_skipped_mismatch", Some(serde_json::json!({ "user": owner_acc.win_user })),
+                                &format!("Skipped auto-backup for {}: live Battle.net config does not match this account's baseline path (path cross-contamination guard)", owner_acc.win_user));
+                            if !owner_acc.strict_baseline {
+                                // Stash the disputed live file NOW — the wipe
+                                // below destroys it long before the user can
+                                // answer the arbitration dialog.
+                                match file_swap::stash_pending(app, owner_id) {
+                                    Ok(()) => {
+                                        let live_paths = file_swap::pending_game_paths(app, owner_id);
+                                        let _ = app.emit("baseline-conflict", serde_json::json!({
+                                            "account_id": owner_id,
+                                            "user": owner_acc.win_user,
+                                            "baseline": baseline,
+                                            "live_paths": live_paths,
+                                        }));
+                                    }
+                                    Err(e) => tracing::warn!("Failed to stash pending conflict copy for {}: {}", owner_acc.win_user, e),
+                                }
+                            }
+                            // strict_baseline (唯一基准): no prompt of any kind —
+                            // the baseline is immutable truth, mismatches are
+                            // cancelled outright (log above is the only trace).
+                        }
+                        // Live file missing or no recognizable paths — fresh
+                        // initial state or mid-write; nothing safe to capture.
+                        None => {}
+                    },
+                }
                 }
             }
         }
@@ -290,6 +366,19 @@ pub fn launch_game(
     match file_swap::restore_snapshot(app, &account.id) {
         Ok(true) => {
             logger::log_localized(Some(app), "success", "logs.launcher.align_success", None, "Environment file alignment complete");
+            // Pollution detector: the snapshot just became the live config, so
+            // if the account has a user-confirmed baseline path and the
+            // restored content doesn't record it, the snapshot itself is bad
+            // (e.g. poisoned before the ownership guard existed). Warn loudly
+            // now instead of letting the user discover a wrong path in-game.
+            if let Some(baseline) = account.baseline_path.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
+                if file_swap::live_config_contains_path(baseline) == Some(false) {
+                    logger::log_localized(Some(app), "warn", "logs.launcher.snapshot_baseline_mismatch",
+                        Some(serde_json::json!({ "user": account.win_user, "path": baseline })),
+                        &format!("Restored snapshot for {} does not record its baseline path {} — the snapshot may be stale or polluted; re-locate the game in Battle.net and save the snapshot again", account.win_user, baseline));
+                    let _ = app.emit("baseline-mismatch", serde_json::json!({ "user": account.win_user, "kind": "snapshot" }));
+                }
+            }
         }
         Ok(false) => {
             logger::log_localized(Some(app), "info", "logs.launcher.no_snapshot", None, "No history snapshot found for target account, using clean Battle.net environment");
@@ -297,9 +386,17 @@ pub fn launch_game(
         Err(e) => {
             logger::log_localized(Some(app), "error", "logs.launcher.align_critical_error", Some(serde_json::json!({ "error": e.to_string() })),
                 &format!("Critical error during file alignment: {}", e));
+            // The old config was already deleted above, so the live slot no
+            // longer belongs to anyone.
+            state.set_live_db_owner(app, None);
             return Err(AccountError::FileSwap(e));
         }
     }
+
+    // The live product.db (restored snapshot, or the clean slate Battle.net is
+    // about to populate) now belongs to the target account. Recording this is
+    // what authorizes future auto-backups for it — see the audit gate above.
+    state.set_live_db_owner(app, Some(account.id.clone()));
 
     perf!("P3.fileswap");
 

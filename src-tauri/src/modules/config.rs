@@ -39,10 +39,27 @@ pub struct AppConfig {
     pub active_sequence: Option<ActiveSequenceState>,
     #[serde(default)]
     pub snapshot_migration_v060: Option<bool>,
-    /// Whether the user has dismissed the "remember to save the last account's
-    /// snapshot manually" reminder banner (acknowledged by typing "yes").
+    /// Account ID that the machine-global Battle.net product.db currently
+    /// belongs to. Set whenever this tool injects/captures an environment for
+    /// an account (launch restore, manual restore, manual backup) and cleared
+    /// when the live file is deleted. The pre-launch auto-backup only captures
+    /// the live product.db into an account's snapshot when that account is the
+    /// recorded owner — a "double-online" process pattern alone is not proof of
+    /// ownership (Battle.net re-opened outside this tool, e.g. by D2R re-auth,
+    /// still reads whatever account's config was injected last, so backing up
+    /// on that signal cross-contaminates snapshots with another account's path).
     #[serde(default)]
-    pub snapshot_reminder_dismissed: Option<bool>,
+    pub live_db_owner: Option<String>,
+    /// One-time migration flag: baseline paths seeded from existing snapshots
+    /// (upgrade path for configs predating the baseline model).
+    #[serde(default)]
+    pub baseline_seed_done: Option<bool>,
+    /// Upgrade report for the seeding above: "win_user → path" summary lines,
+    /// persisted until the user acknowledges the dialog (survives restarts;
+    /// the migration runs before frontend listeners exist, so an event would
+    /// be lost). Backend-authoritative — save_config preserves it.
+    #[serde(default)]
+    pub baseline_seed_report: Option<Vec<String>>,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -99,6 +116,45 @@ impl AppConfig {
                 }
             }
             updated_config.snapshot_migration_v060 = Some(true);
+            let _ = updated_config.save(app);
+            // Early return by design: baseline seeding below runs on the NEXT
+            // load, after any snapshots rescued here are already in place.
+            return Ok(updated_config);
+        }
+
+        // Baseline seeding (upgrade to the baseline-as-sole-criterion model):
+        // configs predating baseline_path would otherwise have auto-backup
+        // fully paused until the user configures every account by hand. Seed
+        // each baseline-less account from its own snapshot — the snapshot
+        // records the Battle.net-CONFIGURED path (the mirror path for junction
+        // setups), which is exactly what the baseline must hold. Only an
+        // unambiguous single-path snapshot is adopted; 0 or >1 paths (other
+        // Blizzard games installed) are left for manual confirmation. The
+        // result is stored as a report shown by the frontend until
+        // acknowledged. A seeded value from a polluted snapshot is harmless:
+        // the first mismatch goes through the stash-and-arbitrate flow.
+        if config.baseline_seed_done.unwrap_or(false) == false {
+            let mut updated_config = config.clone();
+            let mut seeded: Vec<String> = Vec::new();
+
+            for acc in &mut updated_config.accounts {
+                let has_baseline = acc.baseline_path.as_deref().map(str::trim).filter(|s| !s.is_empty()).is_some();
+                if has_baseline {
+                    continue;
+                }
+                let paths = crate::modules::file_swap::snapshot_game_paths(app, &acc.id);
+                if paths.len() == 1 {
+                    let path = paths.into_iter().next().unwrap();
+                    seeded.push(format!("{} → {}", acc.win_user, path));
+                    acc.baseline_path = Some(path);
+                }
+            }
+
+            updated_config.baseline_seed_done = Some(true);
+            if !seeded.is_empty() {
+                crate::modules::logger::info_key(None, "logs.config.baseline_seeded", Some(serde_json::json!({ "count": seeded.len() })));
+                updated_config.baseline_seed_report = Some(seeded);
+            }
             let _ = updated_config.save(app);
             return Ok(updated_config);
         }

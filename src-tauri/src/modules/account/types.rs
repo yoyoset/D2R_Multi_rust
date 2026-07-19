@@ -20,7 +20,13 @@ pub struct Account {
     pub avatar: Option<String>,   // Base64 encoded image or library icon ID
     #[serde(default = "default_true")]
     pub auto_fix_password: bool,  // Auto-refresh password policy (Fixes 0x80070532)
-    pub game_path: Option<String>,    // Custom execution path
+    pub game_path: Option<String>,    // Auto-learned REAL path of the running D2R.exe (junction-resolved; display/diagnostics only)
+    #[serde(default = "default_true")]
+    pub is_d2r: bool,                 // false = pure Battle.net login-switching account (no D2R multibox): baseline not required, backup by ledger ownership alone
+    #[serde(default)]
+    pub baseline_path: Option<String>, // User-confirmed CONFIGURED game dir as set in the Battle.net client (mirror path when using junctions). THE sole criterion for the backup gate.
+    #[serde(default = "default_false")]
+    pub strict_baseline: bool,        // 唯一基准: on mismatch, silently cancel the backup instead of prompting for arbitration
     #[serde(default = "default_false")]
     pub skip_config_sync: bool,       // Skip product.db synchronization (Manual Backup Mode)
 }

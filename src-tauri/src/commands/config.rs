@@ -48,10 +48,23 @@ pub fn save_config(
         account.win_pass = None;
     }
 
-    // 3. Persist non-sensitive JSON state
+    // 3. Backend-authoritative fields: the frontend never edits these, so its
+    // copy may be stale (fetched before a launch updated them). Merging from
+    // the current cache prevents a full-config save from silently reverting
+    // the live-db ownership ledger and reopening the path-contamination hole.
+    // (active_sequence / auto-learned game_path share this clobber pattern but
+    // predate the ledger; left as-is for now.)
+    {
+        let cached = state.config_lock();
+        updated_config.live_db_owner = cached.live_db_owner.clone();
+        updated_config.baseline_seed_report = cached.baseline_seed_report.clone();
+        updated_config.baseline_seed_done = cached.baseline_seed_done;
+    }
+
+    // 4. Persist non-sensitive JSON state
     updated_config.save(&app).map_err(|e| e.to_string())?;
 
-    // 4. Update memory cache (AppState also stays zero-trust)
+    // 5. Update memory cache (AppState also stays zero-trust)
     {
         let mut cached = state.config_lock();
         *cached = updated_config.clone();

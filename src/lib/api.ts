@@ -11,7 +11,10 @@ export interface Account {
     avatar?: string;          // Base64 encoded image or library icon ID
     note?: string;            // Role remarks
     auto_fix_password?: boolean; // 自动刷新密码策略 (修复 0x80070532)
-    game_path?: string;       // 自定义路径
+    game_path?: string;       // 自动学习的真实运行路径（junction 已被系统解析；仅展示/诊断）
+    is_d2r?: boolean;         // false = 非 D2R 账户（仅战网免登录切换）：不要求基准路径，凭台账归属直接备份；缺省视为 true
+    baseline_path?: string;   // 用户确认的基准路径（战网内配置的目录；镜像时为镜像目录），备份的唯一判据
+    strict_baseline?: boolean;   // 唯一基准：路径不符时不询问，直接取消备份
     skip_config_sync?: boolean;  // 跳过 product.db 同步
 }
 
@@ -80,7 +83,10 @@ export interface AppConfig {
     window_rename_format?: 'note' | 'bnet' | 'username' | 'full';
     sequence_presets: (SequencePreset | null)[];
     active_sequence?: ActiveSequenceState;
-    snapshot_reminder_dismissed?: boolean;
+    /** Account ID the machine-global product.db currently belongs to (anti path-contamination tracking). */
+    live_db_owner?: string | null;
+    /** Upgrade report: baseline paths seeded from snapshots ("user → path" lines); shown until acknowledged. */
+    baseline_seed_report?: string[] | null;
 }
 
 export interface WindowsUser {
@@ -145,6 +151,31 @@ export async function getAccountPassword(id: string): Promise<string> {
 
 export async function manualBackupSave(accountId: string): Promise<string> {
     return await invoke('manual_backup_save', { accountId });
+}
+
+/** Game paths recorded inside an account's snapshot (baseline-path suggestions). */
+export async function getSnapshotGamePaths(accountId: string): Promise<string[]> {
+    return await invoke('get_snapshot_game_paths', { accountId });
+}
+
+/** Does the live product.db plausibly belong to this account? (baseline first, snapshot fallback) */
+export async function verifyLiveConfig(accountId: string): Promise<'match' | 'mismatch' | 'unknown'> {
+    return await invoke('verify_live_config', { accountId });
+}
+
+/** Arbitrate a stashed baseline conflict: 'discard' cancels the backup, 'adopt' makes the disputed copy the new snapshot + baseline. */
+export async function resolveBaselineConflict(accountId: string, action: 'discard' | 'adopt'): Promise<string | null> {
+    return await invoke('resolve_baseline_conflict', { accountId, action });
+}
+
+/** Re-surface unresolved baseline conflicts after app restart. */
+export async function rescanPendingConflicts(): Promise<number> {
+    return await invoke('rescan_pending_conflicts');
+}
+
+/** Acknowledge (and clear) the baseline-seeding upgrade report. */
+export async function ackBaselineSeedReport(): Promise<void> {
+    return await invoke('ack_baseline_seed_report');
 }
 
 export async function getAccountsProcessStatus(usernames: string[]): Promise<Record<string, AccountStatus>> {
