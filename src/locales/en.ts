@@ -477,7 +477,8 @@ export default {
             "syncing_password_policy": "Syncing password policy (Never Expires)...",
             "sync_policy_note": "Policy sync remark: {{error}}",
             "security_patch_skipped": "Security patch skipped: {{error}}",
-            "vault_error": "Launch failed: Could not retrieve credentials from vault. {{error}}"
+            "vault_error": "Launch failed: Could not retrieve credentials from vault. {{error}}",
+            "user_uninitialized": "Target user {{user}} has no initialized Windows profile yet — a manual first login is required to complete setup"
         },
         "mutex": {
             "debug_priv_failed": "Failed to enable debug privilege, sensing process may be limited",
@@ -499,7 +500,8 @@ export default {
         "sequence": {
             "interrupted": "Sequence automation manually interrupted by user",
             "advancing": "Sequence Advancing: Starting account {{user}} ({{current}}/{{total}})",
-            "launch_failed": "Launch failed: {{error}}"
+            "launch_failed": "Launch failed: {{error}}",
+            "launch_timeout": "Account {{user}} timed out after {{secs}}s — gave up waiting and unblocked the UI. The underlying logon call may still be running in the background and could finish on its own later."
         },
         "inspector": {
             "debug_priv_failed": "Failed to enable debug privilege, handle enumeration may be incomplete"

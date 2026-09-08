@@ -486,7 +486,8 @@ export default {
             "syncing_password_policy": "正在同步密碼永不過期策略...",
             "sync_policy_note": "策略同步備註: {{error}}",
             "security_patch_skipped": "安全狀態預修補跳過: {{error}}",
-            "vault_error": "隔離啟動失敗: 無法從加密倉提取憑據。{{error}}"
+            "vault_error": "隔離啟動失敗: 無法從加密倉提取憑據。{{error}}",
+            "user_uninitialized": "目標用戶 {{user}} 尚未初始化 Windows 個人資料——需要先手動登入一次完成首次設定"
         },
         "mutex": {
             "debug_priv_failed": "無法啟用調試權限，探測過程可能受限",
@@ -508,7 +509,8 @@ export default {
         "sequence": {
             "interrupted": "序列自動化已由用戶手動中斷",
             "advancing": "序列推進: 正在啟動帳號 {{user}} ({{current}}/{{total}})",
-            "launch_failed": "啟動失敗: {{error}}"
+            "launch_failed": "啟動失敗: {{error}}",
+            "launch_timeout": "帳號 {{user}} 啟動逾時（超過 {{secs}} 秒未完成），已放棄等待並解除介面卡死；系統底層的登入呼叫可能仍在背景執行，稍後可能自行完成"
         },
         "inspector": {
             "debug_priv_failed": "無法啟用調試權限，句柄枚舉可能不完整"

@@ -475,7 +475,8 @@ export default {
             "syncing_password_policy": "パスワード無期限ポリシーを同期中...",
             "sync_policy_note": "ポリシー同期の備考: {{error}}",
             "security_patch_skipped": "安全ステータスの事前パッチをスキップしました: {{error}}",
-            "vault_error": "分離起動に失敗しました：暗号化ボールトから資格情報を抽出できません。{{error}}"
+            "vault_error": "分離起動に失敗しました：暗号化ボールトから資格情報を抽出できません。{{error}}",
+            "user_uninitialized": "対象ユーザー {{user}} の Windows プロファイルが未初期化です——先に手動で一度ログインして初期設定を完了してください"
         },
         "mutex": {
             "debug_priv_failed": "デバッグ権限を有効にできません。プローブプロセスが制限される可能性があります",
@@ -497,7 +498,8 @@ export default {
         "sequence": {
             "interrupted": "シーケンスの自動化がユーザーによって手動で中断されました",
             "advancing": "シーケンス推進：アカウント {{user}} を起動中 ({{current}}/{{total}})",
-            "launch_failed": "起動失敗: {{error}}"
+            "launch_failed": "起動失敗: {{error}}",
+            "launch_timeout": "アカウント {{user}} の起動が {{secs}} 秒経っても完了しなかったため、待機を諦めて画面を解除しました。バックグラウンドのログイン処理は継続している可能性があり、後で自動的に完了することがあります"
         },
         "inspector": {
             "debug_priv_failed": "デバッグ権限を有効にできません。ハンドル列挙が不完全である可能性があります"

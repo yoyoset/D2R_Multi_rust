@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.2] - 2026-09-08
+
+### Fixed (修复)
+- **序列启动器可能永久卡在"正在启动" / Sequencer could get stuck on "Launching…" forever**：序列迷你窗口关闭时其实只是隐藏到托盘、并未销毁，它的界面状态会跨多轮序列运行一直存活；一旦某次点击的响应未能正常落地（比如窗口正隐藏在托盘期间），"正在启动"这个标志就会永远留在界面上——哪怕之后关掉所有游戏、重新开一轮全新的序列，界面也会立即显示"正在启动"，即使实际上并没有任何请求在等待。现在序列状态每次更新时都会强制清除这个标志，不再信任窗口自己缓存的旧状态。 / The sequencer mini-window is only hidden (not destroyed) when closed, so its UI state persists across sequence runs. If any single click's response ever failed to land cleanly (e.g. while the window was hidden in the tray), the "Launching…" flag could stay stuck forever — even after closing every game and starting a brand-new sequence run, the window would show "Launching…" immediately with nothing actually pending. The flag is now force-cleared on every sequence state update instead of trusting stale cached state.
+- **序列单步启动缺少超时，可能无限期卡死界面 / A single sequence step had no timeout and could hang the UI indefinitely**：负责用目标账号密码拉起战网的 Win32 调用（CreateProcessWithLogonW）本身没有超时；一旦系统层面卡住，序列窗口会无限期停在"正在启动"，除了强制退出整个程序别无他法。现在每一步都有 30 秒硬超时，超时后自动放弃等待、解除界面卡死并给出提示（底层调用可能仍在后台运行，稍后可能自行完成）。 / The Win32 call that logs on as the target account and launches Battle.net (CreateProcessWithLogonW) has no timeout of its own; if it ever stalls at the OS level, the sequence window would sit on "Launching…" forever with no recovery short of force-quitting the whole app. Every step now has a hard 30-second ceiling — past it, the app gives up waiting, unblocks the UI, and shows a notice (the underlying call may still be running in the background and could finish on its own).
+- **跨用户启动前置校验：从未登录过的 Windows 账户会导致卡死 / Pre-flight check for never-logged-in Windows accounts**：目标账户若从未交互式登录过（没有本地资料/AppData），CreateProcessWithLogonW 会陷入 Windows 首次登录初始化流程，且不会返回，界面表现为无限期"正在启动"。现在启动前会先检查该账户是否已初始化，未初始化则立即返回明确错误（提示需先手动登录一次），不再无声卡死。 / If the target account has never logged in interactively before (no local profile/AppData), CreateProcessWithLogonW runs into Windows' first-login initialization flow and never returns, showing up as an indefinite "Launching…". Launches now check whether the account is initialized first and fail fast with a clear error (asking for one manual first login) instead of silently hanging.
+
+### Changed (变更)
+- **启动分阶段耗时日志常驻输出 / Phase-timing logs are always on now**：此前只有调试版才输出的 `[PERF]` 分阶段耗时日志（杀进程、清互斥锁、文件对齐、Win32 登录调用等各阶段耗时），正式发布版现在也会写入日志面板，便于排查启动卡死问题定位到具体阶段。 / The `[PERF]` phase-timing log lines (per-phase duration for killing processes, clearing mutexes, file alignment, the Win32 logon call, etc.) previously only appeared in debug builds. Release builds now log them too, so a stuck launch can be pinned to a specific phase from the Logs panel alone.
+
 ## [0.7.1] - 2026-09-08
 
 ### Documentation (文档)

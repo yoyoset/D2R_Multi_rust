@@ -475,7 +475,8 @@ export default {
             "syncing_password_policy": "비밀번호 만료되지 않음 정책 동기화 중...",
             "sync_policy_note": "정책 동기화 메모: {{error}}",
             "security_patch_skipped": "보안 상태 사전 패치 건너뜀: {{error}}",
-            "vault_error": "격리 실행 실패: 암호화 볼트에서 자격 증명을 추출할 수 없습니다. {{error}}"
+            "vault_error": "격리 실행 실패: 암호화 볼트에서 자격 증명을 추출할 수 없습니다. {{error}}",
+            "user_uninitialized": "대상 사용자 {{user}}의 Windows 프로필이 아직 초기화되지 않았습니다 — 먼저 수동으로 한 번 로그인하여 초기 설정을 완료해야 합니다"
         },
         "mutex": {
             "debug_priv_failed": "디버그 권한을 활성화할 수 없어 탐지 과정이 제한될 수 있습니다",
@@ -497,7 +498,8 @@ export default {
         "sequence": {
             "interrupted": "사용자에 의해 시퀀스 자동화가 수동 중단되었습니다",
             "advancing": "시퀀스 진행: 계정 {{user}} 실행 중 ({{current}}/{{total}})",
-            "launch_failed": "실행 실패: {{error}}"
+            "launch_failed": "실행 실패: {{error}}",
+            "launch_timeout": "계정 {{user}}의 실행이 {{secs}}초가 지나도 완료되지 않아 대기를 포기하고 화면 잠금을 해제했습니다. 백그라운드의 로그온 작업은 계속 실행 중일 수 있으며 나중에 자동으로 완료될 수 있습니다"
         },
         "inspector": {
             "debug_priv_failed": "디버그 권한을 활성화할 수 없어 핸들 열거가 불완전할 수 있습니다"

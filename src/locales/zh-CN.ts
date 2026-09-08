@@ -505,7 +505,8 @@ export default {
             "syncing_password_policy": "正在同步密码永不过期策略...",
             "sync_policy_note": "策略同步备注: {{error}}",
             "security_patch_skipped": "安全状态预修补跳过: {{error}}",
-            "vault_error": "隔离启动失败: 无法从加密仓提取凭据。{{error}}"
+            "vault_error": "隔离启动失败: 无法从加密仓提取凭据。{{error}}",
+            "user_uninitialized": "目标用户 {{user}} 尚未初始化 Windows 个人资料——需要先手动登录一次完成首次设置"
         },
         "mutex": {
             "debug_priv_failed": "无法启用调试权限，探测过程可能受限",
@@ -527,7 +528,8 @@ export default {
         "sequence": {
             "interrupted": "序列自动化已由用户手动中断",
             "advancing": "序列推进: 正在启动账号 {{user}} ({{current}}/{{total}})",
-            "launch_failed": "启动失败: {{error}}"
+            "launch_failed": "启动失败: {{error}}",
+            "launch_timeout": "账号 {{user}} 启动超时（超过 {{secs}} 秒未完成），已放弃等待并解除界面卡死；系统底层的登录调用可能仍在后台运行，稍后可能会自行完成"
         },
         "inspector": {
             "debug_priv_failed": "无法启用调试权限，句柄枚举可能不完整"

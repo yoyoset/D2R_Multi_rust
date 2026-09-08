@@ -50,6 +50,14 @@ const SequencerMini: React.FC = () => {
 
         const unlisten = listen<ActiveSequenceState | null>('sequence-state-changed', (event) => {
             const newState = event.payload;
+            // This window is a singleton the app hides rather than destroys
+            // (close-to-tray), so its React state can outlive any single
+            // sequence run. Every event here reflects a state transition the
+            // backend has already completed — nothing from a prior click can
+            // still be genuinely in flight by the time it arrives, so a stale
+            // isProcessing=true (e.g. from a click whose response never made
+            // it back while the window was hidden) must not survive it.
+            setIsProcessing(false);
             if (!newState) {
                 setIsFinished(true);
             } else {
@@ -97,8 +105,18 @@ const SequencerMini: React.FC = () => {
         try {
             await nextSequenceStep();
             setIsProcessing(false);
-        } catch (e) {
-            console.error(e);
+        } catch (err) {
+            console.error(err);
+            const msg = String(err);
+            if (msg.includes('USER_UNINITIALIZED')) {
+                addNotification('error', t('user_uninitialized_desc', { user: currentAccount?.win_user ?? '?' }) as string, 10000);
+            } else if (msg.includes('LAUNCH_TIMEOUT')) {
+                addNotification('warning', t('logs.sequence.launch_timeout', { user: currentAccount?.win_user ?? '?', secs: 30 }) as string, 10000);
+            } else {
+                addNotification('error', `${t('launch_failed')}: ${msg}`, 8000);
+            }
+            // The backend already interrupted the sequence on failure
+            // (sequence-state-changed fires None), so just clear local UI state.
             setIsProcessing(false);
         }
     };

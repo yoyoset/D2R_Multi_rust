@@ -19,20 +19,21 @@ pub fn launch_game(
     // per-phase breakdown of a cross-user launch. Baseline before optimization.
     let __perf_start = std::time::Instant::now();
     let mut __perf_mark = __perf_start;
+    // Temporarily always-on (not debug-gated): there's an open report of
+    // launches hanging indefinitely with no visible cause, and the phase
+    // breakdown is the only way to see which stage it's actually stuck in
+    // from a release build's Logs panel. Re-gate behind cfg!(debug_assertions)
+    // once that's root-caused.
     macro_rules! perf {
         ($label:expr) => {{
             let now = std::time::Instant::now();
-            // Phase timing is debug-only: release builds stay clean (the branch
-            // is compiled but optimized away when debug_assertions is off).
-            if cfg!(debug_assertions) {
-                crate::modules::logger::log(
-                    Some(app),
-                    "info",
-                    None,
-                    None,
-                    &format!("[PERF] {:<16} {:>6} ms", $label, now.duration_since(__perf_mark).as_millis()),
-                );
-            }
+            crate::modules::logger::log(
+                Some(app),
+                "info",
+                None,
+                None,
+                &format!("[PERF] {:<16} {:>6} ms", $label, now.duration_since(__perf_mark).as_millis()),
+            );
             __perf_mark = now;
         }};
     }
@@ -280,10 +281,8 @@ pub fn launch_game(
         );
         process_killer::force_kill_bnet_stack(&mut sys_lock)
     };
-    if cfg!(debug_assertions) {
-        crate::modules::logger::log(Some(app), "info", None, None,
-            &format!("[PERF]   kill.force   {:>5} ms (killed {})", __kill_t.elapsed().as_millis(), killed));
-    }
+    crate::modules::logger::log(Some(app), "info", None, None,
+        &format!("[PERF]   kill.force   {:>5} ms (killed {})", __kill_t.elapsed().as_millis(), killed));
 
     if killed > 0 {
         logger::log_localized(Some(app), "success", "logs.launcher.killed_processes", Some(serde_json::json!({ "count": killed })),
@@ -320,12 +319,10 @@ pub fn launch_game(
             }
             std::thread::sleep(Duration::from_millis(25));
         }
-        if cfg!(debug_assertions) {
-            let final_writable = file_swap::verify_config_writable().is_ok();
-            crate::modules::logger::log(Some(app), "info", None, None,
-                &format!("[PERF]   kill.verify  {:>5} ms (iters {}, rescued {}, writable {})",
-                    __verify_t.elapsed().as_millis(), iters, rescued, final_writable));
-        }
+        let final_writable = file_swap::verify_config_writable().is_ok();
+        crate::modules::logger::log(Some(app), "info", None, None,
+            &format!("[PERF]   kill.verify  {:>5} ms (iters {}, rescued {}, writable {})",
+                __verify_t.elapsed().as_millis(), iters, rescued, final_writable));
     }
     perf!("P2.kill");
 
@@ -419,10 +416,8 @@ pub fn launch_game(
         logger::log_localized(Some(app), "success", "logs.launcher.launch_success", Some(serde_json::json!({ "pid": child.id() })),
             &format!("Launched Battle.net (PID: {})", child.id()));
         perf!("P4.spawn_host");
-        if cfg!(debug_assertions) {
-            crate::modules::logger::log(Some(app), "info", None, None,
-                &format!("[PERF] {:<16} {:>6} ms", "TOTAL", __perf_start.elapsed().as_millis()));
-        }
+        crate::modules::logger::log(Some(app), "info", None, None,
+            &format!("[PERF] {:<16} {:>6} ms", "TOTAL", __perf_start.elapsed().as_millis()));
         Ok(child.id())
     } else {
         // Sandbox launch with credentials
@@ -434,6 +429,18 @@ pub fn launch_game(
 
         // 1. 安全预检 (Industrial-grade Security Shims) - 已移除（会导致部分环境认证回退）
 
+        // Pre-flight: CreateProcessWithLogonW with LOGON_WITH_PROFILE will
+        // silently hang if the target user has never logged in interactively
+        // before (Windows runs its first-login profile setup, which needs a
+        // manual click to complete — indistinguishable from a frozen launch
+        // to both the caller and the "正在启动..." UI). Catch it here instead
+        // of blocking on the Win32 call.
+        if !os.is_user_initialized(user) {
+            logger::log_localized(Some(app), "warn", "logs.launcher.user_uninitialized", Some(serde_json::json!({ "user": account.win_user })),
+                &format!("Target user {} has no initialized profile — first interactive login required", account.win_user));
+            return Err(AccountError::UserUninitialized);
+        }
+
         let physical_password = match Vault::load_password(app, &account.id) {
             Ok(p) => p,
             Err(e) => {
@@ -442,6 +449,13 @@ pub fn launch_game(
                 return Err(AccountError::SysInfo(format!("Vault Retrieval Error: {}", e)));
             }
         };
+
+        // Checkpoint: everything up to here is bounded (kill, ~1s file-writable
+        // poll, mutex scan). If a launch hangs, this is the last line seen
+        // before the hang unless it's inside the Win32 call itself below —
+        // that call has no internal timeout and can block indefinitely.
+        crate::modules::logger::log(Some(app), "info", None, None,
+            &format!("[PERF]   logon.begin  (user={})", user));
 
         let result = os.create_process_with_logon(
             user,
@@ -452,10 +466,8 @@ pub fn launch_game(
             working_dir.as_deref(),
         )?;
         perf!("P4.logon_spawn");
-        if cfg!(debug_assertions) {
-            crate::modules::logger::log(Some(app), "info", None, None,
-                &format!("[PERF] {:<16} {:>6} ms", "TOTAL", __perf_start.elapsed().as_millis()));
-        }
+        crate::modules::logger::log(Some(app), "info", None, None,
+            &format!("[PERF] {:<16} {:>6} ms", "TOTAL", __perf_start.elapsed().as_millis()));
 
         let _ = app.emit(
             "launch-log",

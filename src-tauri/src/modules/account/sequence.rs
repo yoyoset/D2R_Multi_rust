@@ -1,5 +1,5 @@
 use crate::modules::account::launcher::launch_game;
-use crate::modules::account::types::LaunchLogPayload;
+use crate::modules::account::types::{AccountError, LaunchLogPayload};
 use crate::modules::config::{ActiveSequenceState, SequencePreset};
 use crate::state::AppState;
 use crate::modules::logger;
@@ -232,9 +232,29 @@ pub async fn trigger_current_step(
 
     // force=true: the sequencer is trusted orchestration with its own pacing,
     // so it bypasses the soft launch-pacing guard (which targets manual clicks).
-    let result = tauri::async_runtime::spawn_blocking(move || {
+    let join_handle = tauri::async_runtime::spawn_blocking(move || {
         launch_game(&*os, &app_handle, &account_clone, false, true, false)
-    }).await.map_err(|e| format!("logs.inspector.task_join_error|{{\"error\":\"{}\"}}", e))?;
+    });
+
+    // Hard ceiling: CreateProcessWithLogonW has no timeout of its own, and has
+    // been observed to sit blocked indefinitely for reasons not yet root-caused
+    // (open investigation — see logs.sequence.advancing above and the [PERF]
+    // phase log immediately before it for the last-known-good checkpoint).
+    // Without this, a single stuck step freezes the mini window forever with
+    // no way out short of killing the whole app. If we hit the ceiling, the OS
+    // thread is left to finish on its own (Rust cannot forcibly abort a
+    // blocked syscall) — worst case it silently spawns Battle.net later with
+    // nobody watching, which is harmless; what matters is the UI recovers.
+    const STEP_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
+    let result = match tokio::time::timeout(STEP_TIMEOUT, join_handle).await {
+        Ok(join_result) => join_result.map_err(|e| format!("logs.inspector.task_join_error|{{\"error\":\"{}\"}}", e))?,
+        Err(_) => {
+            logger::log_localized(Some(app), "error", "logs.sequence.launch_timeout",
+                Some(serde_json::json!({ "user": account.win_user, "secs": STEP_TIMEOUT.as_secs() })),
+                &format!("Sequence step for {} did not complete within {}s — giving up and unblocking the UI", account.win_user, STEP_TIMEOUT.as_secs()));
+            Err(AccountError::LaunchTimeout)
+        }
+    };
 
     if let Err(e) = result {
         // Log the error globally as well

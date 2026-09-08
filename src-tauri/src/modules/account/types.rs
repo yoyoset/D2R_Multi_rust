@@ -52,8 +52,9 @@ pub enum AccountError {
     #[error("File Swap Error: {0}")]
     FileSwap(#[from] file_swap::FileSwapError),
     #[error("USER_UNINITIALIZED")]
-    #[allow(dead_code)]
     UserUninitialized,
+    #[error("LAUNCH_TIMEOUT")]
+    LaunchTimeout,
     #[error("System Error: {0}")]
     SysInfo(String),
 }
