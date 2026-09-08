@@ -166,7 +166,7 @@ D2R 启动时会创建一个命名内核对象 `DiabloII Check For Other Instanc
 
 ### 5.3 创建 Windows 用户
 
-若还没有对应的 Windows 用户，可在账号弹窗里「新建用户」，或用 [工具箱](#8-工具箱) 的「本地用户和组 / 高级用户面板」创建。**新建的用户建议先登录一次**以完成初始化。
+若还没有对应的 Windows 用户，可在账号弹窗里「新建用户」，或用 [工具箱](#8-工具箱) 的「本地用户和组 / 高级用户面板」创建。**新建的用户建议先手动登录一次**以完成初始化——最好顺手在这次手动登录里把战网也登进去，而不是留给工具的首次跨用户启动去做。原因很朴素：一个从没在本机登录过的全新用户，走跨用户桥接（`CreateProcessWithLogonW`）去完成"系统首次初始化 + 战网首次登录"这两件事，偶尔会有点不确定；自己手动登一次、把桌面初始化走完，之后再交给工具做免登录切换，会顺畅很多。
 
 ### 5.4 幽灵图标 👻
 
@@ -330,6 +330,7 @@ D2R 启动时会创建一个命名内核对象 `DiabloII Check For Other Instanc
 - **启动时弹出「基准路径不符」裁决窗**：当前 `product.db` 里的路径与该账号的基准不一致。若你**确实改过**游戏路径 → 选「更新基准并备份」；说不清原因 → 选「取消备份」，快照保持原样、绝不污染（宁可少备一次，不可备错一次）。
 - **换了游戏目录怎么办**：在战网里改完路径后，到账号编辑里更新基准路径；或等下次启动弹裁决窗时选「更新基准并备份」。
 - **改了 Windows 密码后战网要求重新登录**：正常现象——免登录凭据与该用户的密码绑定（§4.1）。重新登录一次即可恢复；同时记得回账号编辑更新存储的密码，之后尽量别再改。
+- **新建账号首次启动战网登录卡住 / 没反应**：多半是全新 Windows 用户第一次登录，恰好撞上工具跨用户启动。建议手动切换到该用户桌面（Win+L →「切换用户」），在里面把系统初始化走完并登一次战网（见 §5.3），之后再回来用工具做免登录切换，通常就顺畅了。
 - **怎么看日志**：`数据目录\logs\d2r-multiplay.log`，或「工具 → 查看系统日志」。
 
 ---
@@ -523,7 +524,7 @@ Open the account modal via Add or a row's Edit; it has several sections (See Fig
 
 ### 5.3 Creating Windows Users
 
-If the Windows user doesn't exist yet, create it from the account modal, or via the [Tools](#8-tools) "Local Users & Groups / Advanced User Panel". **Log into a newly created user once** to initialize it.
+If the Windows user doesn't exist yet, create it from the account modal, or via the [Tools](#8-tools) "Local Users & Groups / Advanced User Panel". **Log into a newly created user once yourself** to initialize it — and while you're there, it's worth logging into Battle.net too, rather than leaving that for the tool's first cross-user launch. The reasoning is simple: a user that has never logged in locally asking the cross-user bridge (`CreateProcessWithLogonW`) to do both "first-time desktop init" and "first Battle.net login" at once can be a little unpredictable; doing the manual login first and handing it off to the tool afterwards tends to go more smoothly.
 
 ### 5.4 Ghost icon 👻
 
@@ -683,6 +684,7 @@ Theme: **Forge / Obsidian / Daylight**, applied instantly and persisted. (See Fi
 - **"Baseline mismatch" arbitration dialog at launch**: the current `product.db` paths don't match that account's baseline. If you **really did move** the game → choose "Update baseline & back up"; if you can't explain it → choose "Cancel backup" — the snapshot stays untouched (a missed backup is recoverable, a wrong one is not).
 - **Moved the game to a new directory**: after changing the path in Battle.net, update the account's baseline path in the editor — or pick "Update baseline & back up" when the arbitration dialog appears at the next launch.
 - **Battle.net asks to log in again after a Windows password change**: expected — the login-free credentials are keyed to that user's password (§4.1). Log in once to recover, update the stored password in the account editor, and avoid changing it again.
+- **First Battle.net login hangs / does nothing on a brand-new account**: usually a fresh Windows user's very first login colliding with the tool's cross-user launch. Switch to that user's desktop manually (Win+L → "Switch user"), finish the system's first-time setup and log into Battle.net there once (see §5.3), then come back and use the tool for login-free switching — that usually clears it up.
 - **Where are the logs**: `<data>\logs\d2r-multiplay.log`, or "Tools → View system logs".
 
 ---

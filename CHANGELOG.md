@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.1] - 2026-09-08
+
+### Documentation (文档)
+- **补充 MIT LICENSE 文件 / Added the MIT LICENSE file**：README 一直标注 MIT，但仓库里没有实际的 LICENSE 文件，现已补上。 / The README has always said MIT, but the repository never actually shipped a LICENSE file — it's added now.
+- **新建 Windows 用户的首次登录建议 / First-login guidance for freshly created Windows users**：README 与手册（§5.3、常见问题）新增一条小建议——刚新建的本地 Windows 用户，最好自己手动切换过去登录一遍系统、并在里面登录一次战网，而不是完全交给工具的首次跨用户启动去处理；一个从没在本机登录过的全新账号，走跨用户桥接一次性完成"系统初始化 + 战网登录"偶尔会有点不确定，手动走一遍能完全绕开。纯文档澄清，不涉及代码逻辑变更。 / README and the guide (§5.3, Troubleshooting) now suggest that for a brand-new local Windows user, it's a bit more reliable to switch to it and log in yourself once — including logging into Battle.net there — rather than relying entirely on the tool's first cross-user launch to do both "system init" and "Battle.net login" at once; a profile that has never logged in locally can be a little unpredictable over that bridge, and a manual first login sidesteps it. Documentation-only clarification, no behavior change.
+
 ## [0.7.0] - 2026-07-19
 
 > 📌 **升级须知 / Upgrade note**：升级后首次启动，程序会自动从各账号的现有快照同步「基准路径」，并弹出一次性报告；报告中“仍需手动标定”的账号，请到账号编辑里确认基准路径（或勾选「非 D2R 账户」）。 / On first launch after upgrading, baseline paths are seeded automatically from each account's existing snapshots and a one-time report is shown; for accounts listed as "needs manual confirmation", set the baseline in the account editor (or mark them Non-D2R).
